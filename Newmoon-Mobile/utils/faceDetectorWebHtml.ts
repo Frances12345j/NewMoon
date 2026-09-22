@@ -5,7 +5,7 @@
 
 export const FACE_DETECTOR_WEB_HTML = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1" /></head>
-<body style="margin:0;background:#000;">
+<body style="margin:0;background:transparent;">
 <script>
 (function(){
   var MODEL = 'https://justadudewhohacks.github.io/face-api.js/models';

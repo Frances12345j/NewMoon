@@ -199,7 +199,7 @@ const PullOutReport = () => {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
-        <Button type="link" className="!text-orange-600 hover:!text-orange-700" onClick={() => showDetailModal(record)}>
+        <Button type="link" className="text-orange-600! hover:text-orange-700" onClick={() => showDetailModal(record)}>
           View Details
         </Button>
       ),
@@ -241,12 +241,12 @@ const PullOutReport = () => {
   return (
     <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">
       {/* Hero Header */}
-      <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/[0.08] blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/[0.06] blur-2xl" />
-        <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/[0.05] blur-2xl" />
+      <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+        <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+        <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
 
-        <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/[0.03]">
+        <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
           <SwapOutlined />
         </div>
 
@@ -271,7 +271,7 @@ const PullOutReport = () => {
               <Button
                 icon={<DownloadOutlined />}
                 onClick={handleExport}
-                className="!h-11 !rounded-xl !border-stone-200 !px-5 !font-medium !text-stone-700 hover:!border-orange-300 hover:!text-orange-600"
+                className="h-11 rounded-xl! border-stone-200! px-5 font-medium text-stone-700 hover:border-orange-300 hover:text-orange-600"
               >
                 Export CSV
               </Button>
@@ -280,7 +280,7 @@ const PullOutReport = () => {
                 icon={<FileTextOutlined />}
                 onClick={fetchPullOutReport}
                 loading={loading}
-                className="!h-11 !rounded-xl !border-none !bg-gradient-to-r !from-orange-600 !to-amber-500 !px-5 !font-semibold !shadow-lg !shadow-orange-500/20"
+                className="h-11 rounded-xl border-none bg-linear-to-r from-orange-600! to-amber-500! px-5! font-semibold! shadow-lg! shadow-orange-500/20!"
               >
                 Generate Report
               </Button>
@@ -290,7 +290,7 @@ const PullOutReport = () => {
           {/* KPI Chips */}
           {summary && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
+              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/15">
                   <SwapOutlined className="text-orange-400 text-base" />
                 </div>
@@ -301,7 +301,7 @@ const PullOutReport = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
+              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/15">
                   <CheckCircleOutlined className="text-orange-400 text-base" />
                 </div>
@@ -312,7 +312,7 @@ const PullOutReport = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
+              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/15">
                   <ClockCircleOutlined className="text-amber-400 text-base" />
                 </div>
@@ -323,7 +323,7 @@ const PullOutReport = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
+              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/15">
                   <DollarOutlined className="text-orange-400 text-base" />
                 </div>
@@ -354,7 +354,7 @@ const PullOutReport = () => {
             onChange={setDateRange}
             format="YYYY-MM-DD"
             allowClear={false}
-            className="!h-11 !rounded-xl !border-stone-200 hover:!border-orange-300 focus:!border-orange-500"
+            className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
           />
           <Text strong>From Branch:</Text>
           <Select
@@ -363,7 +363,7 @@ const PullOutReport = () => {
             allowClear
             value={selectedSourceBranch}
             onChange={setSelectedSourceBranch}
-            className="!h-11 !rounded-xl"
+            className="h-11! rounded-xl!"
             popupClassName="!rounded-xl"
           >
             {Array.isArray(branches) && branches.map((branch) => (
@@ -379,7 +379,7 @@ const PullOutReport = () => {
             allowClear
             value={selectedDestBranch}
             onChange={setSelectedDestBranch}
-            className="!h-11 !rounded-xl"
+            className="h-11! rounded-xl!"
             popupClassName="!rounded-xl"
           >
             {Array.isArray(branches) && branches.map((branch) => (
@@ -395,7 +395,7 @@ const PullOutReport = () => {
             allowClear
             value={selectedStatus}
             onChange={setSelectedStatus}
-            className="!h-11 !rounded-xl"
+            className="h-11! rounded-xl!"
             popupClassName="!rounded-xl"
           >
             <Select.Option value="pending">Pending</Select.Option>
@@ -410,7 +410,7 @@ const PullOutReport = () => {
             style={{ width: 200 }}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="!h-11 !rounded-xl !border-stone-200 hover:!border-orange-300 focus:!border-orange-500"
+            className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
           />
         </Space>
       </div>
@@ -488,7 +488,7 @@ const PullOutReport = () => {
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
                 <SwapOutlined />
               </div>
-              <Title level={5} className="!mb-0 !text-stone-900">Items</Title>
+              <Title level={5} className="mb-0! text-stone-900!">Items</Title>
             </div>
             <Table
               columns={itemColumns}

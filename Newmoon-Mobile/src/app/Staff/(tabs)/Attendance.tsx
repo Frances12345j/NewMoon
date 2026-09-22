@@ -11,6 +11,7 @@ import {
   View,
   Alert,
   ScrollView,
+  StyleSheet,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, CARD } from '../../../lib/staffTheme';
@@ -21,7 +22,7 @@ import api from '../../../../lib/api';
 import { getUser as getStoredUser } from '../../../../lib/userStorage';
 import { buildLandmarkEmbedding, normalizeEmbedding } from '../../../../utils/faceEmbedding';
 import { FaceScanOverlay, type ScanPhase } from '../../../../components/staff/FaceScanOverlay';
-import {  
+import {
   isFaceDetectorNativeAvailable,
 } from '../../../../utils/expoFaceDetectorOptional';
 import { landmarks68ToFaceLandmarksInput } from '../../../../utils/landmarks68ToFace';
@@ -364,18 +365,18 @@ export default function AttendanceScreen() {
     try {
       setUserLoading(true);
       setDebugInfo('Loading user data...');
-      
+
       // Get user from storage
       const userRaw = Platform.OS === 'web'
         ? localStorage.getItem('user')
         : await SecureStore.getItemAsync('user');
       addDebug(`User from storage: ${userRaw ? 'Found' : 'Not found'}`);
-      
+
       let userData = userRaw ? JSON.parse(userRaw) : null;
       if (!userData?.id) {
         userData = await getStoredUser();
       }
-      
+
       if (!userData?.id) {
         addDebug('No user ID in storage, fetching from API...');
         try {
@@ -392,15 +393,15 @@ export default function AttendanceScreen() {
           console.error('Failed to fetch user:', error);
         }
       }
-      
+
       setUser(userData);
       addDebug(`User ID: ${userData?.id}`);
-      
+
       // Fetch staff assignment from staff_assignments table
       if (userData?.id) {
         await fetchStaffAssignment(userData.id);
       }
-      
+
     } catch (error: any) {
       addDebug(`Error in loadUserData: ${error.message}`);
       console.error('Failed to load user data:', error);
@@ -413,16 +414,16 @@ export default function AttendanceScreen() {
   const fetchStaffAssignment = async (userId: number) => {
     try {
       addDebug(`Fetching staff assignment for user ID: ${userId}`);
-      
+
       // Try to get staff assignment from staff_assignments table
       const response = await api.get(`/staff-assignments`, {
         params: { user_id: userId, is_active: true }
       });
-      
+
       addDebug(`Staff assignment response: ${JSON.stringify(response.data)}`);
-      
+
       let assignment = null;
-      
+
       // Check if response is array and has data
       const responseData = response?.data;
       if (Array.isArray(responseData) && responseData.length > 0) {
@@ -433,12 +434,12 @@ export default function AttendanceScreen() {
       } else if (responseData && typeof responseData === 'object' && !responseData.data) {
         assignment = responseData;
       }
-      
+
       if (assignment && assignment.branch_id) {
         setStaffAssignment(assignment);
         setBranchId(assignment.branch_id);
         addDebug(`Found active staff assignment - Branch ID: ${assignment.branch_id}, Position: ${assignment.position}, Daily Rate: ${assignment.daily_rate}`);
-        
+
         // Update user data with branch info
         const updatedUser = { ...user, branch_id: assignment.branch_id, staff_assignment: assignment };
         if (Platform.OS === 'web') {
@@ -446,30 +447,30 @@ export default function AttendanceScreen() {
         } else {
           await SecureStore.setItemAsync('user', JSON.stringify(updatedUser));
         }
-        
+
         // Load attendance record
         await loadAttendanceRecord(userId, assignment.branch_id);
       } else {
         addDebug('No active staff assignment found');
         setBranchId(null);
       }
-      
+
     } catch (error: any) {
       addDebug(`Error fetching staff assignment: ${error.message}`);
       console.error('Failed to fetch staff assignment:', error);
-      
+
       // Try alternative endpoint if needed
       try {
         addDebug('Trying alternative endpoint: /staff/{userId}/assignment');
         const altResponse = await api.get(`/staff/${userId}/assignment`);
         addDebug(`Alternative response: ${JSON.stringify(altResponse.data)}`);
-        
+
         if (altResponse.data && altResponse.data.branch_id) {
           setStaffAssignment(altResponse.data);
           setBranchId(altResponse.data.branch_id);
           addDebug(`Found via alternative endpoint - Branch ID: ${altResponse.data.branch_id}`);
-          
-           await loadAttendanceRecord(userId, altResponse.data.branch_id);
+
+          await loadAttendanceRecord(userId, altResponse.data.branch_id);
         }
       } catch (altError: any) {
         addDebug(`Alternative endpoint also failed: ${altError.message}`);
@@ -600,8 +601,8 @@ export default function AttendanceScreen() {
         typeof photo.base64 === 'string'
           ? photo.base64
           : await FileSystemLegacy.readAsStringAsync(photo.uri, {
-              encoding: FileSystemLegacy.EncodingType.Base64,
-            });
+            encoding: FileSystemLegacy.EncodingType.Base64,
+          });
       const webRes = await faceWebRef.current.detectFromBase64(b64);
       console.log('[FACE-WEB] result', webRes.ok, !webRes.ok ? webRes.code : '');
 
@@ -683,11 +684,25 @@ export default function AttendanceScreen() {
 
     const now = Date.now();
     if (scanInFlightRef.current) return;
-    if (now < scanCooldownUntilRef.current) return;
+    if (now < scanCooldownUntilRef.current) {
+      if (scanPhase === 'checking') {
+        setScanPhase('scanning');
+        setScanConfidence(null);
+        setScanThreshold(null);
+      }
+      return;
+    }
 
     const shouldTimeIn = mode === 'time_in' && canTimeIn;
     const shouldTimeOut = mode === 'time_out' && canTimeOutEffective;
-    if (!shouldTimeIn && !shouldTimeOut) return;
+    if (!shouldTimeIn && !shouldTimeOut) {
+      if (scanPhase === 'checking') {
+        setScanPhase('scanning');
+        setScanConfidence(null);
+        setScanThreshold(null);
+      }
+      return;
+    }
 
     scanInFlightRef.current = true;
     setScanPhase('scanning');
@@ -719,8 +734,14 @@ export default function AttendanceScreen() {
         const th = responseData?.threshold;
         if (typeof sim === 'number') setScanConfidence(sim);
         if (typeof th === 'number') setScanThreshold(th);
-        Alert.alert('Success', `Time In recorded at ${time}`);
+        setScanPhase('verified');
         scanCooldownUntilRef.current = Date.now() + 2500;
+        setTimeout(() => {
+          setScanPhase('scanning');
+          setScanConfidence(null);
+          setScanThreshold(null);
+        }, 2200);
+        Alert.alert('Success', `Time In recorded at ${time}`);
         return;
       }
 
@@ -740,8 +761,14 @@ export default function AttendanceScreen() {
         const th = responseData?.threshold;
         if (typeof sim === 'number') setScanConfidence(sim);
         if (typeof th === 'number') setScanThreshold(th);
-        Alert.alert('Success', `Time Out recorded at ${time}`);
+        setScanPhase('verified');
         scanCooldownUntilRef.current = Date.now() + 2500;
+        setTimeout(() => {
+          setScanPhase('scanning');
+          setScanConfidence(null);
+          setScanThreshold(null);
+        }, 2200);
+        Alert.alert('Success', `Time Out recorded at ${time}`);
       }
     } catch (err: any) {
       const code = err?.response?.data?.code;
@@ -753,15 +780,24 @@ export default function AttendanceScreen() {
         if (typeof sim === 'number') setScanConfidence(sim);
         if (typeof th === 'number') setScanThreshold(th);
         scanCooldownUntilRef.current = Date.now() + 2500;
-        setTimeout(() => setScanPhase('scanning'), 2000);
+        setTimeout(() => {
+          setScanPhase('scanning');
+          setScanConfidence(null);
+          setScanThreshold(null);
+        }, 2000);
       } else {
+        setScanPhase('scanning');
+        setScanConfidence(null);
+        setScanThreshold(null);
         Alert.alert('Error', attendanceErrorMessage(err));
         scanCooldownUntilRef.current = Date.now() + 2500;
       }
     } finally {
       scanInFlightRef.current = false;
-      if (Date.now() >= scanCooldownUntilRef.current) {
+      if (scanPhase === 'checking') {
         setScanPhase('scanning');
+        setScanConfidence(null);
+        setScanThreshold(null);
       }
     }
   };
@@ -833,7 +869,7 @@ export default function AttendanceScreen() {
       setMode('time_out');
       return;
     }
-    
+
     if (!branchId) {
       Alert.alert(
         'No Branch Assignment',
@@ -842,7 +878,7 @@ export default function AttendanceScreen() {
       );
       return;
     }
-    
+
     setLoading(true);
     try {
       const { date, time } = getPhilippinesTime();
@@ -876,6 +912,12 @@ export default function AttendanceScreen() {
       const th = responseData?.threshold;
       if (typeof sim === 'number') setScanConfidence(sim);
       if (typeof th === 'number') setScanThreshold(th);
+      setScanPhase('verified');
+      setTimeout(() => {
+        setScanPhase('scanning');
+        setScanConfidence(null);
+        setScanThreshold(null);
+      }, 2200);
       setMode('time_out');
       startTimeOutLock('manual_time_in');
       Alert.alert('Success', `Time In recorded at ${time}`);
@@ -883,7 +925,7 @@ export default function AttendanceScreen() {
     } catch (error: any) {
       addDebug(`Time In error: ${error.message}`);
       console.error('Time in error:', error);
-      
+
       Alert.alert('Error', attendanceErrorMessage(error));
     } finally {
       setLoading(false);
@@ -916,7 +958,7 @@ export default function AttendanceScreen() {
       Alert.alert('Already Timed Out', 'You already recorded your time out for today. You can time in again tomorrow.');
       return;
     }
-    
+
     setLoading(true);
     try {
       const { time } = getPhilippinesTime();
@@ -945,6 +987,12 @@ export default function AttendanceScreen() {
       const th = responseData?.threshold;
       if (typeof sim === 'number') setScanConfidence(sim);
       if (typeof th === 'number') setScanThreshold(th);
+      setScanPhase('verified');
+      setTimeout(() => {
+        setScanPhase('scanning');
+        setScanConfidence(null);
+        setScanThreshold(null);
+      }, 2200);
       setMode('time_in');
       clearTimeOutLock('time_out');
       Alert.alert('Success', `Time Out recorded at ${time}`);
@@ -952,7 +1000,7 @@ export default function AttendanceScreen() {
     } catch (error: any) {
       addDebug(`Time Out error: ${error.message}`);
       console.error('Time out error:', error);
-      
+
       Alert.alert('Error', attendanceErrorMessage(error));
     } finally {
       setLoading(false);
@@ -1217,12 +1265,12 @@ export default function AttendanceScreen() {
     );
   } else {
     attendanceBody = (
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: '#000000' }}>
         <CameraView
           ref={cameraRef}
-          style={{ flex: 1 }}
+          style={StyleSheet.absoluteFill}
           facing="front"
-          enableTorch={torchOn}
+          mode="picture"
         />
 
         {/* Top controls (simple + clean) */}
@@ -1232,13 +1280,12 @@ export default function AttendanceScreen() {
               <TouchableOpacity
                 onPress={() => setMode('time_in')}
                 disabled={!canTimeIn && mode !== 'time_in'}
-                className={`flex-1 py-3 rounded-xl ${
-                  mode === 'time_in'
+                className={`flex-1 py-3 rounded-xl ${mode === 'time_in'
                     ? ''
                     : !canTimeIn
                       ? 'opacity-50'
                       : ''
-                }`}
+                  }`}
                 style={{
                   backgroundColor: mode === 'time_in'
                     ? COLORS.PRIMARY_RED
@@ -1255,13 +1302,12 @@ export default function AttendanceScreen() {
               <TouchableOpacity
                 onPress={() => setMode('time_out')}
                 disabled={!canTimeOutEffective && mode !== 'time_out'}
-                className={`flex-1 py-3 rounded-xl ${
-                  mode === 'time_out'
+                className={`flex-1 py-3 rounded-xl ${mode === 'time_out'
                     ? ''
                     : !canTimeOutEffective
                       ? 'opacity-50'
                       : ''
-                }`}
+                  }`}
                 style={{
                   backgroundColor: mode === 'time_out'
                     ? COLORS.PRIMARY_NAVY
@@ -1320,16 +1366,28 @@ export default function AttendanceScreen() {
             <Pill
               text={
                 staffUser
-                  ? scanPhase === 'mismatch'
-                    ? 'Mismatch'
-                    : scanPhase === 'checking'
-                      ? 'Checking…'
-                      : 'Ready'
+                  ? scanPhase === 'verified'
+                    ? 'Verified ✓'
+                    : scanPhase === 'mismatch'
+                      ? 'Mismatch'
+                      : scanPhase === 'checking'
+                        ? 'Checking…'
+                        : mode === 'time_out' && timeOutLocked
+                          ? 'Standby'
+                          : 'Ready'
                   : loading
                     ? 'Working…'
                     : 'Ready'
               }
-              tone={staffUser && scanPhase === 'mismatch' ? 'danger' : 'success'}
+              tone={
+                staffUser && scanPhase === 'verified'
+                  ? 'success'
+                  : staffUser && scanPhase === 'mismatch'
+                    ? 'danger'
+                    : mode === 'time_out' && timeOutLocked
+                      ? 'neutral'
+                      : 'success'
+              }
             />
           </View>
         </View>
@@ -1349,11 +1407,10 @@ export default function AttendanceScreen() {
             <TouchableOpacity
               onPress={mode === 'time_in' ? handleTimeIn : handleTimeOut}
               disabled={loading || (mode === 'time_in' ? !canTimeIn : !canTimeOutEffective)}
-              className={`w-20 h-20 rounded-full justify-center items-center shadow-lg ${
-                loading || (mode === 'time_in' ? !canTimeIn : !canTimeOutEffective)
+              className={`w-20 h-20 rounded-full justify-center items-center shadow-lg ${loading || (mode === 'time_in' ? !canTimeIn : !canTimeOutEffective)
                   ? 'bg-gray-500/80'
                   : 'bg-white'
-              }`}
+                }`}
             >
               {loading ? (
                 <ActivityIndicator size="large" color={COLORS.PRIMARY_RED} />
@@ -1371,13 +1428,13 @@ export default function AttendanceScreen() {
                   : 'Tap to Time In'
                 : timeOutLocked
                   ? <>
-                      Please wait <TimeOutCountdown until={timeOutLockUntil} />
-                    </>
+                    Please wait <TimeOutCountdown until={timeOutLockUntil} />
+                  </>
                   : hasTimedOut
-                  ? 'Time Out already recorded today'
-                  : !hasTimedIn
-                    ? 'Time In first'
-                    : 'Tap to Time Out'}
+                    ? 'Time Out already recorded today'
+                    : !hasTimedIn
+                      ? 'Time In first'
+                      : 'Tap to Time Out'}
             </Text>
           </View>
         )}
@@ -1442,14 +1499,14 @@ export default function AttendanceScreen() {
             </Card>
           </TouchableOpacity>
         </View>
-    </View>
+      </View>
     );
   }
 
   return (
-    <>
-      {showFaceWebLayer ? <FaceDetectionWebView ref={faceWebRef} /> : null}
+    <View style={{ flex: 1, backgroundColor: '#000000' }}>
       {attendanceBody}
-    </>
+      {showFaceWebLayer ? <FaceDetectionWebView ref={faceWebRef} /> : null}
+    </View>
   );
 }

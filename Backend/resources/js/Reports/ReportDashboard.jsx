@@ -95,11 +95,11 @@ const ReportDashboard = () => {
       stats: dashboardData?.branch,
     },
     {
-      title: "Stock Out Report",
+      title: "Pull Out Report",
       description: "Item transfers between branches",
       icon: <SwapOutlined className="text-2xl" style={{ color: "#F97316" }} />,
       color: "#F97316",
-      path: "/reports/stockout",
+      path: "/reports/PullOut",
       stats: dashboardData?.pullout,
     },
   ];
@@ -109,7 +109,7 @@ const ReportDashboard = () => {
       {/* =========================================================
           HERO HEADER
       ========================================================= */}
-      <section className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+      <section className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
         {/* Decorative background */}
         <div className="pointer-events-none absolute -right-20 -top-28 h-80 w-80 rounded-full bg-orange-500/10 blur-2xl" />
 
@@ -158,7 +158,7 @@ const ReportDashboard = () => {
             </div>
 
             {/* Report Period */}
-            <div className="w-full min-w-[240px] xl:max-w-sm rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+            <div className="w-full min-w-60 xl:max-w-sm rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
               <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-orange-300">
                 <CalendarOutlined />
                 Reporting Period
@@ -169,7 +169,7 @@ const ReportDashboard = () => {
                 onChange={setDateRange}
                 format="YYYY-MM-DD"
                 allowClear={false}
-                className="!h-11 !w-full !rounded-xl !border-white/15 hover:!border-orange-300 focus:!border-orange-500"
+                className="h-11! w-full! rounded-xl! border-white/15! hover:border-orange-300! focus:border-orange-500!"
               />
 
               <Button
@@ -178,7 +178,7 @@ const ReportDashboard = () => {
                 onClick={fetchDashboardData}
                 loading={loading}
                 block
-                className="!mt-3 !h-11 !rounded-xl !border-none !bg-gradient-to-r !from-orange-600 !to-amber-500 !font-semibold !shadow-lg !shadow-orange-500/20 transition-all duration-300 hover:!from-orange-700 hover:!to-amber-600"
+                className="mt-3! h-11! rounded-xl! border-none! bg-linear-to-r! from-orange-600! to-amber-500! font-semibold! shadow-lg! shadow-orange-500/20! transition-all duration-300 hover:from-orange-700! hover:to-amber-600!"
               >
                 Refresh
               </Button>
@@ -191,7 +191,7 @@ const ReportDashboard = () => {
           {dashboardData && (
             <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {/* Total Revenue */}
-              <div className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09]">
+              <div className="group rounded-2xl border border-white/10 bg-white/6 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/9">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-white/45">
@@ -212,7 +212,7 @@ const ReportDashboard = () => {
               </div>
 
               {/* Total Transactions */}
-              <div className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09]">
+              <div className="group rounded-2xl border border-white/10 bg-white/6 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/9">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-white/45">
@@ -232,7 +232,7 @@ const ReportDashboard = () => {
               </div>
 
               {/* Low Stock Items */}
-              <div className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09]">
+              <div className="group rounded-2xl border border-white/10 bg-white/6 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/9">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-white/45">
@@ -264,7 +264,7 @@ const ReportDashboard = () => {
               </div>
 
               {/* Attendance Rate */}
-              <div className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09]">
+              <div className="group rounded-2xl border border-white/10 bg-white/6 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/9">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-white/45">
@@ -320,7 +320,7 @@ const ReportDashboard = () => {
               type="warning"
               showIcon
               closable
-              className="!rounded-2xl !border-amber-200 !bg-amber-50"
+              className="rounded-2xl! border-amber-200! bg-amber-50!"
             />
           </Col>
         )}
@@ -334,7 +334,7 @@ const ReportDashboard = () => {
               </div>
 
               <div>
-                <Title level={4} className="!mb-0 !text-2xl !font-bold !tracking-tight !text-stone-900">
+                <Title level={4} className="mb-0! text-2xl! font-bold! tracking-tight! text-stone-900!">
                   Available Reports
                 </Title>
 
@@ -352,12 +352,12 @@ const ReportDashboard = () => {
             <Card
               hoverable
               bordered={false}
-              className="group !h-full !overflow-hidden !rounded-2xl !border !border-orange-100 !shadow-sm transition-all duration-300 hover:!border-orange-200 hover:!shadow-[0_18px_40px_rgba(234,88,12,0.12)]"
+              className="group h-full! overflow-hidden! rounded-2xl! border! border-orange-100! shadow-sm! transition-all duration-300 hover:border-orange-200! hover:shadow-[0_18px_40px_rgba(234,88,12,0.12)]!"
               styles={{ body: { padding: 0 } }}
               onClick={() => navigate(card.path)}
             >
               {/* Report Header */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-stone-950 via-stone-900 to-orange-950 px-5 py-6">
+              <div className="relative overflow-hidden bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 px-5 py-6">
                 <div className="pointer-events-none absolute -right-8 -top-12 h-32 w-32 rounded-full bg-orange-500/10" />
 
                 <div className="relative z-10 flex items-center justify-between">
@@ -377,7 +377,7 @@ const ReportDashboard = () => {
                   {card.title}
                 </h3>
 
-                <Text type="secondary" className="!mt-1 block !text-xs !text-stone-500">
+                <Text type="secondary" className="mt-1! block text-xs! text-stone-500!">
                   {card.description}
                 </Text>
 
@@ -405,7 +405,7 @@ const ReportDashboard = () => {
         <Col span={24}>
           <Card
             bordered={false}
-            className="!rounded-2xl !border !border-orange-100 !shadow-sm"
+            className="rounded-2xl! border! border-orange-100! shadow-sm!"
             styles={{ body: { padding: "20px 24px" } }}
           >
             <div className="mb-5 flex items-center gap-3">
@@ -413,7 +413,7 @@ const ReportDashboard = () => {
                 <DownloadOutlined />
               </div>
 
-              <Title level={5} className="!mb-0 !text-lg !font-bold !text-stone-900">
+              <Title level={5} className="mb-0! text-lg! font-bold! text-stone-900!">
                 Quick Actions
               </Title>
             </div>
@@ -423,7 +423,7 @@ const ReportDashboard = () => {
                 type="primary"
                 icon={<DownloadOutlined />}
                 onClick={() => navigate("/reports/sales")}
-                className="!h-11 !rounded-xl !border-none !bg-gradient-to-r !from-orange-600 !to-amber-500 !px-5 !font-semibold !shadow-lg !shadow-orange-500/20 transition-all duration-300 hover:!from-orange-700 hover:!to-amber-600"
+                className="h-11! rounded-xl! border-none! bg-linear-to-r! from-orange-600! to-amber-500! px-5! font-semibold! shadow-lg! shadow-orange-500/20! transition-all duration-300 hover:from-orange-700! hover:to-amber-600!"
               >
                 Download Sales Report
               </Button>
@@ -431,7 +431,7 @@ const ReportDashboard = () => {
               <Button
                 icon={<CalendarOutlined />}
                 onClick={() => navigate("/reports/attendance")}
-                className="!h-11 !rounded-xl !border-orange-300 !px-5 !font-medium !text-orange-600 hover:!border-orange-500 hover:!bg-orange-50 hover:!text-orange-700"
+                className="h-11! rounded-xl! border-orange-300! px-5! font-medium! text-orange-600! hover:border-orange-500! hover:bg-orange-50! hover:text-orange-700!"
               >
                 View Attendance
               </Button>
@@ -439,7 +439,7 @@ const ReportDashboard = () => {
               <Button
                 icon={<InboxOutlined />}
                 onClick={() => navigate("/reports/inventory")}
-                className="!h-11 !rounded-xl !border-orange-300 !px-5 !font-medium !text-orange-600 hover:!border-orange-500 hover:!bg-orange-50 hover:!text-orange-700"
+                className="h-11! rounded-xl! border-orange-300! px-5! font-medium! text-orange-600! hover:border-orange-500! hover:bg-orange-50! hover:text-orange-700!"
               >
                 Check Inventory
               </Button>
@@ -452,7 +452,7 @@ const ReportDashboard = () => {
           <Col span={24}>
             <Card
               bordered={false}
-              className="!rounded-2xl !border !border-orange-100 !shadow-sm"
+              className="rounded-2xl! border! border-orange-100! shadow-sm!"
               styles={{ body: { padding: "20px 24px" } }}
             >
               <div className="mb-5 flex items-center gap-3">
@@ -460,7 +460,7 @@ const ReportDashboard = () => {
                   <CalendarOutlined />
                 </div>
 
-                <Title level={5} className="!mb-0 !text-lg !font-bold !text-stone-900">
+                <Title level={5} className="mb-0! text-lg! font-bold! text-stone-900!">
                   Recent Report Activity
                 </Title>
               </div>
@@ -475,7 +475,7 @@ const ReportDashboard = () => {
                       {activity.description}
                     </Text>
 
-                    <Text type="secondary" className="shrink-0 !text-xs">
+                    <Text type="secondary" className="shrink-0 text-xs!">
                       {dayjs(activity.timestamp).fromNow()}
                     </Text>
                   </div>

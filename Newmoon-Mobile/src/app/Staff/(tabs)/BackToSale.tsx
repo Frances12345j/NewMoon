@@ -153,6 +153,7 @@ const submitMutation = useMutation({
     setRequestQuantity('');
     setRequestNotes('');
     queryClient.invalidateQueries({ queryKey: ['backToSales'] });
+    queryClient.invalidateQueries({ queryKey: ['products'] });
   },
   onError: (error: any) => {
     console.error('Back-to-Sale error:', error);
@@ -495,7 +496,7 @@ const submitMutation = useMutation({
               </View>
               <View className="flex-row items-start">
                 <Text className="text-[#EA580C] text-sm font-extrabold mr-2">•</Text>
-                <Text className="text-stone-600 text-sm leading-5 flex-1">If rejected, the quantity is returned to branch stock</Text>
+                <Text className="text-stone-600 text-sm leading-5 flex-1">If rejected, the quantity stays out of available inventory</Text>
               </View>
               <View className="flex-row items-start">
                 <Text className="text-[#EA580C] text-sm font-extrabold mr-2">•</Text>

@@ -27,6 +27,7 @@ class User extends Authenticatable
         'role',
         'email',
         'phone',
+        'avatar',
         'is_active',
     ];
 
@@ -40,7 +41,7 @@ class User extends Authenticatable
     ];
 
     // ✅ AUTO APPEND
-    protected $appends = ['full_name', 'position'];
+    protected $appends = ['full_name', 'position', 'avatar_url'];
 
     /*
     |--------------------------------------------------------------------------
@@ -78,6 +79,16 @@ class User extends Authenticatable
     public function getFullNameAttribute()
     {
         return trim("{$this->firstname} {$this->middlename} {$this->lastname}");
+    }
+
+    // ✅ AVATAR URL (resolved against the requesting host so it works on phone + web)
+    public function getAvatarUrlAttribute()
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+
+        return request()->getSchemeAndHttpHost() . '/storage/' . ltrim($this->avatar, '/');
     }
 
     // ✅ CURRENT BRANCH ID

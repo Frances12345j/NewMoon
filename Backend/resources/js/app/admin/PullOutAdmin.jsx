@@ -7,7 +7,6 @@ import {
   CloseCircleOutlined,
   CheckOutlined,
   CloseOutlined,
-  DeleteOutlined,
   InboxOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
@@ -15,6 +14,45 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from "@/config/api";
 
 const { TextArea } = Input;
+
+// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
+};
 
 function PullOutAdmin() {
   const [statusFilter, setStatusFilter] = useState("all");
@@ -89,13 +127,17 @@ function PullOutAdmin() {
 
   const getStatusTag = (status) => {
     const statusConfig = {
-      pending: { color: "#D97706", icon: <ClockCircleOutlined />, text: "Pending" },
-      approved: { color: "#16A34A", icon: <CheckCircleOutlined />, text: "Approved" },
-      rejected: { color: "#DC2626", icon: <CloseCircleOutlined />, text: "Rejected" },
+      pending: { background: AMBER_SOFT, color: AMBER, icon: <ClockCircleOutlined />, text: "Pending" },
+      approved: { background: GREEN_SOFT, color: ACCENT, icon: <CheckCircleOutlined />, text: "Approved" },
+      rejected: { background: RED_SOFT, color: "#F87171", icon: <CloseCircleOutlined />, text: "Rejected" },
     };
     const config = statusConfig[status] || statusConfig.pending;
     return (
-      <Tag color={config.color} icon={config.icon}>
+      <Tag
+        className="rounded-full px-3 py-1"
+        style={{ background: config.background, color: config.color, border: "none", fontWeight: 600 }}
+        icon={config.icon}
+      >
         {config.text}
       </Tag>
     );
@@ -118,10 +160,10 @@ function PullOutAdmin() {
       key: "staff",
       render: (_, record) => (
         <div>
-          <div className="font-semibold">
+          <div className="font-semibold" style={{ color: TEXT }}>
             {record.user?.firstname} {record.user?.lastname}
           </div>
-          <div className="text-gray-500 text-xs">ID: {record.user?.id}</div>
+          <div className="text-xs" style={{ color: MUTED }}>ID: {record.user?.id}</div>
         </div>
       ),
     },
@@ -130,8 +172,8 @@ function PullOutAdmin() {
       key: "product",
       render: (_, record) => (
         <div>
-          <div className="font-semibold">{record.product?.name}</div>
-          <div className="text-gray-500 text-xs">SKU: {record.product?.sku}</div>
+          <div className="font-semibold" style={{ color: TEXT }}>{record.product?.name}</div>
+          <div className="text-xs" style={{ color: MUTED }}>SKU: {record.product?.sku}</div>
         </div>
       ),
     },
@@ -139,7 +181,7 @@ function PullOutAdmin() {
       title: "Branch",
       key: "branch",
       render: (_, record) => (
-        <div className="font-semibold">{record.branch?.name}</div>
+        <div className="font-semibold" style={{ color: TEXT }}>{record.branch?.name}</div>
       ),
     },
     {
@@ -147,20 +189,20 @@ function PullOutAdmin() {
       dataIndex: "quantity",
       key: "quantity",
       render: (quantity) => (
-        <span className="font-semibold">{quantity}</span>
+        <span className="font-semibold" style={{ color: TEXT }}>{quantity}</span>
       ),
     },
     {
       title: "Notes",
       dataIndex: "notes",
       key: "notes",
-      render: (notes) => notes || <span className="text-gray-400">-</span>,
+      render: (notes) => notes || <span style={{ color: MUTED }}>-</span>,
     },
     {
       title: "Reason",
       dataIndex: "reason",
       key: "reason",
-      render: (reason) => reason ? <Tag color="purple">{reason}</Tag> : <span className="text-gray-400">-</span>,
+      render: (reason) => reason ? <Tag style={{ background: ACCENT_SOFT, color: ACCENT, border: "none" }}>{reason}</Tag> : <span style={{ color: MUTED }}>-</span>,
     },
     {
       title: "Status",
@@ -179,19 +221,19 @@ function PullOutAdmin() {
       key: "processed_date",
       render: (_, record) => {
         if (record.status === "approved" && record.approved_at) {
-          return <span className="text-green-600">{formatDate(record.approved_at)}</span>;
+          return <span style={{ color: ACCENT }}>{formatDate(record.approved_at)}</span>;
         }
         if (record.status === "rejected" && record.rejected_at) {
-          return <span className="text-red-600">{formatDate(record.rejected_at)}</span>;
+          return <span style={{ color: "#F87171" }}>{formatDate(record.rejected_at)}</span>;
         }
-        return <span className="text-gray-400">-</span>;
+        return <span style={{ color: MUTED }}>-</span>;
       },
     },
     {
       title: "Admin Notes",
       dataIndex: "admin_notes",
       key: "admin_notes",
-      render: (notes) => notes || <span className="text-gray-400">-</span>,
+      render: (notes) => notes || <span style={{ color: MUTED }}>-</span>,
     },
     {
       title: "Actions",
@@ -208,7 +250,7 @@ function PullOutAdmin() {
                     setSelectedPullOut(record);
                     setShowApproveModal(true);
                   }}
-                  className="rounded-full bg-gradient-to-br from-[#16A34A] to-[#22C55E] text-white border-none text-[11px] hover:brightness-110 transition-all duration-200 shadow-[0_2px_8px_rgba(34,197,94,0.3)]"
+                  style={{ background: ACCENT, border: "none", color: "#1F1A2E", fontWeight: 700, fontSize: 11, borderRadius: 9999 }}
                 >
                   Approve
                 </Button>
@@ -216,12 +258,13 @@ function PullOutAdmin() {
               <Tooltip title="Reject">
                 <Button
                   size="small"
+                  danger
                   icon={<CloseOutlined />}
                   onClick={() => {
                     setSelectedPullOut(record);
                     setShowRejectModal(true);
                   }}
-                  className="rounded-full bg-gradient-to-br from-[#DC2626] to-[#EF4444] text-white border-none text-[11px] hover:brightness-110 transition-all duration-200 shadow-[0_2px_8px_rgba(220,38,38,0.3)]"
+                  style={{ fontSize: 11, borderRadius: 9999 }}
                 >
                   Reject
                 </Button>
@@ -229,7 +272,7 @@ function PullOutAdmin() {
             </>
           )}
           {record.status !== "pending" && (
-            <span className="text-gray-400 text-sm">No actions</span>
+            <span className="text-sm" style={{ color: MUTED }}>No actions</span>
           )}
         </Space>
       ),
@@ -243,60 +286,100 @@ function PullOutAdmin() {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
-      {/* Header - NewMoon Roasted Style */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-        <div className="px-8 py-6 relative">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
+      
+
+      {/* Header — dark plum with mint accents */}
+      <div
+        className="mb-6 overflow-hidden rounded-2xl"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+      >
+        <div className="relative px-8 py-6">
           {/* Decorative circles */}
           <div className="absolute right-0 top-0 opacity-10">
-            <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
+            <div
+              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
+              style={{ background: ACCENT }}
+            />
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
           </div>
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
 
-          <div className="flex items-center justify-between relative z-10">
+          {/* Accent line */}
+          <div
+            className="absolute left-0 right-0 top-0 h-1"
+            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+          />
+
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
-                <InboxOutlined className="mr-2 text-[#F97316]" />
+              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                <InboxOutlined className="mr-2" style={{ color: ACCENT }} />
                 Stock Out Management
               </h1>
-              <p className="text-white/80 text-sm">Approve or reject product stock-out requests</p>
+              <p className="text-sm" style={{ color: MUTED }}>
+                Approve or reject product stock-out requests
+              </p>
             </div>
           </div>
 
           {/* Quick Stats in Header */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 relative z-10">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Total Stock Outs</p>
-              <p className="text-white font-bold text-xl">{stats.total || 0}</p>
+          <div className="relative z-10 mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <InboxOutlined style={{ color: ACCENT }} /> Total Stock Outs
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.total || 0}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Pending</p>
-              <p className="text-white font-bold text-xl">{stats.pending || 0}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <ClockCircleOutlined style={{ color: ACCENT }} /> Pending
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.pending || 0}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Approved</p>
-              <p className="text-white font-bold text-xl">{stats.approved || 0}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <CheckCircleOutlined style={{ color: ACCENT }} /> Approved
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.approved || 0}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Total Quantity</p>
-              <p className="text-white font-bold text-xl">{stats.total_quantity || 0}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <InboxOutlined style={{ color: ACCENT }} /> Total Quantity
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.total_quantity || 0}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons - NewMoon Style */}
-      <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm">
+      {/* Filter / Action Toolbar */}
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Space wrap>
-          <span className="text-[#451A03] font-semibold text-sm">Filter by status:</span>
+          <span className="text-sm font-semibold" style={{ color: MUTED }}>Filter by status:</span>
           <Select
             value={statusFilter}
             onChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}
             style={{ width: 150 }}
             className="rounded-xl"
+            popupClassName="nm-dark-select-dropdown"
           >
             <Select.Option value="all">All</Select.Option>
             <Select.Option value="pending">Pending</Select.Option>
@@ -307,30 +390,38 @@ function PullOutAdmin() {
             icon={<ReloadOutlined />}
             onClick={handleRefresh}
             loading={pullOutsLoading}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
+            style={GHOST_BTN}
           >
             Refresh
           </Button>
         </Space>
       </Card>
 
-      {/* Requests Section - NewMoon Style */}
+      {/* Requests Section */}
       <div className="mb-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-[#451A03]">
-              <InboxOutlined className="mr-2 text-[#F97316]" />
+            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
+              <InboxOutlined className="mr-2" style={{ color: ACCENT }} />
               All Stock Outs
             </h2>
-            <p className="text-sm text-gray-500 mt-1">Review and process staff stock-out requests</p>
+            <p className="mt-1 text-sm" style={{ color: MUTED }}>
+              Review and process staff stock-out requests
+            </p>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag
+            className="rounded-full px-3 py-1 text-sm font-semibold"
+            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
             {paginationMeta.total || pullOuts.length} stock-out(s)
           </Tag>
         </div>
       </div>
 
-      <Card className="rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Table
           columns={columns}
           dataSource={pullOuts}
@@ -347,27 +438,33 @@ function PullOutAdmin() {
           locale={{
             emptyText: (
               <div className="py-10 text-center">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3">
-                  <InboxOutlined className="text-3xl text-[#F97316]" />
+                <div
+                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
+                  style={{ background: ACCENT_SOFT, color: ACCENT }}
+                >
+                  <InboxOutlined className="text-3xl" />
                 </div>
-                <p className="text-[#451A03] font-semibold">No stock-outs found</p>
-                <p className="text-gray-400 text-sm">Try adjusting your filter</p>
+                <p className="font-semibold" style={{ color: TEXT }}>No stock-outs found</p>
+                <p className="text-sm" style={{ color: MUTED }}>Try adjusting your filter</p>
               </div>
             ),
           }}
         />
       </Card>
 
-      {/* Approve Modal - NewMoon Style */}
+      {/* Approve Modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: ACCENT_SOFT, color: ACCENT }}
+            >
               <CheckOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">Approve Stock Out</p>
-              <p className="text-xs font-normal text-stone-400">Confirm the stock-out request</p>
+              <p className="font-bold" style={{ color: TEXT }}>Approve Stock Out</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Confirm the stock-out request</p>
             </div>
           </div>
         }
@@ -382,26 +479,29 @@ function PullOutAdmin() {
         className="rounded-2xl"
       >
         {selectedPullOut && (
-          <div className="mb-4 p-4 rounded-xl bg-[#FFF1E6]">
-            <div className="font-semibold text-[#451A03]">
+          <div
+            className="mb-4 rounded-xl p-4"
+            style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}
+          >
+            <div className="font-semibold" style={{ color: TEXT }}>
               {selectedPullOut.user?.firstname} {selectedPullOut.user?.lastname}
             </div>
-            <div className="text-lg font-bold text-[#16A34A]">
+            <div className="text-lg font-bold" style={{ color: ACCENT }}>
               {selectedPullOut.product?.name}
             </div>
-            <div className="text-gray-600 text-sm">
+            <div className="text-sm" style={{ color: MUTED }}>
               Quantity: {selectedPullOut.quantity}
             </div>
-            <div className="text-gray-600 text-sm">
+            <div className="text-sm" style={{ color: MUTED }}>
               Branch: {selectedPullOut.branch?.name}
             </div>
             {selectedPullOut.reason && (
-              <div className="text-gray-600 text-sm">
+              <div className="text-sm" style={{ color: MUTED }}>
                 Reason: {selectedPullOut.reason}
               </div>
             )}
             {selectedPullOut.notes && (
-              <div className="text-gray-600 text-sm mt-1">
+              <div className="mt-1 text-sm" style={{ color: MUTED }}>
                 Notes: {selectedPullOut.notes}
               </div>
             )}
@@ -414,7 +514,7 @@ function PullOutAdmin() {
           initialValues={{ admin_notes: "" }}
         >
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Admin Notes (Optional)</span>}
+            label={<span style={FIELD_LABEL}>Admin Notes (Optional)</span>}
             name="admin_notes"
             rules={[
               { max: 500, message: "Notes cannot exceed 500 characters" },
@@ -426,11 +526,14 @@ function PullOutAdmin() {
               maxLength={500}
               showCount
               disabled={approveMutation.isPending}
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
+              className="rounded-xl"
             />
           </Form.Item>
-          <div className="p-3 mb-4 rounded-xl bg-[#FFF1E6]">
-            <p className="text-xs text-[#451A03] mb-0">
+          <div
+            className="mb-4 rounded-xl p-3"
+            style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}
+          >
+            <p className="mb-0 text-xs" style={{ color: ACCENT }}>
               <InfoCircleOutlined className="mr-1" />
               This action will approve the stock-out request and notify the staff member.
             </p>
@@ -444,7 +547,8 @@ function PullOutAdmin() {
                   setSelectedPullOut(null);
                 }}
                 disabled={approveMutation.isPending}
-                className="rounded-xl border-[#F5EDE0] text-[#451A03] hover:border-[#F97316] hover:text-[#EA580C]"
+                className="rounded-xl"
+                style={SECONDARY_BTN}
               >
                 Cancel
               </Button>
@@ -452,7 +556,8 @@ function PullOutAdmin() {
                 htmlType="submit"
                 loading={approveMutation.isPending}
                 icon={<CheckOutlined />}
-                className="rounded-xl bg-gradient-to-br from-[#16A34A] to-[#22C55E] border-none shadow-[0_4px_15px_rgba(34,197,94,0.3)] hover:brightness-110"
+                className="rounded-xl"
+                style={GRADIENT_BTN}
               >
                 Approve Stock Out
               </Button>
@@ -461,16 +566,19 @@ function PullOutAdmin() {
         </Form>
       </Modal>
 
-      {/* Reject Modal - NewMoon Style */}
+      {/* Reject Modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-[#FEF2F2] flex items-center justify-center text-[#DC2626] text-lg">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: RED_SOFT, color: "#F87171" }}
+            >
               <CloseOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">Reject Stock Out</p>
-              <p className="text-xs font-normal text-stone-400">Decline the stock-out request</p>
+              <p className="font-bold" style={{ color: TEXT }}>Reject Stock Out</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Decline the stock-out request</p>
             </div>
           </div>
         }
@@ -485,26 +593,29 @@ function PullOutAdmin() {
         className="rounded-2xl"
       >
         {selectedPullOut && (
-          <div className="mb-4 p-4 rounded-xl bg-red-50">
-            <div className="font-semibold text-[#451A03]">
+          <div
+            className="mb-4 rounded-xl p-4"
+            style={{ background: RED_SOFT, border: `1px solid ${RED}40` }}
+          >
+            <div className="font-semibold" style={{ color: TEXT }}>
               {selectedPullOut.user?.firstname} {selectedPullOut.user?.lastname}
             </div>
-            <div className="text-lg font-bold text-[#DC2626]">
+            <div className="text-lg font-bold" style={{ color: "#F87171" }}>
               {selectedPullOut.product?.name}
             </div>
-            <div className="text-gray-600 text-sm">
+            <div className="text-sm" style={{ color: MUTED }}>
               Quantity: {selectedPullOut.quantity}
             </div>
-            <div className="text-gray-600 text-sm">
+            <div className="text-sm" style={{ color: MUTED }}>
               Branch: {selectedPullOut.branch?.name}
             </div>
             {selectedPullOut.reason && (
-              <div className="text-gray-600 text-sm">
+              <div className="text-sm" style={{ color: MUTED }}>
                 Reason: {selectedPullOut.reason}
               </div>
             )}
             {selectedPullOut.notes && (
-              <div className="text-gray-600 text-sm mt-1">
+              <div className="mt-1 text-sm" style={{ color: MUTED }}>
                 Notes: {selectedPullOut.notes}
               </div>
             )}
@@ -517,7 +628,7 @@ function PullOutAdmin() {
           initialValues={{ admin_notes: "" }}
         >
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Rejection Reason (Optional)</span>}
+            label={<span style={FIELD_LABEL}>Rejection Reason (Optional)</span>}
             name="admin_notes"
             rules={[
               { max: 500, message: "Reason cannot exceed 500 characters" },
@@ -529,11 +640,14 @@ function PullOutAdmin() {
               maxLength={500}
               showCount
               disabled={rejectMutation.isPending}
-              className="rounded-xl border-[#F5EDE0] focus:border-[#DC2626]"
+              className="rounded-xl"
             />
           </Form.Item>
-          <div className="p-3 mb-4 rounded-xl bg-red-50">
-            <p className="text-xs text-[#DC2626] mb-0">
+          <div
+            className="mb-4 rounded-xl p-3"
+            style={{ background: RED_SOFT, border: `1px solid ${RED}40` }}
+          >
+            <p className="mb-0 text-xs" style={{ color: "#F87171" }}>
               <InfoCircleOutlined className="mr-1" />
               This action will reject the stock-out request and notify the staff member.
             </p>
@@ -547,7 +661,8 @@ function PullOutAdmin() {
                   setSelectedPullOut(null);
                 }}
                 disabled={rejectMutation.isPending}
-                className="rounded-xl border-[#F5EDE0] text-[#451A03] hover:border-[#F97316] hover:text-[#EA580C]"
+                className="rounded-xl"
+                style={SECONDARY_BTN}
               >
                 Cancel
               </Button>
@@ -556,7 +671,7 @@ function PullOutAdmin() {
                 htmlType="submit"
                 loading={rejectMutation.isPending}
                 icon={<CloseOutlined />}
-                className="rounded-xl bg-gradient-to-br from-[#DC2626] to-[#EF4444] border-none shadow-[0_4px_15px_rgba(220,38,38,0.3)] hover:brightness-110"
+                className="rounded-xl"
               >
                 Reject Stock Out
               </Button>

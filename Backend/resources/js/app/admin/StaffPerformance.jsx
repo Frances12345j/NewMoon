@@ -27,15 +27,66 @@ import MuiMenuItem from "@mui/material/MenuItem";
 
 const { MonthPicker } = DatePicker;
 
-const RATING_COLORS = {
-  Excellent: { color: "green", bg: "#f0fdf4", border: "#86efac" },
-  Good: { color: "gold", bg: "#fffbeb", border: "#fde68a" },
-  Average: { color: "orange", bg: "#fff7ed", border: "#fdba74" },
-  "Needs Improvement": { color: "volcano", bg: "#fff1e6", border: "#fdba74" },
-  Poor: { color: "red", bg: "#fef2f2", border: "#fca5a5" },
+// ─── Palette — matches ProductList (dark plum + mint) ─────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
 };
 
-const CHART_COLORS = ["#EA580C", "#F97316", "#F59E0B", "#22c55e", "#16A34A", "#8b5cf6", "#ec4899", "#14b8a6"];
+const RATING_COLORS = {
+  Excellent: { color: "green", bg: GREEN_SOFT, border: "#22D3A8" },
+  Good: { color: "gold", bg: AMBER_SOFT, border: "#F59E0B" },
+  Average: { color: "orange", bg: AMBER_SOFT, border: "#F59E0B" },
+  "Needs Improvement": { color: "volcano", bg: RED_SOFT, border: "#EF4444" },
+  Poor: { color: "red", bg: RED_SOFT, border: "#EF4444" },
+};
+
+const CHART_COLORS = ["#22D3A8", "#16B48C", "#F59E0B", "#22c55e", "#14b8a6", "#8b5cf6", "#ec4899", "#3B82F6"];
+
+// MUI X Charts dark styling — readable axis/legend/grid on plum cards
+const CHART_SX = {
+  "& .MuiChartsSurface": { color: "#FFFFFF" },
+  "& .MuiChartsAxis-tickLabel": { fill: "#A5A0B5" },
+  "& .MuiChartsAxis-label": { fill: "#FFFFFF" },
+  "& .MuiChartsAxis-line": { stroke: "rgba(255,255,255,0.15)" },
+  "& .MuiChartsAxis-tick": { stroke: "rgba(255,255,255,0.15)" },
+  "& .MuiChartsGrid-line": { stroke: "rgba(255,255,255,0.08)" },
+  "& .MuiChartsLegend-root text": { fill: "#FFFFFF", fontSize: 12 },
+  "& .MuiChartsLegend-markLabel": { fill: "#FFFFFF" },
+};
 
 const shapes = ["circle", "square", "diamond", "cross", "star", "triangle", "wye"];
 const marksMapping = {
@@ -197,8 +248,8 @@ function StaffPerformance() {
     const totalDays = onTime + late;
     if (totalDays === 0) return [];
     return [
-      { name: "On Time", value: onTime, color: "#22c55e" },
-      { name: "Late", value: late, color: "#f59e0b" },
+      { name: "On Time", value: onTime, color: "#22D3A8" },
+      { name: "Late", value: late, color: "#F59E0B" },
     ];
   })();
 
@@ -211,10 +262,10 @@ function StaffPerformance() {
       align: "center",
       render: (_, __, i) => (
         <div className="flex items-center justify-center">
-          {i === 0 ? <TrophyOutlined className="text-yellow-500 text-lg" /> :
-           i === 1 ? <StarOutlined className="text-gray-400 text-lg" /> :
-           i === 2 ? <StarOutlined className="text-amber-600 text-lg" /> :
-           <span className="text-gray-400 font-medium">{i + 1}</span>}
+          {i === 0 ? <TrophyOutlined className="text-lg" style={{ color: AMBER }} /> :
+           i === 1 ? <StarOutlined className="text-lg" style={{ color: MUTED }} /> :
+           i === 2 ? <StarOutlined className="text-lg" style={{ color: FAINT }} /> :
+           <span className="font-medium" style={{ color: MUTED }}>{i + 1}</span>}
         </div>
       ),
     },
@@ -225,10 +276,10 @@ function StaffPerformance() {
       render: (_, r) => (
         <div className="flex items-center gap-3">
           <Avatar size={36} icon={<UserOutlined />}
-            style={{ backgroundColor: r.rating === "Excellent" ? "#16A34A" : r.rating === "Good" ? "#F59E0B" : r.rating === "Average" ? "#EA580C" : "#DC2626" }} />
+            style={{ backgroundColor: r.rating === "Excellent" ? GREEN : r.rating === "Good" ? AMBER : r.rating === "Average" ? ACCENT_DEEP : RED }} />
           <div>
-            <div className="font-semibold text-sm text-[#292524]">{r.full_name}</div>
-            {r.branch && <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><ShopOutlined />{r.branch.name}</div>}
+            <div className="text-sm font-semibold" style={{ color: TEXT }}>{r.full_name}</div>
+            {r.branch && <div className="mt-0.5 flex items-center gap-1 text-xs" style={{ color: MUTED }}><ShopOutlined />{r.branch.name}</div>}
           </div>
         </div>
       ),
@@ -240,13 +291,13 @@ function StaffPerformance() {
       render: (_, r) => (
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-green-600 font-medium">{r.attendance.present_days}d present</span>
-            {r.attendance.late_days > 0 && <span className="text-orange-500">{r.attendance.late_days} late</span>}
+            <span className="font-medium" style={{ color: ACCENT }}>{r.attendance.present_days}d present</span>
+            {r.attendance.late_days > 0 && <span style={{ color: AMBER }}>{r.attendance.late_days} late</span>}
           </div>
           <Progress percent={Math.round(r.attendance.attendance_rate)} size="small"
-            strokeColor={r.attendance.attendance_rate >= 90 ? "#22C55E" : r.attendance.attendance_rate >= 75 ? "#F59E0B" : "#EA580C"}
+            strokeColor={r.attendance.attendance_rate >= 90 ? ACCENT : r.attendance.attendance_rate >= 75 ? AMBER : RED}
             format={() => `${Math.round(r.attendance.attendance_rate)}%`} />
-          <div className="text-xs text-gray-400">{r.attendance.total_hours}h total</div>
+          <div className="text-xs" style={{ color: FAINT }}>{r.attendance.total_hours}h total</div>
         </div>
       ),
     },
@@ -261,14 +312,14 @@ function StaffPerformance() {
         const achieved = pct >= 100;
         return (
           <div>
-            <div className="font-semibold text-[#451A03] text-sm">
+            <div className="text-sm font-semibold" style={{ color: TEXT }}>
               {dailySold} / {dailyTarget} pcs
             </div>
-            <Progress percent={pct} size="small" strokeColor={achieved ? "#22C55E" : "#EA580C"} />
-            <div className="text-xs mt-0.5">
+            <Progress percent={pct} size="small" strokeColor={achieved ? ACCENT : AMBER} />
+            <div className="mt-0.5 text-xs">
               {achieved
-                ? <span className="text-green-600 font-medium">Target reached ({pct}%)</span>
-                : <span className="text-gray-500">{pct}% achieved</span>}
+                ? <span className="font-medium" style={{ color: ACCENT }}>Target reached ({pct}%)</span>
+                : <span style={{ color: MUTED }}>{pct}% achieved</span>}
             </div>
           </div>
         );
@@ -280,8 +331,8 @@ function StaffPerformance() {
       width: 120,
       render: (_, r) => (
         <div className="text-center">
-          <div className="text-green-600 font-bold text-sm">₱{r.quota.incentive_amount.toLocaleString()}</div>
-          <div className="text-xs text-gray-400">{r.quota.threshold_40_pcs} × 40pcs</div>
+          <div className="text-sm font-bold" style={{ color: ACCENT }}>₱{r.quota.incentive_amount.toLocaleString()}</div>
+          <div className="text-xs" style={{ color: FAINT }}>{r.quota.threshold_40_pcs} × 40pcs</div>
         </div>
       ),
     },
@@ -291,12 +342,13 @@ function StaffPerformance() {
       width: 140,
       render: (_, r) => {
         const cfg = RATING_COLORS[r.rating] || RATING_COLORS.Poor;
+        const scoreColor = cfg.color === "green" ? ACCENT : cfg.color === "gold" ? AMBER : cfg.color === "orange" ? ACCENT_DEEP : cfg.color === "volcano" ? "#F87171" : RED;
         return (
           <div className="text-center">
-            <div className="text-2xl font-bold mb-1" style={{ color: cfg.color === "green" ? "#16A34A" : cfg.color === "gold" ? "#D97706" : cfg.color === "orange" ? "#F97316" : cfg.color === "volcano" ? "#EA580C" : "#DC2626" }}>
+            <div className="mb-1 text-2xl font-bold" style={{ color: scoreColor }}>
               {r.performance_score}
             </div>
-            <Tag color={cfg.color} className="rounded-full text-xs px-3 py-0.5">{r.rating}</Tag>
+            <Tag color={cfg.color} className="rounded-full px-3 py-0.5 text-xs">{r.rating}</Tag>
           </div>
         );
       },
@@ -312,13 +364,13 @@ function StaffPerformance() {
             { label: "Products", value: r.trend.products },
           ].map(({ label, value }) => (
             <div key={label} className="flex items-center gap-1 text-xs">
-              {value > 0 ? <ArrowUpOutlined className="text-green-500" /> :
-               value < 0 ? <ArrowDownOutlined className="text-red-500" /> :
-               <MinusOutlined className="text-gray-400" />}
-              <span className={value > 0 ? "text-green-600" : value < 0 ? "text-red-600" : "text-gray-400"}>
+              {value > 0 ? <ArrowUpOutlined style={{ color: ACCENT }} /> :
+               value < 0 ? <ArrowDownOutlined style={{ color: RED }} /> :
+               <MinusOutlined style={{ color: FAINT }} />}
+              <span style={{ color: value > 0 ? ACCENT : value < 0 ? "#F87171" : FAINT }}>
                 {Math.abs(value)}%
               </span>
-              <span className="text-gray-400">{label}</span>
+              <span style={{ color: FAINT }}>{label}</span>
             </div>
           ))}
         </div>
@@ -335,19 +387,19 @@ function StaffPerformance() {
         <div>
           {r.user ? (
             <div className="flex items-center gap-2">
-              <Avatar size={28} icon={<UserOutlined />} style={{ backgroundColor: "#EA580C" }} />
+              <Avatar size={28} icon={<UserOutlined />} style={{ backgroundColor: ACCENT }} />
               <div>
-                <div className="font-medium text-sm">{r.user.firstname} {r.user.lastname}</div>
-                {r.branch && <div className="text-xs text-gray-400">{r.branch.name}</div>}
+                <div className="text-sm font-medium" style={{ color: TEXT }}>{r.user.firstname} {r.user.lastname}</div>
+                {r.branch && <div className="text-xs" style={{ color: FAINT }}>{r.branch.name}</div>}
               </div>
             </div>
           ) : r.branch ? (
             <div className="flex items-center gap-2">
-              <Avatar size={28} icon={<ShopOutlined />} style={{ backgroundColor: "#F59E0B" }} />
-              <div className="font-medium text-sm">{r.branch.name} (All Staff)</div>
+              <Avatar size={28} icon={<ShopOutlined />} style={{ backgroundColor: AMBER }} />
+              <div className="text-sm font-medium" style={{ color: TEXT }}>{r.branch.name} (All Staff)</div>
             </div>
           ) : (
-            <span className="text-gray-400">Unknown</span>
+            <span style={{ color: FAINT }}>Unknown</span>
           )}
         </div>
       ),
@@ -365,11 +417,11 @@ function StaffPerformance() {
       render: (_, r) => (
         <Space>
           <Tooltip title="Edit">
-            <Button type="text" icon={<EditOutlined />} onClick={() => openTargetModal(r)} className="text-[#EA580C]" />
+            <Button type="text" icon={<EditOutlined />} onClick={() => openTargetModal(r)} style={{ color: ACCENT }} />
           </Tooltip>
           <Tooltip title="Delete">
             <Button type="text" icon={<DeleteOutlined />} onClick={() => { setDeletingTarget(r); setDeleteConfirmVisible(true); }}
-              className="text-[#DC2626]" />
+              style={{ color: RED }} />
           </Tooltip>
         </Space>
       ),
@@ -377,68 +429,95 @@ function StaffPerformance() {
   ];
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
-      {/* Header - NewMoon Roasted Style */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-        <div className="px-8 py-6 relative">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
+      
+
+      {/* Header — dark plum with mint accents */}
+      <div
+        className="mb-6 overflow-hidden rounded-2xl"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+      >
+        <div className="relative px-8 py-6">
+          {/* Decorative circles */}
           <div className="absolute right-0 top-0 opacity-10">
-            <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32" />
+            <div className="-mr-32 -mt-32 h-64 w-64 rounded-full" style={{ background: ACCENT }} />
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]" />
+            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
           </div>
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
-          <div className="flex items-center justify-between relative z-10">
+
+          {/* Accent line */}
+          <div
+            className="absolute left-0 right-0 top-0 h-1"
+            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+          />
+
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
-                <TrophyOutlined className="mr-2 text-[#F97316]" />Staff Monitoring
+              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                <TrophyOutlined className="mr-2" style={{ color: ACCENT }} />
+                Staff Monitoring
               </h1>
-              <p className="text-white/80 text-sm">Evaluate employee productivity based on sales targets, attendance, and branch performance</p>
+              <p className="text-sm" style={{ color: MUTED }}>
+                Evaluate employee productivity based on sales targets, attendance, and branch performance
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 relative z-10">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Total Staff</p>
-              <p className="text-white font-bold text-xl">{meta.total_staff || 0}</p>
+          {/* Quick Stats in Header */}
+          <div className="relative z-10 mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <TeamOutlined style={{ color: ACCENT }} /> Total Staff
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{meta.total_staff || 0}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Total Sales</p>
-              <p className="text-white font-bold text-xl">₱{Number(meta.total_sales || 0).toLocaleString()}</p>
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <ShoppingCartOutlined style={{ color: ACCENT }} /> Total Sales
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: ACCENT }}>₱{Number(meta.total_sales || 0).toLocaleString()}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Today's Achievement</p>
-              <p className="text-white font-bold text-xl">{meta.daily_target_achievement_pct || 0}%</p>
-              <p className="text-white/50 text-xs">{meta.total_daily_products || 0} / {meta.total_daily_targets || 0} pcs today</p>
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <RiseOutlined style={{ color: ACCENT }} /> Today&apos;s Achievement
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{meta.daily_target_achievement_pct || 0}%</p>
+              <p className="text-xs" style={{ color: FAINT }}>{meta.total_daily_products || 0} / {meta.total_daily_targets || 0} pcs today</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Avg Performance</p>
-              <p className="text-white font-bold text-xl">{meta.avg_performance_score || 0}/100</p>
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <TrophyOutlined style={{ color: ACCENT }} /> Avg Performance
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{meta.avg_performance_score || 0}/100</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm">
-        <div className="flex items-end gap-4 flex-wrap">
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
+        <div className="flex flex-wrap items-end gap-4">
           <div>
-            <div className="text-xs font-semibold text-[#451A03] mb-1">Month</div>
+            <div className="mb-1 text-xs font-semibold" style={FIELD_LABEL}>Month</div>
             <MonthPicker value={month ? dayjs(month, "YYYY-MM") : null} onChange={handleMonthChange}
-              allowClear={false} format="MMMM YYYY" style={{ width: 160 }} className="rounded-xl" />
+              allowClear={false} format="MMMM YYYY" style={{ width: 160 }} className="rounded-xl" popupClassName="nm-dark-select-dropdown" />
           </div>
           <div>
-            <div className="text-xs font-semibold text-[#451A03] mb-1">Branch</div>
+            <div className="mb-1 text-xs font-semibold" style={FIELD_LABEL}>Branch</div>
             <Select value={branchId} onChange={setBranchId} style={{ width: 180 }} className="rounded-xl"
+              popupClassName="nm-dark-select-dropdown"
               options={[{ value: "all", label: "All Branches" }, ...branches.map((b) => ({ value: String(b.id), label: b.name }))]} />
           </div>
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={isLoading}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200">
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={isLoading} style={GHOST_BTN}>
             Refresh
           </Button>
           <Button type="primary" icon={<SettingOutlined />}
-            onClick={() => openTargetModal()}
-            className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200">
+            onClick={() => openTargetModal()} style={GRADIENT_BTN}>
             Manage Targets
           </Button>
         </div>
@@ -454,20 +533,20 @@ function StaffPerformance() {
             children: (
               <>
                 {/* Summary Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
                   {[
-                    { title: "Total Sales", value: `₱${Number(meta.total_sales || 0).toLocaleString()}`, icon: <ShoppingCartOutlined />, color: "#EA580C" },
-                    { title: "Today's Products Sold", value: `${meta.total_daily_products || 0} pcs`, icon: <GiftOutlined />, color: "#F97316" },
-                    { title: "Avg Attendance", value: `${Math.round(meta.avg_attendance_rate || 0)}%`, icon: <CheckCircleOutlined />, color: "#16A34A" },
-                    { title: "Total Incentives", value: `₱${Number(meta.total_incentives || 0).toLocaleString()}`, icon: <TrophyOutlined />, color: "#D97706" },
+                    { title: "Total Sales", value: `₱${Number(meta.total_sales || 0).toLocaleString()}`, icon: <ShoppingCartOutlined />, color: ACCENT },
+                    { title: "Today's Products Sold", value: `${meta.total_daily_products || 0} pcs`, icon: <GiftOutlined />, color: TEXT },
+                    { title: "Avg Attendance", value: `${Math.round(meta.avg_attendance_rate || 0)}%`, icon: <CheckCircleOutlined />, color: TEXT },
+                    { title: "Total Incentives", value: `₱${Number(meta.total_incentives || 0).toLocaleString()}`, icon: <TrophyOutlined />, color: ACCENT },
                   ].map(({ title, value, icon, color }) => (
-                    <Card key={title} className="rounded-xl border border-[#F5EDE0] shadow-sm" styles={{ body: { padding: 20 } }}>
+                    <Card key={title} style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { padding: 20, background: PANEL_BG } }}>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: ACCENT_SOFT, color: ACCENT }}>
                           {icon}
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500">{title}</div>
+                          <div className="text-xs" style={{ color: MUTED }}>{title}</div>
                           <div className="text-lg font-bold" style={{ color }}>{value}</div>
                         </div>
                       </div>
@@ -476,19 +555,20 @@ function StaffPerformance() {
                 </div>
 
                 {/* Charts Row */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
                   {/* Products vs Target Bar Chart */}
-                  <Card className="lg:col-span-2 rounded-xl border border-[#F5EDE0] shadow-sm" styles={{ body: { padding: 20 } }}>
-                    <h3 className="font-semibold text-[#451A03] mb-4">
-                      <BarChartOutlined className="mr-2 text-[#F97316]" />Daily Products vs Target by Staff
+                  <Card className="lg:col-span-2" style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { padding: 20, background: PANEL_BG } }}>
+                    <h3 className="mb-4 font-semibold" style={{ color: TEXT }}>
+                      <BarChartOutlined className="mr-2" style={{ color: ACCENT }} />Daily Products vs Target by Staff
                     </h3>
                     {productTargetChart.length > 0 ? (
                       <MuiBarChart
                         height={300}
+                        sx={CHART_SX}
                         xAxis={[{ data: productTargetChart.map((d) => d.name) }]}
                         series={[
-                          { data: productTargetChart.map((d) => d.sold), label: "Products Sold", color: "#EA580C" },
-                          { data: productTargetChart.map((d) => d.target), label: "Target (pcs)", color: "#F59E0B" },
+                          { data: productTargetChart.map((d) => d.sold), label: "Products Sold", color: ACCENT },
+                          { data: productTargetChart.map((d) => d.target), label: "Target (pcs)", color: AMBER },
                         ]}
                       />
                     ) : (
@@ -497,14 +577,15 @@ function StaffPerformance() {
                   </Card>
 
                   {/* Attendance Pie */}
-                  <Card className="rounded-xl border border-[#F5EDE0] shadow-sm" styles={{ body: { padding: 20 } }}>
-                    <h3 className="font-semibold text-[#451A03] mb-4">
-                      <ClockCircleOutlined className="mr-2 text-[#F97316]" />Attendance Distribution
+                  <Card style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { padding: 20, background: PANEL_BG } }}>
+                    <h3 className="mb-4 font-semibold" style={{ color: TEXT }}>
+                      <ClockCircleOutlined className="mr-2" style={{ color: ACCENT }} />Attendance Distribution
                     </h3>
                     {attendancePieData.length > 0 ? (
                       <MuiPieChart
                         height={200}
                         width={200}
+                        sx={CHART_SX}
                         series={[
                           {
                             data: attendancePieData.map((d, i) => ({
@@ -527,9 +608,9 @@ function StaffPerformance() {
 
                 {/* Monthly Trend */}
                 {monthlyTrend.length > 0 && (
-                  <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm" styles={{ body: { padding: 20 } }}>
-                    <h3 className="font-semibold text-[#451A03] mb-4">
-                      <FundOutlined className="mr-2 text-[#F97316]" />6-Month Trend
+                  <Card className="mb-6" style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { padding: 20, background: PANEL_BG } }}>
+                    <h3 className="mb-4 font-semibold" style={{ color: TEXT }}>
+                      <FundOutlined className="mr-2" style={{ color: ACCENT }} />6-Month Trend
                     </h3>
                     <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
                       <Stack direction={{ xs: "row", md: "column" }} spacing={1}>
@@ -539,7 +620,12 @@ function StaffPerformance() {
                           value={chartMarks}
                           onChange={(e) => setChartMarks(e.target.value)}
                           size="small"
-                          sx={{ minWidth: 150 }}
+                          sx={{
+                            minWidth: 150,
+                            "& .MuiOutlinedInput-root": { color: TEXT, backgroundColor: PANEL_BG_2, "& fieldset": { borderColor: BORDER } },
+                            "& .MuiInputLabel-root": { color: MUTED, "&.Mui-focused": { color: ACCENT } },
+                            "& .MuiSvgIcon-root": { color: MUTED },
+                          }}
                         >
                           {marksOptions.map((opt) => (
                             <MuiMenuItem key={opt} value={opt}>{opt}</MuiMenuItem>
@@ -551,7 +637,12 @@ function StaffPerformance() {
                           value={chartShape}
                           onChange={(e) => setChartShape(e.target.value)}
                           size="small"
-                          sx={{ minWidth: 150 }}
+                          sx={{
+                            minWidth: 150,
+                            "& .MuiOutlinedInput-root": { color: TEXT, backgroundColor: PANEL_BG_2, "& fieldset": { borderColor: BORDER } },
+                            "& .MuiInputLabel-root": { color: MUTED, "&.Mui-focused": { color: ACCENT } },
+                            "& .MuiSvgIcon-root": { color: MUTED },
+                          }}
                         >
                           {shapes.map((s) => (
                             <MuiMenuItem key={s} value={s}>{s}</MuiMenuItem>
@@ -561,6 +652,7 @@ function StaffPerformance() {
                       <Box sx={{ flexGrow: 1 }}>
                         <LineChart
                           height={300}
+                          sx={CHART_SX}
                           dataset={monthlyTrend.map((d) => ({
                             month: d.label,
                             sales: Number(d.total_sales) || 0,
@@ -574,6 +666,7 @@ function StaffPerformance() {
                               showMark: marksMapping[chartMarks],
                               shape: chartShape,
                               yAxisId: "left",
+                              color: ACCENT,
                             },
                             {
                               dataKey: "attendance",
@@ -582,6 +675,7 @@ function StaffPerformance() {
                               showMark: marksMapping[chartMarks],
                               shape: chartShape,
                               yAxisId: "right",
+                              color: AMBER,
                             },
                           ]}
                           xAxis={[{ scaleType: "point", dataKey: "month" }]}
@@ -597,22 +691,33 @@ function StaffPerformance() {
                 )}
 
                 {/* Performance Table */}
-                <div className="flex justify-between items-center mb-4">
+                <div className="mb-4 flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold text-[#451A03]">
-                      <TeamOutlined className="mr-2 text-[#F97316]" />Staff Rankings
+                    <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
+                      <TeamOutlined className="mr-2" style={{ color: ACCENT }} />Staff Rankings
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">Detailed performance metrics for {dayjs(month, "YYYY-MM").format("MMMM YYYY")}</p>
+                    <p className="mt-1 text-sm" style={{ color: MUTED }}>Detailed performance metrics for {dayjs(month, "YYYY-MM").format("MMMM YYYY")}</p>
                   </div>
-                  <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+                  <Tag className="rounded-full px-3 py-1 text-sm font-semibold" style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>
                     {staffDataList.length} staff
                   </Tag>
                 </div>
 
-                <Card className="rounded-xl border border-[#F5EDE0] shadow-sm">
+                <Card
+                  style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+                  styles={{ body: { background: PANEL_BG } }}
+                >
                   <Table columns={columns} dataSource={staffDataList} rowKey="id" loading={isLoading}
                     pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (t) => `Total ${t} staff` }}
-                    locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><TeamOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No performance data for this period</p><p className="text-gray-400 text-sm">Try adjusting the month or branch filter</p></div> }} />
+                    locale={{ emptyText: (
+                      <div className="py-10 text-center">
+                        <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}>
+                          <TeamOutlined className="text-3xl" />
+                        </div>
+                        <p className="font-semibold" style={{ color: TEXT }}>No performance data for this period</p>
+                        <p className="text-sm" style={{ color: MUTED }}>Try adjusting the month or branch filter</p>
+                      </div>
+                    ) }} />
                 </Card>
               </>
             ),
@@ -622,20 +727,20 @@ function StaffPerformance() {
             label: <span><ShopOutlined /> Branch Comparison</span>,
             children: (
               <>
-                <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm" styles={{ body: { padding: 20 } }}>
-                  <h3 className="font-semibold text-[#451A03] mb-4">
-                    <ShopOutlined className="mr-2 text-[#F97316]" />Branch Performance Overview
+                <Card className="mb-6" style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { padding: 20, background: PANEL_BG } }}>
+                  <h3 className="mb-4 font-semibold" style={{ color: TEXT }}>
+                    <ShopOutlined className="mr-2" style={{ color: ACCENT }} />Branch Performance Overview
                   </h3>
                   {branchAggregates.length > 0 ? (
                     <ResponsiveContainer width="100%" height={350}>
                       <BarChart data={branchAggregates} layout="vertical" barGap={2}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#F5EDE0" />
-                        <XAxis type="number" tick={{ fontSize: 11 }} />
-                        <YAxis type="category" dataKey="branch_name" tick={{ fontSize: 12 }} width={120} />
-                        <ReTooltip />
-                        <Legend />
-                        <Bar dataKey="total_products" name="Products Sold" fill="#EA580C" radius={[0, 4, 4, 0]} />
-                        <Bar dataKey="total_target_products" name="Target (pcs)" fill="#F59E0B" radius={[0, 4, 4, 0]} opacity={0.4} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                        <XAxis type="number" tick={{ fontSize: 11, fill: MUTED }} tickLine={false} />
+                        <YAxis type="category" dataKey="branch_name" tick={{ fontSize: 12, fill: MUTED }} width={120} tickLine={false} />
+                        <ReTooltip contentStyle={{ background: PANEL_BG_2, border: `1px solid ${BORDER}`, borderRadius: 8, color: TEXT }} labelStyle={{ color: TEXT }} />
+                        <Legend wrapperStyle={{ color: MUTED }} />
+                        <Bar dataKey="total_products" name="Products Sold" fill={ACCENT} radius={[0, 4, 4, 0]} />
+                        <Bar dataKey="total_target_products" name="Target (pcs)" fill={AMBER} radius={[0, 4, 4, 0]} opacity={0.4} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -643,38 +748,38 @@ function StaffPerformance() {
                   )}
                 </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {branchAggregates.map((b) => (
-                    <Card key={b.branch_id} className="rounded-xl border border-[#F5EDE0] shadow-sm" styles={{ body: { padding: 20 } }}>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] flex items-center justify-center text-white font-bold">
+                    <Card key={b.branch_id} style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { padding: 20, background: PANEL_BG } }}>
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl font-bold" style={{ background: ACCENT_SOFT, color: ACCENT }}>
                           {b.branch_name?.charAt(0) || "B"}
                         </div>
                         <div>
-                          <div className="font-semibold text-[#451A03]">{b.branch_name}</div>
-                          <div className="text-xs text-gray-400">{b.staff_count} staff</div>
+                          <div className="font-semibold" style={{ color: TEXT }}>{b.branch_name}</div>
+                          <div className="text-xs" style={{ color: FAINT }}>{b.staff_count} staff</div>
                         </div>
                       </div>
-                        <div className="space-y-3">
+                      <div className="space-y-3">
                         <div>
-                          <div className="flex justify-between text-xs text-gray-500 mb-1">
+                          <div className="mb-1 flex justify-between text-xs" style={{ color: MUTED }}>
                             <span>Products vs Sales Target</span>
-                            <span className="font-medium">{b.total_products} / {b.total_target_products} pcs</span>
+                            <span className="font-medium" style={{ color: TEXT }}>{b.total_products} / {b.total_target_products} pcs</span>
                           </div>
                           <Progress percent={Math.min(100, b.target_achievement_pct || 0)} size="small"
-                            strokeColor={(b.target_achievement_pct || 0) >= 100 ? "#22C55E" : "#EA580C"} />
+                            strokeColor={(b.target_achievement_pct || 0) >= 100 ? ACCENT : AMBER} />
                         </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">Avg Attendance</span>
-                          <span className="font-medium">{b.avg_attendance_rate}%</span>
+                        <div className="flex justify-between text-xs" style={{ color: MUTED }}>
+                          <span>Avg Attendance</span>
+                          <span className="font-medium" style={{ color: TEXT }}>{b.avg_attendance_rate}%</span>
                         </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">Avg Score</span>
-                          <span className="font-bold text-[#451A03]">{b.avg_score}/100</span>
+                        <div className="flex justify-between text-xs" style={{ color: MUTED }}>
+                          <span>Avg Score</span>
+                          <span className="font-bold" style={{ color: TEXT }}>{b.avg_score}/100</span>
                         </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">Products Sold</span>
-                          <span className="font-medium">{b.total_products} pcs</span>
+                        <div className="flex justify-between text-xs" style={{ color: MUTED }}>
+                          <span>Products Sold</span>
+                          <span className="font-medium" style={{ color: TEXT }}>{b.total_products} pcs</span>
                         </div>
                       </div>
                     </Card>
@@ -688,29 +793,39 @@ function StaffPerformance() {
             label: <span><AimOutlined /> Sales Targets</span>,
             children: (
               <>
-                <div className="flex justify-between items-center mb-4">
+                <div className="mb-4 flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold text-[#451A03]">
-                      <AimOutlined className="mr-2 text-[#F97316]" />Sales Targets
+                    <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
+                      <AimOutlined className="mr-2" style={{ color: ACCENT }} />Sales Targets
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">Set and manage sales targets per branches </p>
+                    <p className="mt-1 text-sm" style={{ color: MUTED }}>Set and manage sales targets per branches</p>
                   </div>
                   <Space>
                     <Button icon={<ShopOutlined />}
                       onClick={() => { bulkForm.resetFields(); setBulkModalVisible(true); }}
-                      className="rounded-xl border-[#EA580C] text-[#EA580C] bg-white hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200">
+                      style={GHOST_BTN}>
                       Set All Branches
                     </Button>
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openTargetModal()}
-                      className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200">
+                      style={GRADIENT_BTN}>
                       Add Target
                     </Button>
                   </Space>
                 </div>
-                <Card className="rounded-xl border border-[#F5EDE0] shadow-sm">
+                <Card
+                  style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+                  styles={{ body: { background: PANEL_BG } }}
+                >
                   <Table columns={targetColumns} dataSource={targets} rowKey="id" loading={targetsLoading}
                     pagination={{ pageSize: 10 }}
-                    locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><AimOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No targets set yet. Click "Add Target" to create one.</p></div> }} />
+                    locale={{ emptyText: (
+                      <div className="py-10 text-center">
+                        <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}>
+                          <AimOutlined className="text-3xl" />
+                        </div>
+                        <p className="font-semibold" style={{ color: TEXT }}>No targets set yet. Click &quot;Add Target&quot; to create one.</p>
+                      </div>
+                    ) }} />
                 </Card>
               </>
             ),
@@ -722,12 +837,12 @@ function StaffPerformance() {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl text-lg" style={{ background: ACCENT_SOFT, color: ACCENT }}>
               {editingTarget ? <EditOutlined /> : <PlusOutlined />}
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">{editingTarget ? "Edit Sales Target" : "Add Sales Target"}</p>
-              <p className="text-xs font-normal text-stone-400">{editingTarget ? "Update the target for this branch" : "Create a new sales target"}</p>
+              <p className="font-bold" style={{ color: TEXT }}>{editingTarget ? "Edit Sales Target" : "Add Sales Target"}</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>{editingTarget ? "Update the target for this branch" : "Create a new sales target"}</p>
             </div>
           </div>
         }
@@ -736,16 +851,17 @@ function StaffPerformance() {
         onOk={handleTargetSubmit}
         confirmLoading={saveTargetMutation.isPending}
         okText={editingTarget ? "Update" : "Create"}
-        okButtonProps={{ className: "rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none" }}
-        cancelButtonProps={{ className: "rounded-xl" }}
+        okButtonProps={{ style: GRADIENT_BTN }}
+        cancelButtonProps={{ style: SECONDARY_BTN }}
         width={520}
       >
         <Form form={targetForm} layout="vertical" className="mt-4">
-          <Form.Item label={<span className="text-sm font-semibold text-[#451A03]">Branch</span>} name="branch_id" rules={[{ required: true, message: "Select a branch" }]}>
+          <Form.Item label={<span className="text-sm font-semibold" style={FIELD_LABEL}>Branch</span>} name="branch_id" rules={[{ required: true, message: "Select a branch" }]}>
             <Select placeholder="Select branch" showSearch optionFilterProp="label"
+              popupClassName="nm-dark-select-dropdown"
               options={branches.map((b) => ({ value: b.id, label: b.name }))} />
           </Form.Item>
-          <Form.Item label={<span className="text-sm font-semibold text-[#451A03]">Product Target (pcs)</span>} name="target_products" rules={[{ required: true, message: "Enter product target" }]}>
+          <Form.Item label={<span className="text-sm font-semibold" style={FIELD_LABEL}>Product Target (pcs)</span>} name="target_products" rules={[{ required: true, message: "Enter product target" }]}>
             <InputNumber style={{ width: "100%" }} min={1} step={10} />
           </Form.Item>
         </Form>
@@ -755,12 +871,12 @@ function StaffPerformance() {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-[#FEF2F2] flex items-center justify-center text-[#DC2626] text-lg">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl text-lg" style={{ background: RED_SOFT, color: RED }}>
               <WarningOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">Delete Target</p>
-              <p className="text-xs font-normal text-stone-400">This action cannot be undone</p>
+              <p className="font-bold" style={{ color: TEXT }}>Delete Target</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>This action cannot be undone</p>
             </div>
           </div>
         }
@@ -769,12 +885,12 @@ function StaffPerformance() {
         onOk={() => deletingTarget && deleteTargetMutation.mutate(deletingTarget.id)}
         confirmLoading={deleteTargetMutation.isPending}
         okText="Delete"
-        okButtonProps={{ danger: true, className: "rounded-xl" }}
-        cancelButtonProps={{ className: "rounded-xl border-[#F5EDE0] text-[#451A03] hover:border-[#F97316] hover:text-[#EA580C]" }}
+        okButtonProps={{ danger: true, style: { background: "linear-gradient(135deg, #EF4444, #DC2626)", border: "none", color: "#FFFFFF", fontWeight: 600 } }}
+        cancelButtonProps={{ style: SECONDARY_BTN }}
       >
-        <p>Are you sure you want to delete this sales target?</p>
+        <p style={{ color: TEXT }}>Are you sure you want to delete this sales target?</p>
         {deletingTarget && (
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="mt-2 text-sm" style={{ color: MUTED }}>
             {deletingTarget.user ? `${deletingTarget.user.firstname} ${deletingTarget.user.lastname}` : deletingTarget.branch?.name || "Unknown"}
           </p>
         )}
@@ -784,12 +900,12 @@ function StaffPerformance() {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl text-lg" style={{ background: ACCENT_SOFT, color: ACCENT }}>
               <ShopOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">Set Target for All Branches</p>
-              <p className="text-xs font-normal text-stone-400">Apply one target across all branches</p>
+              <p className="font-bold" style={{ color: TEXT }}>Set Target for All Branches</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Apply one target across all branches</p>
             </div>
           </div>
         }
@@ -803,20 +919,20 @@ function StaffPerformance() {
         }}
         confirmLoading={bulkTargetMutation.isPending}
         okText="Apply to All Branches"
-        okButtonProps={{ className: "rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none" }}
-        cancelButtonProps={{ className: "rounded-xl" }}
+        okButtonProps={{ style: GRADIENT_BTN }}
+        cancelButtonProps={{ style: SECONDARY_BTN }}
         width={520}
       >
-        <div className="bg-[#FFF1E6] rounded-xl p-4 mb-4 mt-2">
-          <p className="text-sm text-[#451A03] font-medium">
+        <div className="mb-4 mt-2 rounded-xl p-4" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30`, borderRadius: 12 }}>
+          <p className="text-sm font-medium" style={{ color: ACCENT }}>
             <ShopOutlined className="mr-1" />This will create or update the sales target for every active branch.
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="mt-1 text-xs" style={{ color: MUTED }}>
             Branch-specific targets will be set. Individual staff targets are not affected.
           </p>
         </div>
         <Form form={bulkForm} layout="vertical">
-          <Form.Item label={<span className="text-sm font-semibold text-[#451A03]">Product Target (pcs)</span>} name="target_products" rules={[{ required: true, message: "Enter product target" }]}>
+          <Form.Item label={<span className="text-sm font-semibold" style={FIELD_LABEL}>Product Target (pcs)</span>} name="target_products" rules={[{ required: true, message: "Enter product target" }]}>
             <InputNumber style={{ width: "100%" }} min={1} step={10} />
           </Form.Item>
         </Form>

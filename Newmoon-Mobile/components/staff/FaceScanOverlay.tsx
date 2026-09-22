@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-export type ScanPhase = 'scanning' | 'checking' | 'mismatch';
+export type ScanPhase = 'scanning' | 'checking' | 'mismatch' | 'verified';
 
 type Props = {
   phase: ScanPhase;
@@ -158,7 +158,7 @@ export default FaceScanOverlay;
 
 const styles = StyleSheet.create({
   root: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -172,17 +172,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   frameClip: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: 28,
     overflow: 'hidden',
   },
   glow: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: 28,
     opacity: 0.9,
   },
   frame: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderWidth: 1.5,
     borderRadius: 28,
     backgroundColor: 'rgba(0,0,0,0.03)',

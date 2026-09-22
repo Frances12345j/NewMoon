@@ -23,6 +23,45 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/config/api";
 import Loading from "@/components/Loading";
 
+// ─── Palette — matches ProductList (dark plum + mint) ────────────────────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
+};
+
 function Staff() {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
@@ -175,13 +214,13 @@ function Staff() {
             <Avatar
               size={36}
               icon={<UserOutlined />}
-              style={{ backgroundColor: getPosition(r) === "Rider" ? '#F59E0B' : '#EA580C' }}
+              style={{ backgroundColor: getPosition(r) === "Rider" ? ACCENT_DEEP : ACCENT, color: "#1F1A2E" }}
             />
             <div>
               <div className="font-semibold">
                 {r.firstname} {r.middlename ? `${r.middlename.charAt(0)}. ` : ''}{r.lastname}
               </div>
-              <div className="text-gray-400 text-xs">{r.username}</div>
+              <div className="text-xs" style={{ color: MUTED }}>{r.username}</div>
             </div>
           </div>
         );
@@ -192,9 +231,9 @@ function Staff() {
       key: "contact",
       render: (_, r) => (
         <div className="text-sm">
-          {r.email && <div><MailOutlined className="mr-1 text-gray-400" />{r.email}</div>}
-          {r.phone && <div><PhoneOutlined className="mr-1 text-gray-400" />{r.phone}</div>}
-          {!r.email && !r.phone && <span className="text-gray-400">—</span>}
+          {r.email && <div><MailOutlined className="mr-1" style={{ color: MUTED }} />{r.email}</div>}
+          {r.phone && <div><PhoneOutlined className="mr-1" style={{ color: MUTED }} />{r.phone}</div>}
+          {!r.email && !r.phone && <span style={{ color: MUTED }}>—</span>}
         </div>
       ),
     },
@@ -204,8 +243,8 @@ function Staff() {
       render: (_, r) => {
         const position = getPosition(r);
         return position === "Rider"
-          ? <Tag color="orange">Rider</Tag>
-          : <Tag color="gold">Staff</Tag>;
+          ? <Tag className="rounded-full px-3 py-1" style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>Rider</Tag>
+          : <Tag className="rounded-full px-3 py-1" style={{ background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` }}>Staff</Tag>;
       },
     },
     {
@@ -213,8 +252,8 @@ function Staff() {
       key: "status",
       render: (_, r) =>
         r.is_active !== false
-          ? <Tag color="green" icon={<CheckCircleOutlined />}>Active</Tag>
-          : <Tag color="red" icon={<CloseCircleOutlined />}>Inactive</Tag>,
+          ? <Tag className="rounded-full px-3 py-1" style={{ background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }} icon={<CheckCircleOutlined />}>Active</Tag>
+          : <Tag className="rounded-full px-3 py-1" style={{ background: RED_SOFT, color: "#F87171", border: `1px solid ${RED}30` }} icon={<CloseCircleOutlined />}>Inactive</Tag>,
     },
     {
       title: "Actions",
@@ -222,13 +261,13 @@ function Staff() {
       render: (_, r) => (
         <Space>
           <Tooltip title="Edit">
-            <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => openEdit(r)} className="rounded-xl" />
+            <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => openEdit(r)} style={GRADIENT_BTN} />
           </Tooltip>
           <Tooltip title="Delete">
             <Button danger size="small" icon={<DeleteOutlined />} onClick={() => {
               setSelectedStaff(r);
               setShowDeleteModal(true);
-            }} className="rounded-xl" />
+            }} className="rounded-xl" style={{ background: RED_SOFT, border: `1px solid ${RED}40`, color: "#F87171" }} />
           </Tooltip>
         </Space>
       ),
@@ -236,40 +275,58 @@ function Staff() {
   ];
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
-      {/* Header - NewMoon Style */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-        <div className="px-8 py-6 relative">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
+      
+      {/* Header — dark plum + mint */}
+      <div
+        className="mb-6 overflow-hidden rounded-2xl"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+      >
+        <div className="relative px-8 py-6">
+          {/* Decorative circles */}
           <div className="absolute right-0 top-0 opacity-10">
-            <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
+            <div
+              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
+              style={{ background: ACCENT }}
+            />
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
           </div>
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
-          <div className="flex items-center justify-between relative z-10 flex-wrap gap-4">
+
+          {/* Accent line */}
+          <div
+            className="absolute left-0 right-0 top-0 h-1"
+            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+          />
+
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
-                <TeamOutlined className="mr-2 text-[#F97316]" />
+              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                <TeamOutlined className="mr-2" style={{ color: ACCENT }} />
                 Staff Management
               </h1>
-              <p className="text-white/80 text-sm">Manage your staff members and riders</p>
+              <p className="text-sm" style={{ color: MUTED }}>Manage your staff members and riders</p>
             </div>
             <Input
               placeholder="Search by name or username..."
-              prefix={<SearchOutlined />}
+              prefix={<SearchOutlined style={{ color: MUTED }} />}
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
               style={{ width: 300 }}
               allowClear
-              className="rounded-xl border-0 focus:border-[#F97316] bg-white/95 py-2"
+              className="rounded-xl py-2"
             />
           </div>
         </div>
       </div>
 
-      {/* Action Buttons - NewMoon Style */}
-      <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm">
+      {/* Action Buttons */}
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Space wrap>
           <Select
             placeholder="Filter by position"
@@ -278,7 +335,7 @@ function Staff() {
             allowClear
             style={{ width: 160 }}
             onClear={() => setPositionFilter(null)}
-            className="rounded-xl"
+            popupClassName="nm-dark-select-dropdown"
           >
             <Select.Option value="Staff">Staff</Select.Option>
             <Select.Option value="Rider">Rider</Select.Option>
@@ -287,7 +344,7 @@ function Staff() {
             icon={<ReloadOutlined />}
             onClick={() => refetch()}
             loading={isLoading}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
+            style={GHOST_BTN}
           >
             Refresh
           </Button>
@@ -295,30 +352,36 @@ function Staff() {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => { addForm.resetFields(); setShowAddModal(true); }}
-            className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            style={GRADIENT_BTN}
           >
             Add Staff
           </Button>
         </Space>
       </Card>
 
-      {/* Staff Members Section - NewMoon Style */}
+      {/* Staff Members Section */}
       <div className="mb-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-[#451A03]">
-              <TeamOutlined className="mr-2 text-[#F97316]" />
+            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
+              <TeamOutlined className="mr-2" style={{ color: ACCENT }} />
               Staff Members
             </h2>
-            <p className="text-sm text-gray-500 mt-1">View and manage all staff and rider accounts</p>
+            <p className="mt-1 text-sm" style={{ color: MUTED }}>View and manage all staff and rider accounts</p>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag
+            className="rounded-full px-3 py-1 text-sm font-semibold"
+            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
             {total} total
           </Tag>
         </div>
       </div>
 
-      <Card className="rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         {isLoading ? (
           <Loading full text="Loading staff members..." />
         ) : (
@@ -335,7 +398,20 @@ function Staff() {
             showSizeChanger: false,
             showTotal: (t) => `Total ${t} staff members`,
           }}
-          locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><TeamOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No staff members found</p><p className="text-gray-400 text-sm">Try adjusting your search or filter</p></div> }}
+          locale={{
+            emptyText: (
+              <div className="py-10 text-center">
+                <div
+                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
+                  style={{ background: ACCENT_SOFT, color: ACCENT }}
+                >
+                  <TeamOutlined className="text-3xl" />
+                </div>
+                <p className="font-semibold" style={{ color: TEXT }}>No staff members found</p>
+                <p className="text-sm" style={{ color: MUTED }}>Try adjusting your search or filter</p>
+              </div>
+            ),
+          }}
         />
         )}
       </Card>
@@ -344,8 +420,8 @@ function Staff() {
       <Modal
         title={
           <span>
-            <PlusOutlined className="mr-2 text-[#F97316]" />
-            <span className="text-[#451A03] font-bold">Add Staff Member</span>
+            <PlusOutlined className="mr-2" style={{ color: ACCENT }} />
+            <span style={{ color: TEXT, fontWeight: 700 }}>Add Staff Member</span>
           </span>
         }
         open={showAddModal}
@@ -358,72 +434,77 @@ function Staff() {
         <Form form={addForm} layout="vertical" onFinish={handleAdd}>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">First Name</span>} name="firstname" rules={[{ required: true, message: "First name is required" }]}>
-                <Input placeholder="First name" className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>First Name</span>} name="firstname" rules={[{ required: true, message: "First name is required" }]}>
+                <Input placeholder="First name" className="rounded-xl" />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Middle Name</span>} name="middlename">
-                <Input placeholder="Middle name" className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Middle Name</span>} name="middlename">
+                <Input placeholder="Middle name" className="rounded-xl" />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Last Name</span>} name="lastname" rules={[{ required: true, message: "Last name is required" }]}>
-                <Input placeholder="Last name" className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Last Name</span>} name="lastname" rules={[{ required: true, message: "Last name is required" }]}>
+                <Input placeholder="Last name" className="rounded-xl" />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Username</span>} name="username" rules={[{ required: true, message: "Username is required" }]}>
-                <Input placeholder="Enter username" prefix={<IdcardOutlined className="text-gray-400" />} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Username</span>} name="username" rules={[{ required: true, message: "Username is required" }]}>
+                <Input placeholder="Enter username" prefix={<IdcardOutlined style={{ color: MUTED }} />} className="rounded-xl" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Password</span>} name="password">
-                <Input.Password placeholder="Default: default123" prefix={<KeyOutlined className="text-gray-400" />} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Password</span>} name="password">
+                <Input.Password placeholder="Default: default123" prefix={<KeyOutlined style={{ color: MUTED }} />} className="rounded-xl" />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Email</span>} name="email">
-                <Input placeholder="Enter email" prefix={<MailOutlined className="text-gray-400" />} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Email</span>} name="email">
+                <Input placeholder="Enter email" prefix={<MailOutlined style={{ color: MUTED }} />} className="rounded-xl" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Phone</span>} name="phone">
-                <Input placeholder="Enter phone number" prefix={<PhoneOutlined className="text-gray-400" />} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Phone</span>} name="phone">
+                <Input placeholder="Enter phone number" prefix={<PhoneOutlined style={{ color: MUTED }} />} className="rounded-xl" />
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item label={<span className="text-[#451A03] font-medium">Address</span>} name="address">
-            <Input placeholder="Enter address" prefix={<HomeOutlined className="text-gray-400" />} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+          <Form.Item label={<span style={FIELD_LABEL}>Address</span>} name="address">
+            <Input placeholder="Enter address" prefix={<HomeOutlined style={{ color: MUTED }} />} className="rounded-xl" />
           </Form.Item>
-          <Form.Item label={<span className="text-[#451A03] font-medium">Position</span>} name="position" rules={[{ required: true, message: "Position is required" }]} initialValue="Staff">
-            <Select className="rounded-xl">
-              <Select.Option value="Staff">Staff</Select.Option>
-              <Select.Option value="Rider">Rider</Select.Option>
-            </Select>
-          </Form.Item>
-          <div className="p-3 mb-4 rounded-xl bg-[#FFF1E6]">
-            <p className="text-sm text-[#451A03]"><InfoCircleOutlined className="mr-1 text-[#F97316]" /> New staff will be set as active by default. Default password is "default123".</p>
-          </div>
-          <Form.Item className="mb-0">
-            <Space className="w-full justify-end">
-              <Button onClick={() => { setShowAddModal(false); addForm.resetFields(); }} className="rounded-xl">Cancel</Button>
-              <Button type="primary" htmlType="submit" loading={addMutation.isPending} className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200">Add Staff</Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
+<Form.Item label={<span style={FIELD_LABEL}>Position</span>} name="position" rules={[{ required: true, message: "Position is required" }]} initialValue="Staff">
+          <Select className="rounded-xl" popupClassName="nm-dark-select-dropdown">
+            <Select.Option value="Staff">Staff</Select.Option>
+            <Select.Option value="Rider">Rider</Select.Option>
+          </Select>
+        </Form.Item>
+        <div
+          className="mb-4 rounded-xl p-3"
+          style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}
+        >
+          <p className="text-sm" style={{ color: ACCENT }}>
+            <InfoCircleOutlined className="mr-1" style={{ color: ACCENT }} /> New staff will be set as active by default. Default password is "default123".
+          </p>
+        </div>
+        <Form.Item className="mb-0">
+          <Space className="w-full justify-end">
+            <Button onClick={() => { setShowAddModal(false); addForm.resetFields(); }} className="rounded-xl" style={SECONDARY_BTN}>Cancel</Button>
+            <Button type="primary" htmlType="submit" loading={addMutation.isPending} className="rounded-xl" style={GRADIENT_BTN}>Add Staff</Button>
+          </Space>
+        </Form.Item>
+      </Form>
+    </Modal>
 
-      {/* Edit Modal - NewMoon Style */}
+      {/* Edit Modal */}
       <Modal
         title={
           <span>
-            <EditOutlined className="mr-2 text-[#F97316]" />
-            <span className="text-[#451A03] font-bold">Edit Staff Member</span>
+            <EditOutlined className="mr-2" style={{ color: ACCENT }} />
+            <span style={{ color: TEXT, fontWeight: 700 }}>Edit Staff Member</span>
           </span>
         }
         open={showEditModal}
@@ -436,79 +517,79 @@ function Staff() {
         <Form form={editForm} layout="vertical" onFinish={handleUpdate}>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">First Name</span>} name="firstname" rules={[{ required: true, message: "First name is required" }]}>
-                <Input placeholder="First name" className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>First Name</span>} name="firstname" rules={[{ required: true, message: "First name is required" }]}>
+                <Input placeholder="First name" className="rounded-xl" />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Middle Name</span>} name="middlename">
-                <Input placeholder="Middle name" className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Middle Name</span>} name="middlename">
+                <Input placeholder="Middle name" className="rounded-xl" />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Last Name</span>} name="lastname" rules={[{ required: true, message: "Last name is required" }]}>
-                <Input placeholder="Last name" className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Last Name</span>} name="lastname" rules={[{ required: true, message: "Last name is required" }]}>
+                <Input placeholder="Last name" className="rounded-xl" />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Username</span>} name="username">
-                <Input prefix={<IdcardOutlined className="text-gray-400" />} disabled className="rounded-xl" />
+              <Form.Item label={<span style={FIELD_LABEL}>Username</span>} name="username">
+                <Input prefix={<IdcardOutlined style={{ color: MUTED }} />} disabled className="rounded-xl" />
               </Form.Item>
-              <span className="text-xs text-gray-400 -mt-3 block">Username cannot be changed</span>
+              <span className="-mt-3 block text-xs" style={{ color: MUTED }}>Username cannot be changed</span>
             </Col>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">New Password</span>} name="password">
-                <Input.Password placeholder="Leave blank to keep current" prefix={<KeyOutlined className="text-gray-400" />} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>New Password</span>} name="password">
+                <Input.Password placeholder="Leave blank to keep current" prefix={<KeyOutlined style={{ color: MUTED }} />} className="rounded-xl" />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Email</span>} name="email">
-                <Input placeholder="Enter email" prefix={<MailOutlined className="text-gray-400" />} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Email</span>} name="email">
+                <Input placeholder="Enter email" prefix={<MailOutlined style={{ color: MUTED }} />} className="rounded-xl" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Phone</span>} name="phone">
-                <Input placeholder="Enter phone number" prefix={<PhoneOutlined className="text-gray-400" />} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+              <Form.Item label={<span style={FIELD_LABEL}>Phone</span>} name="phone">
+                <Input placeholder="Enter phone number" prefix={<PhoneOutlined style={{ color: MUTED }} />} className="rounded-xl" />
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item label={<span className="text-[#451A03] font-medium">Address</span>} name="address">
-            <Input placeholder="Enter address" prefix={<HomeOutlined className="text-gray-400" />} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+          <Form.Item label={<span style={FIELD_LABEL}>Address</span>} name="address">
+            <Input placeholder="Enter address" prefix={<HomeOutlined style={{ color: MUTED }} />} className="rounded-xl" />
           </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Position</span>} name="position" rules={[{ required: true, message: "Position is required" }]}>
-                <Select className="rounded-xl">
+              <Form.Item label={<span style={FIELD_LABEL}>Position</span>} name="position" rules={[{ required: true, message: "Position is required" }]}>
+                <Select className="rounded-xl" popupClassName="nm-dark-select-dropdown">
                   <Select.Option value="Staff">Staff</Select.Option>
                   <Select.Option value="Rider">Rider</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label={<span className="text-[#451A03] font-medium">Status</span>} name="is_active" valuePropName="checked">
+              <Form.Item label={<span style={FIELD_LABEL}>Status</span>} name="is_active" valuePropName="checked">
                 <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
               </Form.Item>
             </Col>
           </Row>
           <Form.Item className="mb-0">
             <Space className="w-full justify-end">
-              <Button onClick={() => { setShowEditModal(false); setEditingStaff(null); editForm.resetFields(); }} className="rounded-xl">Cancel</Button>
-              <Button type="primary" htmlType="submit" loading={updateMutation.isPending} className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200">Update Staff</Button>
+              <Button onClick={() => { setShowEditModal(false); setEditingStaff(null); editForm.resetFields(); }} className="rounded-xl" style={SECONDARY_BTN}>Cancel</Button>
+              <Button type="primary" htmlType="submit" loading={updateMutation.isPending} className="rounded-xl" style={GRADIENT_BTN}>Update Staff</Button>
             </Space>
           </Form.Item>
         </Form>
       </Modal>
 
-      {/* Delete Modal - NewMoon Style */}
+      {/* Delete Modal */}
       <Modal
         title={
           <span>
-            <DeleteOutlined className="mr-2 text-[#F97316]" />
-            <span className="text-[#451A03] font-bold">Confirm Delete</span>
+            <DeleteOutlined className="mr-2" style={{ color: ACCENT }} />
+            <span style={{ color: TEXT, fontWeight: 700 }}>Confirm Delete</span>
           </span>
         }
         open={showDeleteModal}
@@ -521,23 +602,33 @@ function Staff() {
         className="rounded-2xl"
       >
         <div className="py-4 text-center">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(135deg, #EA580C, #F59E0B)' }}>
-            <DeleteOutlined className="text-white text-2xl" />
+          <div
+            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
+            style={{ background: RED_SOFT, border: `1px solid ${RED}30` }}
+          >
+            <DeleteOutlined className="text-2xl" style={{ color: "#F87171" }} />
           </div>
-          <p className="text-lg font-semibold mb-2 text-[#451A03]">
+          <p className="mb-2 text-lg font-semibold" style={{ color: TEXT }}>
             Are you sure you want to delete this staff member?
           </p>
           {selectedStaff && (
-            <div className="p-3 bg-[#FFF1E6] rounded-xl text-left">
-              <p><UserOutlined className="mr-2 text-[#F97316]" /><strong>{selectedStaff.firstname} {selectedStaff.lastname}</strong></p>
-              <p className="text-sm text-gray-500"><IdcardOutlined className="mr-2" />{selectedStaff.username}</p>
-              <Tag color={getPosition(selectedStaff) === "Rider" ? "orange" : "gold"}>{getPosition(selectedStaff)}</Tag>
+            <div className="rounded-xl p-3 text-left" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
+              <p><UserOutlined className="mr-2" style={{ color: ACCENT }} /><strong>{selectedStaff.firstname} {selectedStaff.lastname}</strong></p>
+              <p className="text-sm" style={{ color: MUTED }}><IdcardOutlined className="mr-2" />{selectedStaff.username}</p>
+              <Tag
+                className="rounded-full px-3 py-1"
+                style={getPosition(selectedStaff) === "Rider"
+                  ? { background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }
+                  : { background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` }}
+              >
+                {getPosition(selectedStaff)}
+              </Tag>
             </div>
           )}
           {selectedStaff?.is_active !== false ? (
-            <p className="text-sm text-[#DC2626] mt-3"><InfoCircleOutlined className="mr-1" /> This action cannot be undone. Consider disabling instead.</p>
+            <p className="mt-3 text-sm" style={{ color: "#F87171" }}><InfoCircleOutlined className="mr-1" /> This action cannot be undone. Consider disabling instead.</p>
           ) : (
-            <p className="text-sm text-[#DC2626] mt-3"><InfoCircleOutlined className="mr-1" /> This staff member is already inactive. This will permanently remove them.</p>
+            <p className="mt-3 text-sm" style={{ color: "#F87171" }}><InfoCircleOutlined className="mr-1" /> This staff member is already inactive. This will permanently remove them.</p>
           )}
         </div>
       </Modal>

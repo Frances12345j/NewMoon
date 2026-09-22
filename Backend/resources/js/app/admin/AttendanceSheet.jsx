@@ -12,6 +12,45 @@ import {
 import dayjs from "dayjs";
 import { api } from "@/config/api";
 
+// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
+};
+
 function AttendanceView() {
   const [attendanceData, setAttendanceData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
@@ -72,18 +111,18 @@ function AttendanceView() {
   const statusTag = (status) => {
     const normalized = String(status).toLowerCase().trim();
     if (normalized === "present" || normalized === "completed") {
-      return <Tag color="#16A34A" icon={<CheckCircleOutlined />}>Present</Tag>;
+      return <Tag className="rounded-full px-3 py-1" icon={<CheckCircleOutlined />} style={{ background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>Present</Tag>;
     }
     if (normalized === "completed_late") {
-      return <Tag color="#16A34A" icon={<CheckCircleOutlined />}>Completed (Late)</Tag>;
+      return <Tag className="rounded-full px-3 py-1" icon={<CheckCircleOutlined />} style={{ background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>Completed (Late)</Tag>;
     }
     if (normalized === "late") {
-      return <Tag color="#D97706" icon={<ClockCircleOutlined />}>Late</Tag>;
+      return <Tag className="rounded-full px-3 py-1" icon={<ClockCircleOutlined />} style={{ background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` }}>Late</Tag>;
     }
     if (normalized === "absent") {
-      return <Tag color="#DC2626" icon={<CloseCircleOutlined />}>Absent</Tag>;
+      return <Tag className="rounded-full px-3 py-1" icon={<CloseCircleOutlined />} style={{ background: RED_SOFT, color: "#F87171", border: `1px solid ${RED}30` }}>Absent</Tag>;
     }
-    return <Tag color="#6B7280">{status || "Unknown"}</Tag>;
+    return <Tag style={{ background: PANEL_BG_2, color: MUTED, border: "none" }}>{status || "Unknown"}</Tag>;
   };
 
   const getStatusStats = (data) => {
@@ -106,10 +145,13 @@ function AttendanceView() {
       key: "name",
       render: (_, r) => (
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-xs font-semibold">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold"
+            style={{ background: PANEL_BG_2, color: ACCENT }}
+          >
             {r.user?.firstname?.charAt(0) || "?"}
           </div>
-          <span className="font-medium text-[#451A03]">
+          <span className="font-medium" style={{ color: TEXT }}>
             {r.user?.firstname && r.user?.lastname
               ? `${r.user.firstname} ${r.user.lastname}`
               : r.user?.firstname || r.user?.lastname || "Unknown Staff"}
@@ -120,7 +162,7 @@ function AttendanceView() {
     {
       title: "Branch",
       key: "branch",
-      render: (_, r) => r.branch?.name || <span className="text-gray-400">N/A</span>,
+      render: (_, r) => r.branch?.name || <span style={{ color: MUTED }}>N/A</span>,
     },
     {
       title: "Time In",
@@ -150,59 +192,73 @@ function AttendanceView() {
       title: "Daily Rate",
       key: "daily_rate",
       align: "right",
-      render: (_, r) => <span className="text-[#16A34A] font-medium">₱{r.daily_rate?.toFixed(2) || "0.00"}</span>,
+      render: (_, r) => <span className="font-medium" style={{ color: ACCENT }}>₱{r.daily_rate?.toFixed(2) || "0.00"}</span>,
     },
   ];
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
+      
+
       {/* Hero Header */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-        <div className="px-8 py-6 relative">
+      <div
+        className="mb-6 overflow-hidden rounded-2xl"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+      >
+        <div className="relative px-8 py-6">
           <div className="absolute right-0 top-0 opacity-10">
-            <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
+            <div className="-mr-32 -mt-32 h-64 w-64 rounded-full" style={{ background: ACCENT }} />
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
           </div>
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
+          <div
+            className="absolute left-0 right-0 top-0 h-1"
+            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+          />
 
-          <div className="flex items-center justify-between relative z-10 flex-wrap gap-4">
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
-                <TeamOutlined className="mr-2 text-[#F97316]" />
+              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                <TeamOutlined className="mr-2" style={{ color: ACCENT }} />
                 Attendance Records
               </h1>
-              <p className="text-white/80 text-sm">Staff attendance for {dayjs(selectedDate).format("MMMM D, YYYY")}</p>
+              <p className="text-sm" style={{ color: MUTED }}>
+                Staff attendance for {dayjs(selectedDate).format("MMMM D, YYYY")}
+              </p>
             </div>
           </div>
 
           {/* KPI Chips */}
-          <div className="grid grid-cols-3 gap-3 mt-4 relative z-10">
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs flex items-center gap-1.5">
-                <CheckCircleOutlined className="text-[#F97316]" /> Present
+          <div className="relative z-10 mt-4 grid grid-cols-3 gap-3">
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <CheckCircleOutlined style={{ color: ACCENT }} /> Present
               </p>
-              <p className="text-white font-bold text-xl mt-1">{stats.present}</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.present}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs flex items-center gap-1.5">
-                <ClockCircleOutlined className="text-[#F97316]" /> Late
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <ClockCircleOutlined style={{ color: AMBER }} /> Late
               </p>
-              <p className="text-white font-bold text-xl mt-1">{stats.late}</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.late}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs flex items-center gap-1.5">
-                <CloseCircleOutlined className="text-[#F97316]" /> Absent
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <CloseCircleOutlined style={{ color: RED }} /> Absent
               </p>
-              <p className="text-white font-bold text-xl mt-1">{stats.absent}</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.absent}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <Card variant="borderless" className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Space wrap>
           <DatePicker
             value={dayjs(selectedDate)}
@@ -211,6 +267,7 @@ function AttendanceView() {
             }}
             allowClear={false}
             className="rounded-xl"
+            popupClassName="nm-dark-select-dropdown"
           />
           <Input
             placeholder="Search staff..."
@@ -225,7 +282,7 @@ function AttendanceView() {
             icon={<ReloadOutlined />}
             onClick={loadAttendanceData}
             loading={isLoading}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
+            style={GHOST_BTN}
           >
             Refresh
           </Button>
@@ -234,31 +291,55 @@ function AttendanceView() {
 
       {/* Section Header */}
       <div className="mb-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg shadow-sm">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: ACCENT_SOFT, color: ACCENT }}
+            >
               <UserOutlined />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#451A03]">Attendance Records</h2>
-              <p className="text-sm text-stone-400">Staff attendance for {dayjs(selectedDate).format("MMMM D, YYYY")}</p>
+              <h2 className="text-lg font-bold" style={{ color: TEXT }}>Attendance Records</h2>
+              <p className="text-sm" style={{ color: MUTED }}>
+                Staff attendance for {dayjs(selectedDate).format("MMMM D, YYYY")}
+              </p>
             </div>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag
+            className="rounded-full px-3 py-1 text-sm"
+            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
             {filteredData.length} record{filteredData.length !== 1 ? 's' : ''}
           </Tag>
         </div>
       </div>
 
       {/* Table */}
-      <Card variant="borderless" className="rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Table
           columns={columns}
           dataSource={filteredData}
           rowKey={(record) => record.id ?? `${record.user_id}-${selectedDate}`}
           loading={isLoading}
           pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} records` }}
-          locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><TeamOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No attendance records found</p><p className="text-gray-400 text-sm">Try selecting a different date</p></div> }}
+          locale={{
+            emptyText: (
+              <div className="py-10 text-center">
+                <div
+                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
+                  style={{ background: ACCENT_SOFT, color: ACCENT }}
+                >
+                  <TeamOutlined className="text-3xl" />
+                </div>
+                <p className="font-semibold" style={{ color: TEXT }}>No attendance records found</p>
+                <p className="text-sm" style={{ color: MUTED }}>Try selecting a different date</p>
+              </div>
+            ),
+          }}
         />
       </Card>
     </div>

@@ -332,7 +332,10 @@ export default function LoginScreen() {
 
                 {/* Forgot Password */}
                 <View className="flex-row justify-end mb-6 mt-2">
-                  <TouchableOpacity className="py-1">
+                  <TouchableOpacity
+                    className="py-1"
+                    onPress={() => router.push('/ForgotPassword' as any)}
+                  >
                     <Text className="text-[#F97316] text-sm font-semibold">
                       Forgot Password?
                     </Text>

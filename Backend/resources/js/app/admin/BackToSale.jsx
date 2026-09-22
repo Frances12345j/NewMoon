@@ -9,9 +9,49 @@ import {
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/config/api";
+import { invalidateCache } from "@/utils/cache";
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
+
+// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
+};
 
 function BackToSale() {
   const [statusFilter, setStatusFilter] = useState("all");
@@ -46,10 +86,12 @@ function BackToSale() {
   const approveMutation = useMutation({
     mutationFn: ({ id }) => api.post(`/back-to-sales/${id}/approve`),
     onSuccess: () => {
-      message.success("Return approved");
+      message.success("Return approved — unsold stock saved to inventory for tomorrow's sale");
       setShowApproveModal(false);
       setSelected(null);
+      invalidateCache("products");
       queryClient.invalidateQueries({ queryKey: ["backToSalesAll"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (e) => message.error(e.response?.data?.message || "Failed to approve"),
   });
@@ -58,11 +100,13 @@ function BackToSale() {
     mutationFn: ({ id, adminNotes }) =>
       api.post(`/back-to-sales/${id}/reject`, { admin_notes: adminNotes }),
     onSuccess: () => {
-      message.success("Return rejected");
+      message.success("Return rejected — quantity stays out of available inventory");
       setShowRejectModal(false);
       rejectForm.resetFields();
       setSelected(null);
+      invalidateCache("products");
       queryClient.invalidateQueries({ queryKey: ["backToSalesAll"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (e) => message.error(e.response?.data?.message || "Failed to reject"),
   });
@@ -77,12 +121,20 @@ function BackToSale() {
 
   const statusTag = (status) => {
     const m = {
-      pending: { color: "#D97706", icon: <ClockCircleOutlined />, text: "Pending" },
-      approved: { color: "#16A34A", icon: <CheckCircleOutlined />, text: "Approved" },
-      rejected: { color: "#DC2626", icon: <CloseCircleOutlined />, text: "Rejected" },
+      pending: { background: AMBER_SOFT, color: AMBER, icon: <ClockCircleOutlined />, text: "Pending" },
+      approved: { background: GREEN_SOFT, color: ACCENT, icon: <CheckCircleOutlined />, text: "Approved" },
+      rejected: { background: RED_SOFT, color: "#F87171", icon: <CloseCircleOutlined />, text: "Rejected" },
     };
     const c = m[status] || m.pending;
-    return <Tag color={c.color} icon={c.icon}>{c.text}</Tag>;
+    return (
+      <Tag
+        className="rounded-full px-3 py-1"
+        style={{ background: c.background, color: c.color, border: "none", fontWeight: 600 }}
+        icon={c.icon}
+      >
+        {c.text}
+      </Tag>
+    );
   };
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
@@ -94,8 +146,8 @@ function BackToSale() {
       width: 180,
       render: (_, r) => (
         <div>
-          <div className="font-semibold text-[#451A03]"><UserOutlined className="mr-1 text-[#F97316]" />{r.user?.firstname} {r.user?.lastname}</div>
-          <div className="text-stone-400 text-xs">ID: {r.user?.id}</div>
+          <div className="font-semibold" style={{ color: TEXT }}><UserOutlined className="mr-1" style={{ color: ACCENT }} />{r.user?.firstname} {r.user?.lastname}</div>
+          <div className="text-xs" style={{ color: MUTED }}>ID: {r.user?.id}</div>
         </div>
       ),
     },
@@ -105,8 +157,8 @@ function BackToSale() {
       width: 180,
       render: (_, r) => (
         <div>
-          <div className="font-semibold text-[#451A03]">{r.product?.name}</div>
-          <div className="text-stone-400 text-xs">Branch: {r.branch?.name}</div>
+          <div className="font-semibold" style={{ color: TEXT }}>{r.product?.name}</div>
+          <div className="text-xs" style={{ color: MUTED }}>Branch: {r.branch?.name}</div>
         </div>
       ),
     },
@@ -115,14 +167,14 @@ function BackToSale() {
       dataIndex: "quantity",
       key: "quantity",
       width: 80,
-      render: (v) => <span className="font-semibold text-lg text-[#EA580C]">{v}</span>,
+      render: (v) => <span className="font-semibold text-lg" style={{ color: ACCENT }}>{v}</span>,
     },
     {
       title: "Notes",
       dataIndex: "notes",
       key: "notes",
       width: 200,
-      render: (v) => v || <span className="text-gray-400">-</span>,
+      render: (v) => v || <span style={{ color: MUTED }}>-</span>,
     },
     {
       title: "Status",
@@ -143,9 +195,9 @@ function BackToSale() {
       key: "processed",
       width: 160,
       render: (_, r) => {
-        if (r.status === "approved" && r.approved_at) return <span className="text-green-600">{fmtDate(r.approved_at)}</span>;
-        if (r.status === "rejected" && r.rejected_at) return <span className="text-red-600">{fmtDate(r.rejected_at)}</span>;
-        return <span className="text-gray-400">-</span>;
+        if (r.status === "approved" && r.approved_at) return <span style={{ color: ACCENT }}>{fmtDate(r.approved_at)}</span>;
+        if (r.status === "rejected" && r.rejected_at) return <span style={{ color: "#F87171" }}>{fmtDate(r.rejected_at)}</span>;
+        return <span style={{ color: MUTED }}>-</span>;
       },
     },
     {
@@ -153,7 +205,7 @@ function BackToSale() {
       dataIndex: "admin_notes",
       key: "admin_notes",
       width: 160,
-      render: (v) => v || <span className="text-gray-400">-</span>,
+      render: (v) => v || <span style={{ color: MUTED }}>-</span>,
     },
     {
       title: "Actions",
@@ -164,75 +216,103 @@ function BackToSale() {
           {r.status === "pending" && (
             <>
               <Tooltip title="Approve return">
-                <Button type="primary" size="small" icon={<CheckOutlined />}
+                <Button size="small" icon={<CheckOutlined />}
                   onClick={() => { setSelected(r); setShowApproveModal(true); }}
-                  className="rounded-xl bg-gradient-to-br from-[#16A34A] to-[#22C55E] border-none shadow-[0_4px_15px_rgba(34,197,94,0.3)] hover:brightness-110 transition-all duration-200">
+                  style={{ background: ACCENT, border: "none", color: "#1F1A2E", fontWeight: 700, fontSize: 11, borderRadius: 9999 }}>
                   Approve
                 </Button>
               </Tooltip>
               <Tooltip title="Reject">
-                <Button size="small" icon={<CloseOutlined />}
+                <Button size="small" danger icon={<CloseOutlined />}
                   onClick={() => { setSelected(r); setShowRejectModal(true); }}
-                  className="rounded-xl bg-gradient-to-br from-[#DC2626] to-[#EF4444] border-none shadow-[0_4px_15px_rgba(220,38,38,0.3)] hover:brightness-110 transition-all duration-200 text-white">
+                  style={{ fontSize: 11, borderRadius: 9999 }}>
                   Reject
                 </Button>
               </Tooltip>
             </>
           )}
-          {r.status !== "pending" && <span className="text-gray-400 text-sm">-</span>}
+          {r.status !== "pending" && <span className="text-sm" style={{ color: MUTED }}>-</span>}
         </Space>
       ),
     },
   ];
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
-      {/* Hero Header */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-        <div className="px-8 py-6 relative">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
+      
+
+      {/* Header — dark plum with mint accents */}
+      <div
+        className="mb-6 overflow-hidden rounded-2xl"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+      >
+        <div className="relative px-8 py-6">
+          {/* Decorative circles */}
           <div className="absolute right-0 top-0 opacity-10">
-            <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
+            <div
+              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
+              style={{ background: ACCENT }}
+            />
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
           </div>
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
 
-          <div className="flex items-center justify-between relative z-10 flex-wrap gap-4">
+          {/* Accent line */}
+          <div
+            className="absolute left-0 right-0 top-0 h-1"
+            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+          />
+
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
-                <RollbackOutlined className="mr-2 text-[#F97316]" />
+              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                <RollbackOutlined className="mr-2" style={{ color: ACCENT }} />
                 Back-to-Sales
               </h1>
-              <p className="text-white/80 text-sm">Manage unsold stock returned from branches</p>
+              <p className="text-sm" style={{ color: MUTED }}>Manage unsold stock returned from branches</p>
             </div>
           </div>
 
           {/* KPI Chips */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 relative z-10">
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs flex items-center gap-1.5">
-                <ShoppingCartOutlined className="text-[#F97316]" /> Total Returns
+          <div className="relative z-10 mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <ShoppingCartOutlined style={{ color: ACCENT }} /> Total Returns
               </p>
-              <p className="text-white font-bold text-xl mt-1">{stats.total || 0}</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.total || 0}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs flex items-center gap-1.5">
-                <ClockCircleOutlined className="text-[#F97316]" /> Pending
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <ClockCircleOutlined style={{ color: ACCENT }} /> Pending
               </p>
-              <p className="text-white font-bold text-xl mt-1">{stats.pending || 0}</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.pending || 0}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs flex items-center gap-1.5">
-                <CheckCircleOutlined className="text-[#F97316]" /> Approved
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <CheckCircleOutlined style={{ color: ACCENT }} /> Approved
               </p>
-              <p className="text-white font-bold text-xl mt-1">{stats.approved || 0}</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.approved || 0}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs flex items-center gap-1.5">
-                <ArrowLeftOutlined className="text-[#F97316]" /> Qty Returned
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <ArrowLeftOutlined style={{ color: ACCENT }} /> Qty Returned
               </p>
-              <p className="text-white font-bold text-xl mt-1">{stats.total_quantity || 0} <span className="text-sm font-normal text-white/50">pcs</span></p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>
+                {stats.total_quantity || 0} <span className="text-sm font-normal" style={{ color: MUTED }}>pcs</span>
+              </p>
             </div>
           </div>
         </div>
@@ -241,32 +321,36 @@ function BackToSale() {
       {/* Statistic Cards */}
       <Row gutter={16} className="mb-6">
         <Col xs={24} sm={12} lg={6}>
-          <Card variant="borderless" size="small" className="rounded-xl border border-[#F5EDE0] shadow-sm">
-            <Statistic title="Total Returns" value={stats.total || 0} prefix={<ShoppingCartOutlined />} styles={{ content: { color: "#EA580C" } }} />
+          <Card size="small" className="rounded-xl" style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }} styles={{ body: { background: PANEL_BG } }}>
+            <Statistic title={<span style={{ color: MUTED }}>Total Returns</span>} value={stats.total || 0} prefix={<ShoppingCartOutlined />} styles={{ content: { color: ACCENT } }} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card variant="borderless" size="small" className="rounded-xl border border-[#F5EDE0] shadow-sm">
-            <Statistic title="Pending" value={stats.pending || 0} styles={{ content: { color: "#D97706" } }} />
+          <Card size="small" className="rounded-xl" style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }} styles={{ body: { background: PANEL_BG } }}>
+            <Statistic title={<span style={{ color: MUTED }}>Pending</span>} value={stats.pending || 0} styles={{ content: { color: AMBER } }} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card variant="borderless" size="small" className="rounded-xl border border-[#F5EDE0] shadow-sm">
-            <Statistic title="Approved" value={stats.approved || 0} styles={{ content: { color: "#16A34A" } }} />
+          <Card size="small" className="rounded-xl" style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }} styles={{ body: { background: PANEL_BG } }}>
+            <Statistic title={<span style={{ color: MUTED }}>Approved</span>} value={stats.approved || 0} styles={{ content: { color: ACCENT } }} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card variant="borderless" size="small" className="rounded-xl border border-[#F5EDE0] shadow-sm">
-            <Statistic title="Qty Returned" value={stats.total_quantity || 0} suffix="pcs" styles={{ content: { color: "#F97316" } }} />
+          <Card size="small" className="rounded-xl" style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }} styles={{ body: { background: PANEL_BG } }}>
+            <Statistic title={<span style={{ color: MUTED }}>Qty Returned</span>} value={stats.total_quantity || 0} suffix="pcs" styles={{ content: { color: ACCENT } }} />
           </Card>
         </Col>
       </Row>
 
       {/* Filters */}
-      <Card variant="borderless" className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Space wrap>
-          <span className="text-sm font-semibold text-[#451A03]">Status:</span>
-          <Select value={statusFilter} onChange={(v) => { setStatusFilter(v); setCurrentPage(1); }} style={{ width: 130 }} className="rounded-xl">
+          <span className="text-sm font-semibold" style={{ color: MUTED }}>Status:</span>
+          <Select value={statusFilter} onChange={(v) => { setStatusFilter(v); setCurrentPage(1); }} style={{ width: 130 }} className="rounded-xl" popupClassName="nm-dark-select-dropdown">
             <Select.Option value="all">All</Select.Option>
             <Select.Option value="pending">Pending</Select.Option>
             <Select.Option value="approved">Approved</Select.Option>
@@ -286,12 +370,13 @@ function BackToSale() {
             onChange={(dates) => setDateRange(dates)}
             style={{ width: 250 }}
             className="rounded-xl"
+            popupClassName="nm-dark-select-dropdown"
           />
           <Button
             icon={<ReloadOutlined />}
             onClick={() => refetch()}
             loading={isLoading}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
+            style={GHOST_BTN}
           >
             Refresh
           </Button>
@@ -300,24 +385,30 @@ function BackToSale() {
 
       {/* Section Header */}
       <div className="mb-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg shadow-sm">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: ACCENT_SOFT, color: ACCENT }}
+            >
               <RollbackOutlined />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#451A03]">Return Requests</h2>
-              <p className="text-sm text-stone-400">Review and process returned stock</p>
+              <h2 className="text-lg font-bold" style={{ color: TEXT }}>Return Requests</h2>
+              <p className="text-sm" style={{ color: MUTED }}>Review and process returned stock</p>
             </div>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag
+            className="rounded-full px-3 py-1 text-sm font-semibold"
+            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
             {paginationMeta.total || records.length} record(s)
           </Tag>
         </div>
       </div>
 
       {/* Table */}
-      <Card variant="borderless" className="rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { background: PANEL_BG } }}>
         <Table
           columns={columns}
           dataSource={records}
@@ -331,7 +422,17 @@ function BackToSale() {
             showSizeChanger: true,
             showTotal: (t) => `Total ${t} records`,
           }}
-          locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><RollbackOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No back-to-sales records found</p><p className="text-gray-400 text-sm">Try adjusting your search or filters</p></div> }}
+          locale={{
+            emptyText: (
+              <div className="py-10 text-center">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}>
+                  <RollbackOutlined className="text-3xl" />
+                </div>
+                <p className="font-semibold" style={{ color: TEXT }}>No back-to-sales records found</p>
+                <p className="text-sm" style={{ color: MUTED }}>Try adjusting your search or filters</p>
+              </div>
+            ),
+          }}
         />
       </Card>
 
@@ -339,12 +440,15 @@ function BackToSale() {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#16A34A] text-lg shadow-sm">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: ACCENT_SOFT, color: ACCENT }}
+            >
               <CheckCircleOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">Approve Return</p>
-              <p className="text-xs font-normal text-stone-400">Confirm the return request</p>
+              <p className="font-bold" style={{ color: TEXT }}>Approve Return</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Confirm the return request</p>
             </div>
           </div>
         }
@@ -353,22 +457,34 @@ function BackToSale() {
         onOk={handleApprove}
         confirmLoading={approveMutation.isPending}
         okText="Approve"
-        okButtonProps={{ icon: <CheckOutlined />, className: "!rounded-xl !bg-gradient-to-br !from-[#16A34A] !to-[#22C55E] !border-none !shadow-[0_4px_15px_rgba(34,197,94,0.3)]" }}
+        okButtonProps={{ icon: <CheckOutlined />, className: "rounded-xl", style: GRADIENT_BTN }}
         className="rounded-2xl"
       >
         {selected && (
           <div className="space-y-3">
-            <div className="p-4 rounded-xl bg-[#FFF1E6]">
-              <div className="font-semibold text-[#451A03]">{selected.user?.firstname} {selected.user?.lastname}</div>
-              <div className="text-lg font-bold text-[#16A34A] mt-1">{selected.product?.name}</div>
-              <div className="flex gap-4 mt-2 text-sm">
-                <span className="text-stone-600">Quantity: <strong>{selected.quantity}</strong></span>
-                <span className="text-stone-600">Branch: <strong>{selected.branch?.name}</strong></span>
+            {/* Product/Staff summary */}
+            <div className="rounded-xl p-4" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
+              <div className="font-semibold" style={{ color: TEXT }}>{selected.user?.firstname} {selected.user?.lastname}</div>
+              <div className="mt-1 text-lg font-bold" style={{ color: ACCENT }}>{selected.product?.name}</div>
+              <div className="mt-2 flex gap-4 text-sm">
+                <span style={{ color: MUTED }}>Quantity: <strong>{selected.quantity}</strong></span>
+                <span style={{ color: MUTED }}>Branch: <strong>{selected.branch?.name}</strong></span>
               </div>
-              {selected.notes && <div className="text-stone-600 text-sm mt-2">Notes: {selected.notes}</div>}
+              {selected.notes && <div className="mt-2 text-sm" style={{ color: MUTED }}>Notes: {selected.notes}</div>}
             </div>
-            <div className="text-sm text-stone-500">
-              Approving confirms this return. The quantity was already deducted from <strong>{selected.branch?.name}</strong> stock when the return was filed.
+
+            {/* Inventory restore info panel */}
+            <div className="flex gap-3 rounded-xl p-4" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
+              <div className="mt-0.5 text-xl" style={{ color: ACCENT }}>✓</div>
+              <div>
+                <div className="text-sm font-bold" style={{ color: TEXT }}>Stock will be saved to inventory for tomorrow's sale</div>
+                <div className="mt-1 text-sm" style={{ color: ACCENT }}>
+                  Approving this return will save <strong>{selected.quantity} unit(s)</strong> of{" "}
+                  <strong>{selected.product?.name}</strong> into{" "}
+                  <strong>{selected.branch?.name}</strong>'s inventory with a fresh stock batch,
+                  so the unsold products can be sold again tomorrow in the POS and viewed in Inventory.
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -378,12 +494,15 @@ function BackToSale() {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#DC2626] text-lg shadow-sm">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: RED_SOFT, color: "#F87171" }}
+            >
               <CloseCircleOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">Reject Return</p>
-              <p className="text-xs font-normal text-stone-400">Provide a reason for rejection</p>
+              <p className="font-bold" style={{ color: TEXT }}>Reject Return</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Provide a reason for rejection</p>
             </div>
           </div>
         }
@@ -394,24 +513,24 @@ function BackToSale() {
         className="rounded-2xl"
       >
         {selected && (
-          <div className="mb-4 p-4 rounded-xl bg-[#FFF1E6]">
-            <div className="font-semibold text-[#451A03]">{selected.user?.firstname} {selected.user?.lastname}</div>
-            <div className="text-lg font-bold text-[#DC2626] mt-1">{selected.product?.name}</div>
-            <div className="flex gap-4 mt-2 text-sm">
-              <span className="text-stone-600">Quantity: <strong>{selected.quantity}</strong></span>
-              <span className="text-stone-600">Branch: <strong>{selected.branch?.name}</strong></span>
+          <div className="mb-4 rounded-xl p-4" style={{ background: RED_SOFT, border: `1px solid ${RED}40` }}>
+            <div className="font-semibold" style={{ color: TEXT }}>{selected.user?.firstname} {selected.user?.lastname}</div>
+            <div className="mt-1 text-lg font-bold" style={{ color: "#F87171" }}>{selected.product?.name}</div>
+            <div className="mt-2 flex gap-4 text-sm">
+              <span style={{ color: MUTED }}>Quantity: <strong>{selected.quantity}</strong></span>
+              <span style={{ color: MUTED }}>Branch: <strong>{selected.branch?.name}</strong></span>
             </div>
-            {selected.notes && <div className="text-stone-600 text-sm mt-2">Notes: {selected.notes}</div>}
+            {selected.notes && <div className="mt-2 text-sm" style={{ color: MUTED }}>Notes: {selected.notes}</div>}
           </div>
         )}
         <Form form={rejectForm} layout="vertical" onFinish={handleReject} initialValues={{ admin_notes: "" }}>
-          <Form.Item label={<span className="text-sm font-semibold text-[#451A03]">Rejection Reason (Optional)</span>} name="admin_notes" rules={[{ max: 500, message: "Reason cannot exceed 500 characters" }]}>
-            <TextArea rows={4} placeholder="Provide a reason for rejection" maxLength={500} showCount disabled={rejectMutation.isPending} className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]" />
+          <Form.Item label={<span style={FIELD_LABEL}>Rejection Reason (Optional)</span>} name="admin_notes" rules={[{ max: 500, message: "Reason cannot exceed 500 characters" }]}>
+            <TextArea rows={4} placeholder="Provide a reason for rejection" maxLength={500} showCount disabled={rejectMutation.isPending} className="rounded-xl" />
           </Form.Item>
           <Form.Item className="mb-0">
             <Space className="w-full justify-end">
-              <Button onClick={() => { setShowRejectModal(false); rejectForm.resetFields(); setSelected(null); }} disabled={rejectMutation.isPending} className="!rounded-xl">Cancel</Button>
-              <Button htmlType="submit" loading={rejectMutation.isPending} icon={<CloseOutlined />} className="!rounded-xl !bg-gradient-to-br !from-[#DC2626] !to-[#EF4444] !border-none !shadow-[0_4px_15px_rgba(220,38,38,0.3)] !text-white hover:brightness-110">Reject</Button>
+              <Button onClick={() => { setShowRejectModal(false); rejectForm.resetFields(); setSelected(null); }} disabled={rejectMutation.isPending} className="rounded-xl" style={SECONDARY_BTN}>Cancel</Button>
+              <Button danger htmlType="submit" loading={rejectMutation.isPending} icon={<CloseOutlined />} className="rounded-xl">Reject</Button>
             </Space>
           </Form.Item>
         </Form>

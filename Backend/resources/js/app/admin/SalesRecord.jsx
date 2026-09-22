@@ -13,6 +13,45 @@ import { api } from "@/config/api";
 
 const { RangePicker } = DatePicker;
 
+// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
+};
+
 const fmtCurrency = (v) => `₱${Number(v || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
 
 function SalesRecord() {
@@ -187,7 +226,7 @@ function SalesRecord() {
       dataIndex: "customer_name",
       key: "customer_name",
       width: 140,
-      render: (v) => v || <span className="text-gray-400">Walk-in</span>,
+      render: (v) => v || <span style={{ color: MUTED }}>Walk-in</span>,
     },
     {
       title: "Items",
@@ -200,14 +239,18 @@ function SalesRecord() {
       dataIndex: "total",
       key: "total",
       width: 120,
-      render: (v) => <span className="font-semibold text-[#EA580C]">{fmtCurrency(v)}</span>,
+      render: (v) => <span className="font-semibold" style={{ color: ACCENT }}>{fmtCurrency(v)}</span>,
     },
     {
       title: "Payment",
       dataIndex: "payment_method",
       key: "payment_method",
       width: 100,
-      render: (v) => <Tag>{v || "cash"}</Tag>,
+      render: (v) => (
+        <Tag className="rounded-full px-3 py-1" style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>
+          {v || "cash"}
+        </Tag>
+      ),
     },
     {
       title: "Cashier",
@@ -221,7 +264,7 @@ function SalesRecord() {
       width: 80,
       render: (_, r) => (
         <Tooltip title="View Details">
-          <Button type="text" icon={<EyeOutlined />} onClick={() => setDetailSale(r)} className="text-[#F97316] hover:text-[#EA580C]" />
+          <Button type="text" icon={<EyeOutlined />} onClick={() => setDetailSale(r)} style={{ color: ACCENT }} />
         </Tooltip>
       ),
     },
@@ -244,84 +287,120 @@ function SalesRecord() {
     });
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
-      {/* Header - NewMoon Roasted Style */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-        <div className="px-8 py-6 relative">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
+      
+
+      {/* Header — dark plum with mint accents */}
+      <div
+        className="mb-6 overflow-hidden rounded-2xl"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+      >
+        <div className="relative px-8 py-6">
           {/* Decorative circles */}
           <div className="absolute right-0 top-0 opacity-10">
-            <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
+            <div
+              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
+              style={{ background: ACCENT }}
+            />
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
           </div>
 
-          {/* Flame accent line */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
+          {/* Accent line */}
+          <div
+            className="absolute left-0 right-0 top-0 h-1"
+            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+          />
 
-          <div className="flex items-center justify-between relative z-10 flex-wrap gap-4">
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
-                <FireOutlined className="mr-2 text-[#F97316]" />
+              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                <FireOutlined className="mr-2" style={{ color: ACCENT }} />
                 Sales Record
               </h1>
-              <p className="text-white/80 text-sm">Record new sales and view sales history</p>
+              <p className="text-sm" style={{ color: MUTED }}>Record new sales and view sales history</p>
             </div>
           </div>
 
           {/* Quick Stats in Header */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 relative z-10">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Today's Transactions</p>
-              <p className="text-white font-bold text-xl">{todayCount}</p>
+          <div className="relative z-10 mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <TransactionOutlined style={{ color: ACCENT }} /> Today's Transactions
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{todayCount}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Today's Revenue</p>
-              <p className="text-white font-bold text-xl">{fmtCurrency(todayRevenue)}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <FireOutlined style={{ color: ACCENT }} /> Today's Revenue
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: ACCENT }}>{fmtCurrency(todayRevenue)}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Items Sold Today</p>
-              <p className="text-white font-bold text-xl">{todayItems}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <ShoppingCartOutlined style={{ color: ACCENT }} /> Items Sold Today
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{todayItems}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Total Transactions</p>
-              <p className="text-white font-bold text-xl">{sales.length}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <TransactionOutlined style={{ color: ACCENT }} /> Total Transactions
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{sales.length}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons - NewMoon Style */}
-      <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm">
+      {/* Action Toolbar */}
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button
             type="primary"
             size="large"
             icon={<ShoppingCartOutlined />}
             onClick={() => setShowSaleModal(true)}
-            className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            style={GRADIENT_BTN}
           >
             New Sale
           </Button>
           <Space wrap>
-            <span className="text-[#451A03] font-medium text-sm">Branch:</span>
+            <span className="text-sm font-medium" style={{ color: MUTED }}>Branch:</span>
             <Select
               value={branchFilter}
               onChange={setBranchFilter}
               style={{ width: 160 }}
               className="rounded-xl"
+              popupClassName="nm-dark-select-dropdown"
             >
               <Select.Option value="all">All Branches</Select.Option>
               {branches.map((b) => (
                 <Select.Option key={b.id} value={String(b.id)}>{b.name}</Select.Option>
               ))}
             </Select>
-            <RangePicker value={dateRange} onChange={setDateRange} allowClear className="rounded-xl" />
+            <RangePicker value={dateRange} onChange={setDateRange} allowClear className="rounded-xl" popupClassName="nm-dark-select-dropdown" />
             <Button
               icon={<ReloadOutlined />}
               onClick={() => refetch()}
               loading={isLoading}
-              className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
+              style={GHOST_BTN}
             >
               Refresh
             </Button>
@@ -329,23 +408,26 @@ function SalesRecord() {
         </div>
       </Card>
 
-      {/* Sales History Section - NewMoon Style */}
+      {/* Sales History Section */}
       <div className="mb-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-[#451A03]">
-              <TransactionOutlined className="mr-2 text-[#F97316]" />
+            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
+              <TransactionOutlined className="mr-2" style={{ color: ACCENT }} />
               Sales History
             </h2>
-            <p className="text-sm text-gray-500 mt-1">Browse and filter all recorded transactions</p>
+            <p className="mt-1 text-sm" style={{ color: MUTED }}>Browse and filter all recorded transactions</p>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag
+            className="rounded-full px-3 py-1 text-sm font-semibold"
+            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
             {sales.length} sale{sales.length !== 1 ? 's' : ''}
           </Tag>
         </div>
       </div>
 
-      <Card className="rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { background: PANEL_BG } }}>
         <Table
           columns={columns}
           dataSource={sales}
@@ -355,11 +437,14 @@ function SalesRecord() {
           locale={{
             emptyText: (
               <div className="py-10 text-center">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3">
-                  <TransactionOutlined className="text-3xl text-[#F97316]" />
+                <div
+                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
+                  style={{ background: ACCENT_SOFT, color: ACCENT }}
+                >
+                  <TransactionOutlined className="text-3xl" />
                 </div>
-                <p className="text-[#451A03] font-semibold">No sales recorded yet</p>
-                <p className="text-gray-400 text-sm">Click "New Sale" to record your first transaction</p>
+                <p className="font-semibold" style={{ color: TEXT }}>No sales recorded yet</p>
+                <p className="text-sm" style={{ color: MUTED }}>Click "New Sale" to record your first transaction</p>
               </div>
             ),
           }}
@@ -367,16 +452,19 @@ function SalesRecord() {
         />
       </Card>
 
-      {/* New Sale Modal - NewMoon Style */}
+      {/* New Sale Modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: ACCENT_SOFT, color: ACCENT }}
+            >
               <ShoppingCartOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">New Sale</p>
-              <p className="text-xs font-normal text-stone-400">Record a new POS transaction</p>
+              <p className="font-bold" style={{ color: TEXT }}>New Sale</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Record a new POS transaction</p>
             </div>
           </div>
         }
@@ -391,7 +479,7 @@ function SalesRecord() {
           {/* Branch & Staff */}
           <Row gutter={16}>
             <Col span={12}>
-              <div className="text-sm font-semibold text-[#451A03] mb-1">Branch *</div>
+              <div className="mb-1 text-sm font-semibold" style={FIELD_LABEL}>Branch *</div>
               <Select
                 value={saleBranch}
                 onChange={setSaleBranch}
@@ -399,10 +487,11 @@ function SalesRecord() {
                 placeholder="Select branch"
                 options={branches.map((b) => ({ value: b.id, label: b.name }))}
                 className="rounded-xl"
+                popupClassName="nm-dark-select-dropdown"
               />
             </Col>
             <Col span={12}>
-              <div className="text-sm font-semibold text-[#451A03] mb-1">Cashier / Staff *</div>
+              <div className="mb-1 text-sm font-semibold" style={FIELD_LABEL}>Cashier / Staff *</div>
               <Select
                 value={saleUser}
                 onChange={setSaleUser}
@@ -415,18 +504,19 @@ function SalesRecord() {
                     label: `${s.firstname || ""} ${s.lastname || ""}${s.username ? ` (${s.username})` : ""}`,
                   }))}
                 className="rounded-xl"
+                popupClassName="nm-dark-select-dropdown"
               />
             </Col>
           </Row>
 
           {/* Customer Name */}
           <div>
-            <div className="text-sm font-semibold text-[#451A03] mb-1">Customer Name (optional)</div>
+            <div className="mb-1 text-sm font-semibold" style={FIELD_LABEL}>Customer Name (optional)</div>
             <Input
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Walk-in customer"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
+              className="rounded-xl"
             />
           </div>
 
@@ -434,9 +524,9 @@ function SalesRecord() {
 
           {/* Items */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-[#451A03]">Items</span>
-              <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addItem} className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6]">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-semibold" style={FIELD_LABEL}>Items</span>
+              <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addItem} className="rounded-xl" style={GHOST_BTN}>
                 Add Item
               </Button>
             </div>
@@ -455,6 +545,7 @@ function SalesRecord() {
                     showSearch
                     filterOption={(input, option) => (option?.label || "").toLowerCase().includes(input.toLowerCase())}
                     options={productOptions}
+                    popupClassName="nm-dark-select-dropdown"
                   />
                 </Col>
                 <Col span={4}>
@@ -469,16 +560,16 @@ function SalesRecord() {
                   />
                 </Col>
                 <Col span={3}>
-                  <div className="text-gray-600 text-sm pt-1">{fmtCurrency(item.product_price)}</div>
+                  <div className="pt-1 text-sm" style={{ color: MUTED }}>{fmtCurrency(item.product_price)}</div>
                 </Col>
                 <Col span={3}>
-                  <div className="font-semibold text-[#EA580C] pt-1">{fmtCurrency(item.product_price * (item.quantity || 0))}</div>
+                  <div className="pt-1 font-semibold" style={{ color: ACCENT }}>{fmtCurrency(item.product_price * (item.quantity || 0))}</div>
                 </Col>
                 <Col span={2}>
                   {maxQty > 0 ? (
-                    <span className="text-xs text-[#D97706] whitespace-nowrap">{maxQty} avail</span>
+                    <span className="text-xs whitespace-nowrap" style={{ color: AMBER }}>{maxQty} avail</span>
                   ) : item.product_id ? (
-                    <span className="text-xs text-[#DC2626]">out</span>
+                    <span className="text-xs" style={{ color: "#F87171" }}>out</span>
                   ) : null}
                 </Col>
                 <Col span={2}>
@@ -498,18 +589,18 @@ function SalesRecord() {
           </Checkbox>
 
           {/* Totals */}
-          <div className="bg-[#FFF1E6] p-4 rounded-xl space-y-1">
+          <div className="space-y-1 rounded-xl p-4" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
             <Row justify="space-between"><Col>Subtotal:</Col><Col>{fmtCurrency(subtotal)}</Col></Row>
             {seniorDiscount && (
-              <Row justify="space-between" className="text-[#DC2626]"><Col>Senior Discount (20%):</Col><Col>-{fmtCurrency(discountAmount)}</Col></Row>
+              <Row justify="space-between" style={{ color: "#F87171" }}><Col>Senior Discount (20%):</Col><Col>-{fmtCurrency(discountAmount)}</Col></Row>
             )}
-            <Row justify="space-between" className="text-lg font-bold"><Col>Total:</Col><Col className="text-[#EA580C]">{fmtCurrency(total)}</Col></Row>
+            <Row justify="space-between" className="text-lg font-bold"><Col>Total:</Col><Col style={{ color: ACCENT }}>{fmtCurrency(total)}</Col></Row>
           </div>
 
           {/* Cash Collected & Payment */}
           <Row gutter={16}>
             <Col span={12}>
-              <div className="text-sm font-semibold text-[#451A03] mb-1">Cash Collected *</div>
+              <div className="mb-1 text-sm font-semibold" style={FIELD_LABEL}>Cash Collected *</div>
               <InputNumber
                 value={cashCollected}
                 onChange={setCashCollected}
@@ -522,8 +613,8 @@ function SalesRecord() {
               />
             </Col>
             <Col span={6}>
-              <div className="text-sm font-semibold text-[#451A03] mb-1">Payment Method</div>
-              <Select value={paymentMethod} onChange={setPaymentMethod} style={{ width: "100%" }} className="rounded-xl">
+              <div className="mb-1 text-sm font-semibold" style={FIELD_LABEL}>Payment Method</div>
+              <Select value={paymentMethod} onChange={setPaymentMethod} style={{ width: "100%" }} className="rounded-xl" popupClassName="nm-dark-select-dropdown">
                 <Select.Option value="cash">Cash</Select.Option>
                 <Select.Option value="card">Card</Select.Option>
                 <Select.Option value="gcash">GCash</Select.Option>
@@ -531,8 +622,11 @@ function SalesRecord() {
               </Select>
             </Col>
             <Col span={6}>
-              <div className="text-sm font-semibold text-[#451A03] mb-1">Change</div>
-              <div className={`text-xl font-bold pt-1 ${change >= 0 ? "text-[#16A34A]" : "text-[#DC2626]"}`}>
+              <div className="mb-1 text-sm font-semibold" style={FIELD_LABEL}>Change</div>
+              <div
+                className="pt-1 text-xl font-bold"
+                style={{ color: change >= 0 ? ACCENT : "#F87171" }}
+              >
                 {fmtCurrency(change)}
               </div>
             </Col>
@@ -546,29 +640,32 @@ function SalesRecord() {
             icon={<ShoppingCartOutlined />}
             onClick={submitSale}
             loading={submitting}
-            className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            style={GRADIENT_BTN}
           >
             Complete Sale — {fmtCurrency(total)}
           </Button>
         </div>
       </Modal>
 
-      {/* Sale Detail Modal - NewMoon Style */}
+      {/* Sale Detail Modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: ACCENT_SOFT, color: ACCENT }}
+            >
               <EyeOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">Sale Details — {detailSale?.invoice_number || ""}</p>
-              <p className="text-xs font-normal text-stone-400">Transaction breakdown</p>
+              <p className="font-bold" style={{ color: TEXT }}>Sale Details — {detailSale?.invoice_number || ""}</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Transaction breakdown</p>
             </div>
           </div>
         }
         open={!!detailSale}
         onCancel={() => setDetailSale(null)}
-        footer={<Button onClick={() => setDetailSale(null)} className="rounded-xl">Close</Button>}
+        footer={<Button onClick={() => setDetailSale(null)} className="rounded-xl" style={SECONDARY_BTN}>Close</Button>}
         width={600}
         className="rounded-2xl"
       >
@@ -576,58 +673,58 @@ function SalesRecord() {
           <div className="space-y-4">
             <Row gutter={16}>
               <Col span={12}>
-                <div className="text-gray-500 text-sm">Branch</div>
-                <div className="font-semibold text-[#451A03]">{detailSale.branch?.name || "-"}</div>
+                <div className="text-sm" style={{ color: MUTED }}>Branch</div>
+                <div className="font-semibold" style={{ color: TEXT }}>{detailSale.branch?.name || "-"}</div>
               </Col>
               <Col span={12}>
-                <div className="text-gray-500 text-sm">Date</div>
-                <div className="font-semibold text-[#451A03]">{detailSale.sale_date}</div>
+                <div className="text-sm" style={{ color: MUTED }}>Date</div>
+                <div className="font-semibold" style={{ color: TEXT }}>{detailSale.sale_date}</div>
               </Col>
             </Row>
             <Row gutter={16}>
               <Col span={12}>
-                <div className="text-gray-500 text-sm">Customer</div>
-                <div className="font-semibold text-[#451A03]">{detailSale.customer_name || "Walk-in"}</div>
+                <div className="text-sm" style={{ color: MUTED }}>Customer</div>
+                <div className="font-semibold" style={{ color: TEXT }}>{detailSale.customer_name || "Walk-in"}</div>
               </Col>
               <Col span={12}>
-                <div className="text-gray-500 text-sm">Cashier</div>
-                <div className="font-semibold text-[#451A03]">
+                <div className="text-sm" style={{ color: MUTED }}>Cashier</div>
+                <div className="font-semibold" style={{ color: TEXT }}>
                   {detailSale.user?.firstname} {detailSale.user?.lastname || ""}
                 </div>
               </Col>
             </Row>
             <Divider />
-            <div className="text-[#451A03] font-medium text-sm mb-2">Items</div>
+            <div className="mb-2 text-sm font-medium" style={{ color: TEXT }}>Items</div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#F5EDE0]">
-                  <th className="text-left py-1 text-stone-400">Product</th>
-                  <th className="text-right py-1 text-stone-400">Qty</th>
-                  <th className="text-right py-1 text-stone-400">Price</th>
-                  <th className="text-right py-1 text-stone-400">Total</th>
+                <tr className="border-b" style={{ borderColor: BORDER }}>
+                  <th className="py-1 text-left" style={{ color: MUTED }}>Product</th>
+                  <th className="py-1 text-right" style={{ color: MUTED }}>Qty</th>
+                  <th className="py-1 text-right" style={{ color: MUTED }}>Price</th>
+                  <th className="py-1 text-right" style={{ color: MUTED }}>Total</th>
                 </tr>
               </thead>
               <tbody>
                 {(detailSale.items || []).map((item, i) => (
-                  <tr key={i} className="border-b border-[#F5EDE0]/50">
+                  <tr key={i} className="border-b" style={{ borderColor: BORDER }}>
                     <td className="py-1">{item.product?.name || `Product #${item.product_id}`}</td>
-                    <td className="text-right py-1">{item.quantity}</td>
-                    <td className="text-right py-1">{fmtCurrency(item.price)}</td>
-                    <td className="text-right py-1 font-semibold">{fmtCurrency(item.total)}</td>
+                    <td className="py-1 text-right">{item.quantity}</td>
+                    <td className="py-1 text-right">{fmtCurrency(item.price)}</td>
+                    <td className="py-1 text-right font-semibold">{fmtCurrency(item.total)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <Divider />
-            <div className="bg-[#FFF1E6] p-4 rounded-xl space-y-1">
+            <div className="space-y-1 rounded-xl p-4" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
               <Row justify="space-between"><Col>Subtotal:</Col><Col>{fmtCurrency(detailSale.subtotal)}</Col></Row>
               {Number(detailSale.discount_amount) > 0 && (
-                <Row justify="space-between" className="text-[#DC2626]"><Col>Discount:</Col><Col>-{fmtCurrency(detailSale.discount_amount)}</Col></Row>
+                <Row justify="space-between" style={{ color: "#F87171" }}><Col>Discount:</Col><Col>-{fmtCurrency(detailSale.discount_amount)}</Col></Row>
               )}
-              <Row justify="space-between" className="text-lg font-bold"><Col>Total:</Col><Col className="text-[#EA580C]">{fmtCurrency(detailSale.total)}</Col></Row>
+              <Row justify="space-between" className="text-lg font-bold"><Col>Total:</Col><Col style={{ color: ACCENT }}>{fmtCurrency(detailSale.total)}</Col></Row>
               <Row justify="space-between"><Col>Cash Collected:</Col><Col>{fmtCurrency(detailSale.cash_collected)}</Col></Row>
               <Row justify="space-between"><Col>Change:</Col><Col>{fmtCurrency(detailSale.change_given)}</Col></Row>
-              <Row justify="space-between"><Col>Payment Method:</Col><Col><Tag>{detailSale.payment_method || "cash"}</Tag></Col></Row>
+              <Row justify="space-between"><Col>Payment Method:</Col><Col><Tag className="rounded-full px-3 py-1" style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>{detailSale.payment_method || "cash"}</Tag></Col></Row>
             </div>
           </div>
         )}

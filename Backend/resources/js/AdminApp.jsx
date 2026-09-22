@@ -12,7 +12,6 @@ import Attendance from "./app/admin/AttendanceSheet.jsx";
 import ProductList from "./app/admin/ProductList.jsx";
 import StaffList from "./app/admin/Staff.jsx";
 import BranchAssignments from "./app/admin/BranchAssignments.jsx";
-import EmployeeTracker from "./app/admin/EmployeeTracker.jsx";
 import BranchMap from "./app/admin/BranchMap.jsx";
 import RequestAdmin from "./app/admin/RequestAdmin.jsx";
 import CashAdvance from "./app/admin/CashAdvance.jsx";
@@ -23,6 +22,7 @@ import PullOutAdmin from "./app/admin/PullOutAdmin.jsx";
 import Customers from "./app/admin/Customers.jsx";
 import SalesRecord from "./app/admin/SalesRecord.jsx";
 import Delivery from "./app/admin/Delivery.jsx";
+import UserProfiles from "./app/admin/UserProfiles.jsx";
 
 // Reports
 import SalesReport from "./Reports/SalesReport.jsx";
@@ -186,6 +186,21 @@ function AdminApp() {
         }
       />
 
+      <Route
+        path="/user-profiles"
+        element={
+          localStorage.getItem("role") === "admin" ? (
+            <ProtectedRoute>
+              <Layout>
+                <UserProfiles />
+              </Layout>
+            </ProtectedRoute>
+          ) : (
+            <Navigate to="/dashboard" replace />
+          )
+        }
+      />
+
       {/* Branch Assignments */}
       <Route
         path="/branch-assign"
@@ -325,7 +340,7 @@ function AdminApp() {
       />
 
       <Route
-        path="/reports/stockout"
+        path="/reports/pullout"
         element={
           localStorage.getItem("role") === "admin" ? (
             <ProtectedRoute>
@@ -339,20 +354,7 @@ function AdminApp() {
         }
       />
 
-      <Route
-        path="/employee-tracker"
-        element={
-          localStorage.getItem("role") === "admin" ? (
-            <ProtectedRoute>
-              <Layout>
-                <EmployeeTracker />
-              </Layout>
-            </ProtectedRoute>
-          ) : (
-            <Navigate to="/dashboard" replace />
-          )
-        }
-      />
+     
 
       <Route
         path="/delivery"

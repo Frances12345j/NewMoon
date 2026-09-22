@@ -60,12 +60,12 @@ const reportCards = [
     iconTileText: "text-orange-400",
   },
   {
-    title: "Stock Out Report",
+    title: "Pull Out Report",
     description: "Item transfers, stock-out requests, and stock adjustments",
     icon: <SwapOutlined style={{ fontSize: 32, color: "#D97706" }} />,
     color: "#D97706",
     bg: "from-amber-500 to-amber-600",
-    path: "/reports/stockout",
+    path: "/reports/pull-out",
     tag: "Stock",
     iconTileBg: "bg-amber-500/15",
     iconTileText: "text-amber-400",
@@ -96,14 +96,14 @@ function ReportGeneration() {
   return (
     <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">
       {/* Hero Header - NewMoon Charcoal */}
-      <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+      <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
         {/* Decorative glow circles */}
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/[0.08] blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/[0.06] blur-2xl" />
-        <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/[0.05] blur-2xl" />
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+        <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+        <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
 
         {/* Watermark icon */}
-        <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/[0.03]">
+        <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
           <FireOutlined />
         </div>
 
@@ -130,7 +130,7 @@ function ReportGeneration() {
 
           {/* KPI Chips in Hero */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/15">
                 <BarChartOutlined className="text-orange-400 text-base" />
               </div>
@@ -141,7 +141,7 @@ function ReportGeneration() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-500/15">
                 <InboxOutlined className="text-green-400 text-base" />
               </div>
@@ -152,7 +152,7 @@ function ReportGeneration() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/15">
                 <CalendarOutlined className="text-amber-400 text-base" />
               </div>
@@ -163,7 +163,7 @@ function ReportGeneration() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/15">
                 <ShopOutlined className="text-orange-400 text-base" />
               </div>
@@ -206,20 +206,20 @@ function ReportGeneration() {
           <Col xs={24} sm={12} lg={8} key={card.path}>
             <Card
               hoverable
-              className="!rounded-2xl !border !border-orange-100 !bg-white !shadow-sm hover:!shadow-[0_18px_40px_rgba(234,88,12,0.12)] hover:!-translate-y-1 !transition-all !duration-300 overflow-hidden group"
+              className="rounded-2xl! border! border-orange-100! bg-white! shadow-sm! hover:shadow-[0_18px_40px_rgba(234,88,12,0.12)]! hover:-translate-y-1! transition-all! duration-300! overflow-hidden group"
               styles={{ body: { padding: 0 } }}
               onClick={() => navigate(card.path)}
             >
               <div className="relative">
                 {/* Charcoal mini-header */}
-                <div className="bg-gradient-to-br from-stone-950 via-stone-900 to-orange-950 px-5 py-4">
+                <div className="bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 px-5 py-4">
                   <div className="flex items-center justify-between">
                     <div
                       className={`flex h-12 w-12 items-center justify-center rounded-xl ${card.iconTileBg} ${card.iconTileText} shadow-inner`}
                     >
                       {card.icon}
                     </div>
-                    <Tag className="!m-0 !border !border-white/10 !bg-white/[0.08] !px-2.5 !py-1 !text-xs !font-semibold !text-white/70 !rounded-full">
+                    <Tag className="m-0! border! border-white/10! bg-white/8! px-2.5! py-1! text-xs! font-semibold! text-white/70! rounded-full!">
                       {card.tag}
                     </Tag>
                   </div>
@@ -228,12 +228,12 @@ function ReportGeneration() {
                 {/* Card body */}
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-2">
-                    <Title level={5} className="!mb-0 !text-stone-900">
+                    <Title level={5} className="mb-0! text-stone-900!">
                       {card.title}
                     </Title>
                     <RightOutlined className="text-orange-400 group-hover:text-orange-600 transition-colors text-sm" />
                   </div>
-                  <Text type="secondary" className="!text-sm !text-stone-500">
+                  <Text type="secondary" className="text-sm! text-stone-500!">
                     {card.description}
                   </Text>
                 </div>

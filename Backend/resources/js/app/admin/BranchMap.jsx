@@ -17,6 +17,45 @@ import { getCache, setCache, invalidateCache } from "@/utils/cache";
 import Loading from "@/components/Loading";
 import "leaflet/dist/leaflet.css";
 
+// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
+};
+
 const style = document.createElement('style');
 style.innerHTML = `
   .custom-marker-cluster {
@@ -140,7 +179,7 @@ function BranchMap() {
     if (rowEl) {
       rowEl.scrollIntoView({ behavior: "smooth", block: "center" });
       rowEl.style.transition = "background 0.3s";
-      rowEl.style.background = "#FFF1E6";
+      rowEl.style.background = PANEL_BG_2;
       setTimeout(() => { rowEl.style.background = ""; }, 2000);
     }
   }, []);
@@ -252,8 +291,8 @@ function BranchMap() {
       key: "name",
       render: (_, r) => (
         <div>
-          <div className="font-semibold text-[#292524]">{r.name}</div>
-          <div className="text-xs text-gray-400">{r.code}</div>
+          <div className="font-semibold" style={{ color: TEXT }}>{r.name}</div>
+          <div className="text-xs" style={{ color: FAINT }}>{r.code}</div>
         </div>
       ),
     },
@@ -262,8 +301,8 @@ function BranchMap() {
       key: "address",
       render: (_, r) => (
         <div className="flex items-center gap-1">
-          <EnvironmentOutlined className="text-[#F97316]" />
-          <span>{r.address || <span className="text-gray-400">No address</span>}</span>
+          <EnvironmentOutlined style={{ color: ACCENT }} />
+          <span style={{ color: TEXT }}>{r.address || <span style={{ color: FAINT }}>No address</span>}</span>
         </div>
       ),
     },
@@ -272,8 +311,8 @@ function BranchMap() {
       key: "status",
       render: (_, r) =>
         r.latitude && r.longitude
-          ? <Tag color="#16A34A">Located</Tag>
-          : <Tag color="#D97706">No Location</Tag>,
+          ? <Tag style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>Located</Tag>
+          : <Tag style={{ background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}40` }}>No Location</Tag>,
     },
     {
       title: "Actions",
@@ -281,16 +320,16 @@ function BranchMap() {
       render: (_, r) => (
         <Space>
           <Tooltip title="Edit Location">
-            <Button size="small" icon={<EditOutlined />} onClick={() => handleEditLocation(r)} className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6]">
+            <Button size="small" icon={<EditOutlined />} onClick={() => handleEditLocation(r)} style={GHOST_BTN}>
               Edit Location
             </Button>
           </Tooltip>
           {r.latitude && r.longitude && (
             <>
-              <Button size="small" onClick={() => handleOpenGoogleMaps(r)} className="rounded-xl border-[#F5EDE0] text-[#451A03] hover:border-[#F97316] hover:text-[#EA580C]">
+              <Button size="small" onClick={() => handleOpenGoogleMaps(r)} style={SECONDARY_BTN}>
                 Google Maps
               </Button>
-              <Button size="small" onClick={() => handleOpenOpenStreetMap(r)} className="rounded-xl border-[#F5EDE0] text-[#451A03] hover:border-[#F97316] hover:text-[#EA580C]">
+              <Button size="small" onClick={() => handleOpenOpenStreetMap(r)} style={SECONDARY_BTN}>
                 OpenStreetMap
               </Button>
             </>
@@ -301,99 +340,142 @@ function BranchMap() {
   ];
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
-      {/* Header - NewMoon Roasted Style */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-        <div className="px-8 py-6 relative">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
+      
+
+      {/* Header — dark plum with mint accents */}
+      <div
+        className="mb-6 overflow-hidden rounded-2xl"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+      >
+        <div className="relative px-8 py-6">
           {/* Decorative circles */}
           <div className="absolute right-0 top-0 opacity-10">
-            <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
+            <div
+              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
+              style={{ background: ACCENT }}
+            />
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
           </div>
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
 
-          <div className="flex items-center justify-between relative z-10">
+          {/* Accent line */}
+          <div
+            className="absolute left-0 right-0 top-0 h-1"
+            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+          />
+
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
-                <EnvironmentOutlined className="mr-2 text-[#F97316]" />
+              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                <EnvironmentOutlined className="mr-2" style={{ color: ACCENT }} />
                 Branch Locations Map
               </h1>
-              <p className="text-white/80 text-sm">View all branch locations on an interactive map</p>
+              <p className="text-sm" style={{ color: MUTED }}>
+                View all branch locations on an interactive map
+              </p>
             </div>
           </div>
 
           {/* Quick Stats in Header */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4 relative z-10">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Total Branches</p>
-              <p className="text-white font-bold text-xl">{branches.length}</p>
+          <div className="relative z-10 mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <EnvironmentOutlined style={{ color: ACCENT }} /> Total Branches
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{branches.length}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">With Location</p>
-              <p className="text-white font-bold text-xl">{branchesWithLocation.length}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <EnvironmentOutlined style={{ color: ACCENT }} /> With Location
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{branchesWithLocation.length}</p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-              <p className="text-white/70 text-xs">Missing Location</p>
-              <p className="text-white font-bold text-xl">{branchesWithoutLocation.length}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <EnvironmentOutlined style={{ color: AMBER }} /> Missing Location
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{branchesWithoutLocation.length}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons - NewMoon Style */}
-      <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm">
+      {/* Action Buttons */}
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Space wrap>
           <Input
             placeholder="Search branch name or address..."
-            prefix={<SearchOutlined />}
+            prefix={<SearchOutlined style={{ color: MUTED }} />}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: 300 }}
             allowClear
-            className="rounded-xl border-[#F5EDE0] hover:border-[#F97316]"
           />
           <Button
             icon={<ReloadOutlined />}
             onClick={() => loadBranches(true)}
             loading={loading}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
+            style={GHOST_BTN}
           >
             Refresh
           </Button>
         </Space>
       </Card>
 
-      {/* Map Section - NewMoon Style */}
+      {/* Map Section */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-xl font-semibold text-[#451A03]">
-              <EnvironmentOutlined className="mr-2 text-[#F97316]" />
+            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
+              <EnvironmentOutlined className="mr-2" style={{ color: ACCENT }} />
               Interactive Map
             </h2>
-            <p className="text-sm text-gray-500 mt-1">Click markers for branch details</p>
+            <p className="text-sm mt-1" style={{ color: MUTED }}>Click markers for branch details</p>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag
+            className="rounded-full px-3 py-1 text-sm font-semibold"
+            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
             {branchesWithLocation.length} located
           </Tag>
         </div>
       </div>
 
-      <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm" styles={{ body: { padding: 0 } }}>
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.35)" }}
+        styles={{ body: { padding: 0, background: PANEL_BG } }}
+      >
         {loading ? (
           <Loading full text="Loading map..." />
         ) : branchesWithLocation.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-4">
-              <EnvironmentOutlined className="text-4xl text-[#F97316]" />
+            <div
+              className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl"
+              style={{ background: ACCENT_SOFT, color: ACCENT }}
+            >
+              <EnvironmentOutlined className="text-4xl" />
             </div>
-            <p className="text-[#451A03] text-lg font-semibold mb-2">No branch locations found</p>
-            <p className="text-gray-400">Add latitude and longitude to branches to see them on the map</p>
+            <p className="mb-2 text-lg font-semibold" style={{ color: TEXT }}>No branch locations found</p>
+            <p style={{ color: MUTED }}>Add latitude and longitude to branches to see them on the map</p>
           </div>
         ) : (
-          <div className="h-[500px] w-full md:h-[600px] lg:h-[700px]">
+          <div className="h-125 w-full md:h-150 lg:h-175">
             <MapContainer
               key={branchesWithLocation.length}
               center={[14.5995, 120.9842]}
@@ -416,7 +498,7 @@ function BranchMap() {
                     eventHandlers={{ click: () => handleMarkerClick(branch) }}
                   >
                     <Popup>
-                      <div className="p-2 min-w-[200px]">
+                      <div className="p-2 min-w-50">
                         <h3 className="font-bold text-lg text-gray-800 mb-2">{branch.name}</h3>
                         <div className="space-y-2 text-sm">
                           <div className="flex items-start gap-2">
@@ -455,25 +537,33 @@ function BranchMap() {
         )}
       </Card>
 
-      {/* Branches Missing Location - NewMoon Style */}
+      {/* Branches Missing Location */}
       {branchesWithoutLocation.length > 0 && (
-        <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm" style={{ borderLeft: '3px solid #F59E0B' }}>
+        <Card
+          className="mb-6"
+          style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderLeft: `3px solid ${AMBER}`, borderRadius: 12 }}
+          styles={{ body: { background: PANEL_BG } }}
+        >
           <div className="flex items-center gap-2 mb-3">
-            <EnvironmentOutlined className="text-[#D97706]" />
-            <span className="font-semibold text-[#B45309]">Branches Missing Location Data ({branchesWithoutLocation.length})</span>
+            <EnvironmentOutlined style={{ color: AMBER }} />
+            <span className="font-semibold" style={{ color: AMBER }}>Branches Missing Location Data ({branchesWithoutLocation.length})</span>
           </div>
           <div className="space-y-2">
             {branchesWithoutLocation.map((branch) => (
-              <div key={branch.id} className="flex items-center justify-between bg-[#FFF1E6]/50 rounded-xl p-3 border border-[#FFE3C9]">
+              <div
+                key={branch.id}
+                className="flex items-center justify-between rounded-xl p-3"
+                style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+              >
                 <div>
-                  <p className="font-medium text-[#451A03]">{branch.name}</p>
-                  <p className="text-xs text-gray-500">{branch.address || 'No address'}</p>
+                  <p className="font-medium" style={{ color: TEXT }}>{branch.name}</p>
+                  <p className="text-xs" style={{ color: MUTED }}>{branch.address || 'No address'}</p>
                 </div>
                 <Button
                   size="small"
                   icon={<EditOutlined />}
                   onClick={() => handleEditLocation(branch)}
-                  className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6]"
+                  style={GHOST_BTN}
                 >
                   Add Location
                 </Button>
@@ -483,49 +573,55 @@ function BranchMap() {
         </Card>
       )}
 
-      {/* All Branches Table Section - NewMoon Style */}
+      {/* All Branches Table Section */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-xl font-semibold text-[#451A03]">
-              <EnvironmentOutlined className="mr-2 text-[#F97316]" />
+            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
+              <EnvironmentOutlined className="mr-2" style={{ color: ACCENT }} />
               All Branches
             </h2>
-            <p className="text-sm text-gray-500 mt-1">Complete list of all registered branches</p>
+            <p className="text-sm mt-1" style={{ color: MUTED }}>Complete list of all registered branches</p>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag
+            className="rounded-full px-3 py-1 text-sm font-semibold"
+            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
             {filteredBranches.length} branch{filteredBranches.length !== 1 ? 'es' : ''}
           </Tag>
         </div>
       </div>
 
-      <Card className="rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <div ref={tableRef}>
           <Table
             columns={columns}
             dataSource={filteredBranches}
             rowKey="id"
-            rowClassName={(record) => record.id === selectedBranch?.id ? "bg-[#FFF1E6] border-l-4 border-l-[#F97316]" : ""}
+            rowClassName={(record) => record.id === selectedBranch?.id ? "border-l-4 border-l-[#22D3A8]" : ""}
             onRow={(record) => ({
               onClick: () => handleRowClick(record),
               style: { cursor: record.latitude && record.longitude ? "pointer" : "default" },
             })}
             pagination={{ pageSize: 5, showSizeChanger: true, showTotal: (t) => `Total ${t} branches` }}
-            locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><EnvironmentOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No branches found</p><p className="text-gray-400 text-sm">Try adjusting your search</p></div> }}
+            locale={{ emptyText: <div className="py-10 text-center"><div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}><EnvironmentOutlined className="text-3xl" /></div><p className="font-semibold" style={{ color: TEXT }}>No branches found</p><p className="text-sm" style={{ color: MUTED }}>Try adjusting your search</p></div> }}
           />
         </div>
       </Card>
 
-      {/* Edit Location Modal - NewMoon Style */}
+      {/* Edit Location Modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl text-lg" style={{ background: ACCENT_SOFT, color: ACCENT }}>
               <EditOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">{editingBranch?.name} - Set Location</p>
-              <p className="text-xs font-normal text-stone-400">Find coordinates for this branch</p>
+              <p className="font-bold" style={{ color: TEXT }}>{editingBranch?.name} - Set Location</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Find coordinates for this branch</p>
             </div>
           </div>
         }
@@ -537,17 +633,19 @@ function BranchMap() {
       >
         <Form form={editFormInstance} layout="vertical" onFinish={handleSaveLocation}>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Address</span>}
+            label={<span style={FIELD_LABEL}>Address</span>}
             name="address"
             rules={[{ required: true, message: "Please enter an address" }]}
           >
             <Input
               placeholder="e.g., 123 Main St, Manila, Philippines"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
             />
           </Form.Item>
-          <div className="p-3 mb-4 rounded-xl bg-[#FFF1E6]">
-            <p className="text-xs text-[#451A03] mb-0">
+          <div
+            className="mb-4 rounded-xl p-3"
+            style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}
+          >
+            <p className="mb-0 text-xs" style={{ color: ACCENT }}>
               <InfoCircleOutlined className="mr-1" />
               Enter a complete address including street, city, and country for accurate location detection.
             </p>
@@ -557,7 +655,7 @@ function BranchMap() {
               <Button
                 onClick={() => { setIsEditModalVisible(false); setEditingBranch(null); editFormInstance.resetFields(); }}
                 disabled={isGeocoding}
-                className="rounded-xl border-[#F5EDE0] text-[#451A03] hover:border-[#F97316] hover:text-[#EA580C]"
+                style={SECONDARY_BTN}
               >
                 Cancel
               </Button>
@@ -565,7 +663,7 @@ function BranchMap() {
                 type="primary"
                 htmlType="submit"
                 loading={isGeocoding}
-                className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+                style={GRADIENT_BTN}
               >
                 Save Location
               </Button>

@@ -14,6 +14,7 @@ use App\Events\RiderLocationUpdated;
 use App\Events\NewOrderCreated;
 use App\Events\RiderAssigned;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
@@ -453,5 +454,123 @@ class OrderController extends Controller
         broadcast(new RiderAssigned($order->fresh(['user', 'items.product', 'branch', 'rider'])));
 
         return response()->json($order->fresh(['items.product', 'branch', 'rider']));
+    }
+
+    // ─── Admin Dashboard Overview (online orders + online sales) ─
+
+    private const OVERVIEW_STATUSES = [
+        'pending', 'confirmed', 'preparing', 'ready',
+        'picked_up', 'out_for_delivery', 'delivered', 'cancelled',
+    ];
+
+    public function adminOverview(Request $request)
+    {
+        $period = $request->input('period', 'week');
+        if (!in_array($period, ['today', 'week', 'month'], true)) {
+            $period = 'week';
+        }
+
+        $activeStatuses = array_values(array_diff(self::OVERVIEW_STATUSES, ['delivered', 'cancelled']));
+
+        $statusCounts = Order::select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->map(fn ($total) => (int) $total);
+
+        $counts = [];
+        foreach (self::OVERVIEW_STATUSES as $status) {
+            $counts[$status] = $statusCounts->get($status, 0);
+        }
+
+        $today = now()->startOfDay();
+
+        $summary = [
+            'total_orders' => (int) Order::count(),
+            'active_orders' => array_sum(array_map(fn ($s) => $counts[$s], $activeStatuses)),
+            'today_orders' => (int) Order::where('created_at', '>=', $today)->count(),
+            'delivered_orders' => $counts['delivered'],
+            'cancelled_orders' => $counts['cancelled'],
+            'today_revenue' => round((float) Order::where('created_at', '>=', $today)->sum('total'), 2),
+            'total_revenue' => round((float) Order::sum('total'), 2),
+            'delivered_revenue' => round((float) Order::where('status', 'delivered')->sum('total'), 2),
+        ];
+
+        $recent = Order::with(['user', 'branch'])
+            ->latest()
+            ->limit(8)
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'customer_name' => $order->user?->full_name ?? 'Customer',
+                    'branch_name' => $order->branch?->name ?? 'N/A',
+                    'status' => $order->status,
+                    'total' => (float) $order->total,
+                    'payment_method' => $order->payment_method,
+                    'created_at' => $order->created_at->toIso8601String(),
+                ];
+            });
+
+        return response()->json([
+            'summary' => $summary,
+            'status_counts' => $counts,
+            'recent_orders' => $recent,
+            'chart' => $this->buildOnlineChart($period),
+        ]);
+    }
+
+    private function buildOnlineChart(string $period): array
+    {
+        $now = now();
+        $keys = [];
+        $labels = [];
+
+        if ($period === 'today') {
+            $from = $now->copy()->startOfDay();
+            for ($h = 0; $h < 24; $h++) {
+                $keys[] = $h;
+                $labels[] = sprintf('%02d:00', $h);
+            }
+        } else {
+            $days = $period === 'week' ? 7 : 30;
+            $from = $now->copy()->startOfDay()->subDays($days - 1);
+            for ($i = 0; $i < $days; $i++) {
+                $d = $from->copy()->addDays($i);
+                $keys[] = $d->format('Y-m-d');
+                $labels[] = $d->format('M d');
+            }
+        }
+
+        $revenue = array_fill(0, count($keys), 0.0);
+        $orders = array_fill(0, count($keys), 0);
+
+        $indexBy = $period === 'today'
+            ? fn (Carbon $ts) => $ts->hour
+            : fn (Carbon $ts) => $ts->format('Y-m-d');
+
+        $map = array_flip(array_map('strval', $keys));
+
+        Order::where('created_at', '>=', $from)
+            ->whereNotNull('total')
+            ->get(['created_at', 'total'])
+            ->each(function ($order) use ($indexBy, $map, &$revenue, &$orders) {
+                $key = (string) $indexBy($order->created_at);
+                if (!isset($map[$key])) return;
+                $idx = $map[$key];
+                $revenue[$idx] += (float) $order->total;
+                $orders[$idx] += 1;
+            });
+
+        $series = [];
+        foreach ($keys as $i => $key) {
+            $series[] = [
+                'label' => $labels[$i],
+                'orders' => $orders[$i],
+                'revenue' => round($revenue[$i], 2),
+            ];
+        }
+
+        return $series;
     }
 }

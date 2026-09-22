@@ -54,9 +54,10 @@ function Login() {
 
   return (
     <div
+      className="nm-dark"
       style={{
         minHeight: "100vh",
-        background: "#FFF8ED",
+        background: "#1F1A2E",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -72,7 +73,7 @@ function Login() {
           width: 420,
           height: 420,
           borderRadius: "50%",
-          background: "rgba(249, 115, 22, 0.06)",
+          background: "rgba(34, 211, 168, 0.07)",
           top: -180,
           right: -150,
         }}
@@ -84,7 +85,7 @@ function Login() {
           width: 300,
           height: 300,
           borderRadius: "50%",
-          background: "rgba(245, 158, 11, 0.05)",
+          background: "rgba(22, 180, 140, 0.06)",
           bottom: -140,
           left: -120,
         }}
@@ -98,10 +99,10 @@ function Login() {
           minHeight: 620,
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          background: "#fff",
+          background: "#2A2438",
           borderRadius: 28,
           overflow: "hidden",
-          boxShadow: "0 25px 70px rgba(59, 36, 24, 0.18)",
+          boxShadow: "0 25px 70px rgba(0, 0, 0, 0.45)",
           position: "relative",
           zIndex: 1,
         }}
@@ -113,7 +114,7 @@ function Login() {
           style={{
             position: "relative",
             overflow: "hidden",
-            background: "#171717",
+            background: "linear-gradient(160deg, #17131F 0%, #2A2438 100%)",
             minHeight: 620,
           }}
         >
@@ -130,6 +131,29 @@ function Login() {
               objectPosition: "center",
             }}
           />
+
+          {/* Plum gradient scrim over brand image */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(160deg, rgba(23, 19, 31, 0.35) 0%, rgba(42, 36, 56, 0.75) 100%)",
+            }}
+          />
+
+          {/* Mint accent line at bottom of brand panel */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 4,
+              background:
+                "linear-gradient(90deg, #22D3A8, #16B48C)",
+            }}
+          />
         </div>
 
         {/* =========================================
@@ -137,7 +161,7 @@ function Login() {
         ========================================= */}
         <div
           style={{
-            background: "#FFFDF9",
+            background: "#2A2438",
             padding: "65px 65px",
             display: "flex",
             flexDirection: "column",
@@ -148,7 +172,7 @@ function Login() {
           <div style={{ marginBottom: 35 }}>
             <Text
               style={{
-                color: "#EA580C",
+                color: "#22D3A8",
                 fontSize: 12,
                 fontWeight: 800,
                 letterSpacing: 2,
@@ -161,7 +185,7 @@ function Login() {
             <Title
               style={{
                 margin: "10px 0 7px",
-                color: "#171717",
+                color: "#FFFFFF",
                 fontSize: 36,
                 fontWeight: 800,
                 letterSpacing: "-1px",
@@ -172,7 +196,7 @@ function Login() {
 
             <Text
               style={{
-                color: "#78716C",
+                color: "#A5A0B5",
                 fontSize: 15,
               }}
             >
@@ -185,7 +209,7 @@ function Login() {
                 width: 50,
                 height: 4,
                 borderRadius: 10,
-                background: "linear-gradient(90deg, #EA580C, #F59E0B)",
+                background: "linear-gradient(90deg, #22D3A8, #16B48C)",
                 marginTop: 18,
               }}
             />
@@ -220,7 +244,7 @@ function Login() {
               label={
                 <span
                   style={{
-                    color: "#44403C",
+                    color: "#FFFFFF",
                     fontSize: 12,
                     fontWeight: 700,
                     letterSpacing: 1,
@@ -242,7 +266,7 @@ function Login() {
                 prefix={
                   <UserOutlined
                     style={{
-                      color: "#A8A29E",
+                      color: "#A5A0B5",
                       fontSize: 18,
                     }}
                   />
@@ -252,9 +276,10 @@ function Login() {
                 style={{
                   height: 54,
                   borderRadius: 14,
-                  background: "#FFFBF7",
-                  border: "1px solid #E7E0D8",
+                  background: "#332C45",
+                  border: "1px solid rgba(255,255,255,0.06)",
                   fontSize: 15,
+                  color: "#FFFFFF",
                 }}
               />
             </Form.Item>
@@ -265,7 +290,7 @@ function Login() {
               label={
                 <span
                   style={{
-                    color: "#44403C",
+                    color: "#FFFFFF",
                     fontSize: 12,
                     fontWeight: 700,
                     letterSpacing: 1,
@@ -287,7 +312,7 @@ function Login() {
                 prefix={
                   <LockOutlined
                     style={{
-                      color: "#A8A29E",
+                      color: "#A5A0B5",
                       fontSize: 18,
                     }}
                   />
@@ -298,16 +323,17 @@ function Login() {
                     <EyeTwoTone />
                   ) : (
                     <EyeInvisibleOutlined
-                      style={{ color: "#A8A29E" }}
+                      style={{ color: "#A5A0B5" }}
                     />
                   )
                 }
                 style={{
                   height: 54,
                   borderRadius: 14,
-                  background: "#FFFBF7",
-                  border: "1px solid #E7E0D8",
+                  background: "#332C45",
+                  border: "1px solid rgba(255,255,255,0.06)",
                   fontSize: 15,
+                  color: "#FFFFFF",
                 }}
               />
             </Form.Item>
@@ -327,12 +353,13 @@ function Login() {
                   borderRadius: 15,
                   border: "none",
                   background:
-                    "linear-gradient(135deg, #EA580C 0%, #F97316 55%, #F59E0B 100%)",
+                    "linear-gradient(135deg, #22D3A8 0%, #16B48C 100%)",
+                  color: "#1F1A2E",
                   fontWeight: 700,
                   fontSize: 15,
                   letterSpacing: 0.4,
                   boxShadow:
-                    "0 10px 25px rgba(234, 88, 12, 0.25)",
+                    "0 10px 30px rgba(0, 0, 0, 0.35)",
                 }}
               >
                 Sign In
@@ -345,69 +372,24 @@ function Login() {
             style={{
               marginTop: 35,
               paddingTop: 22,
-              borderTop: "1px solid #E7E0D8",
+              borderTop: "1px solid rgba(255,255,255,0.06)",
               textAlign: "center",
             }}
           >
             <Text
               style={{
-                color: "#A8A29E",
+                color: "#A5A0B5",
                 fontSize: 11,
                 letterSpacing: 1.5,
               }}
             >
               NEWMOON • LECHON MANOK & LIEMPO
-            </Text>
-          </div>
-        </div>
-      </div>
-
-      {/* Responsive CSS */}
-      <style>
-        {`
-          @media (max-width: 800px) {
-            .ant-card {
-              box-shadow: none !important;
-            }
-          }
-
-          @media (max-width: 768px) {
-            body {
-              overflow-x: hidden;
-            }
-          }
-
-          @media (max-width: 700px) {
-            div[style*="grid-template-columns"] {
-              grid-template-columns: 1fr !important;
-              max-width: 480px !important;
-              min-height: auto !important;
-            }
-
-            div[style*="grid-template-columns"] > div:first-child {
-              padding: 35px 30px !important;
-              min-height: 350px !important;
-            }
-
-            div[style*="grid-template-columns"] > div:last-child {
-              padding: 40px 30px !important;
-            }
-          }
-
-          @media (max-width: 480px) {
-            div[style*="grid-template-columns"] > div:first-child {
-              min-height: 320px !important;
-              padding: 30px 24px !important;
-            }
-
-            div[style*="grid-template-columns"] > div:last-child {
-              padding: 35px 22px !important;
-            }
-          }
-        `}
-      </style>
-    </div>
-  );
-}
+</Text>
+           </div>
+         </div>
+       </div>
+     </div>
+   );
+ }
 
 export default Login;

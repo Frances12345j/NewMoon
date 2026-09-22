@@ -9,7 +9,7 @@ export const setOnAuthError = (cb: (() => void) | null) => {
 };
 
 const api = axios.create({
-  baseURL: 'http://192.168.254.101:8000/api',
+  baseURL: 'http://192.168.254.105:8000/api',
   timeout: 15000,
   headers: {
     Accept: 'application/json',

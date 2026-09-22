@@ -113,9 +113,9 @@ export default function StaffTabsLayout() {
             />
 
             <Tabs.Screen
-                name="StockOut"
+                name="PullOut"
                 options={{
-                    title: 'Stock Out',
+                    title: 'Pullout Out',
                     tabBarIcon: ({ color, focused }) => (
                         <MaterialIcons
                             name={focused ? 'remove-shopping-cart' : 'delete'}

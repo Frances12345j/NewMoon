@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,16 +8,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../lib/api';
+import { listenToOrder } from '../lib/websocket';
 
 interface Sender {
   id: number;
   firstname: string;
   lastname: string;
   role: string;
+  avatar_url?: string | null;
 }
 
 interface Message {
@@ -43,7 +46,6 @@ export default function OrderChat({ orderId, currentUserId, onBack, title = 'Cha
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const flatListRef = useRef<FlatList>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -59,11 +61,16 @@ export default function OrderChat({ orderId, currentUserId, onBack, title = 'Cha
       await fetchMessages();
       setLoading(false);
     })();
-    pollRef.current = setInterval(fetchMessages, 5000);
+    const unsubscribe = listenToOrder(orderId, '.MessageSent', (data: Message) => {
+      setMessages((prev) =>
+        prev.some((m) => m.id === data.id) ? prev : [...prev, data]
+      );
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    });
     return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
+      if (unsubscribe) unsubscribe();
     };
-  }, [fetchMessages]);
+  }, [fetchMessages, orderId]);
 
   const sendMessage = async () => {
     const text = inputText.trim();
@@ -80,6 +87,14 @@ export default function OrderChat({ orderId, currentUserId, onBack, title = 'Cha
       setSending(false);
     }
   };
+
+  const riderSender = useMemo(
+    () => messages.find((m) => m.sender?.role === 'delivery_rider')?.sender ?? null,
+    [messages]
+  );
+  const riderName = riderSender
+    ? `${riderSender.firstname} ${riderSender.lastname}`.trim()
+    : null;
 
   const getSenderLabel = (msg: Message) => {
     if (msg.sender_id === currentUserId) return 'You';
@@ -167,9 +182,31 @@ export default function OrderChat({ orderId, currentUserId, onBack, title = 'Cha
         <TouchableOpacity onPress={onBack} style={{ marginRight: 12, padding: 4 }}>
           <Ionicons name="arrow-back" size={24} color="#1F2937" />
         </TouchableOpacity>
+        {riderSender && (
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              marginRight: 10,
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              backgroundColor: '#FFF1E6',
+            }}
+          >
+            {riderSender.avatar_url ? (
+              <Image key={riderSender.avatar_url} source={{ uri: riderSender.avatar_url }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+            ) : (
+              <Ionicons name="person" size={22} color="#EA580C" />
+            )}
+          </View>
+        )}
         <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937' }}>{title}</Text>
-          <Text style={{ fontSize: 12, color: '#6B7280' }}>Order #{orderId}</Text>
+          <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1F2937' }}>{riderName || title}</Text>
+          <Text style={{ fontSize: 12, color: '#6B7280' }}>
+            {riderName ? 'Delivery Rider' : `Order #${orderId}`}
+          </Text>
         </View>
         <Ionicons name="chatbubbles" size={22} color="#F59E0B" />
       </View>

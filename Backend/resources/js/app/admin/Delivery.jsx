@@ -33,11 +33,50 @@ import { api } from "@/config/api";
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
 
+// ─── Palette — matches ProductList (dark plum + mint) ─────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
+};
+
 const STATUS_COLORS = {
-  ready: { color: "#D97706", label: "Ready" },
-  picked_up: { color: "#059669", label: "Picked Up" },
-  out_for_delivery: { color: "#F97316", label: "Out for Delivery" },
-  delivered: { color: "#16A34A", label: "Delivered" },
+  ready: { color: AMBER, label: "Ready" },
+  picked_up: { color: ACCENT, label: "Picked Up" },
+  out_for_delivery: { color: ACCENT_DEEP, label: "Out for Delivery" },
+  delivered: { color: ACCENT, label: "Delivered" },
 };
 
 const DeliveryReport = () => {
@@ -142,7 +181,7 @@ const DeliveryReport = () => {
       key: "order_number",
       width: 140,
       render: (val, record) => (
-        <a onClick={() => showDetail(record)} className="font-medium text-[#EA580C] hover:text-[#F97316]">
+        <a onClick={() => showDetail(record)} className="font-medium transition-all hover:opacity-80" style={{ color: ACCENT }}>
           {val}
         </a>
       ),
@@ -154,7 +193,7 @@ const DeliveryReport = () => {
       width: 180,
       render: (val) => (
         <div className="flex items-center gap-2">
-          <Avatar size={28} icon={<UserOutlined />} style={{ backgroundColor: '#EA580C' }} />
+          <Avatar size={28} icon={<UserOutlined />} style={{ backgroundColor: ACCENT }} />
           <span>{val}</span>
         </div>
       ),
@@ -189,7 +228,7 @@ const DeliveryReport = () => {
       key: "status",
       width: 140,
       render: (status) => {
-        const s = STATUS_COLORS[status] || { color: "#6B7280", label: status };
+        const s = STATUS_COLORS[status] || { color: FAINT, label: status };
         return <Tag color={s.color}>{s.label}</Tag>;
       },
     },
@@ -206,7 +245,7 @@ const DeliveryReport = () => {
       key: "total",
       width: 110,
       align: "right",
-      render: (val) => <span className="font-semibold">₱{Number(val).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>,
+      render: (val) => <span className="font-semibold" style={{ color: ACCENT }}>₱{Number(val).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>,
     },
     {
       title: "Payment",
@@ -228,7 +267,7 @@ const DeliveryReport = () => {
       width: 80,
       fixed: "right",
       render: (_, record) => (
-        <Button type="link" size="small" onClick={() => showDetail(record)}>
+        <Button type="link" size="small" onClick={() => showDetail(record)} style={{ color: ACCENT }}>
           View
         </Button>
       ),
@@ -236,31 +275,38 @@ const DeliveryReport = () => {
   ];
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>   
       <Row gutter={[16, 16]}>
         {/* Header */}
         <Col span={24}>
-          <div className="rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-            <div className="px-8 py-6 relative">
+          <div className="mb-6 overflow-hidden rounded-2xl" style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}>
+            <div className="relative px-8 py-6">
+              {/* Decorative circles */}
               <div className="absolute right-0 top-0 opacity-10">
-                <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
+                <div className="-mr-32 -mt-32 h-64 w-64 rounded-full" style={{ background: ACCENT }} />
               </div>
               <div className="absolute bottom-0 left-1/3 opacity-5">
-                <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+                <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
               </div>
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
-              <div className="flex items-center justify-between relative z-10 flex-wrap gap-4">
+
+              {/* Accent line */}
+              <div
+                className="absolute left-0 right-0 top-0 h-1"
+                style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+              />
+
+              <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-white mb-1">
-                    <TruckOutlined className="mr-2 text-[#F97316]" />
+                  <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                    <TruckOutlined className="mr-2" style={{ color: ACCENT }} />
                     Delivery Report
                   </h1>
-                  <p className="text-white/80 text-sm">Delivery status, rider assignments, and order fulfillment</p>
+                  <p className="text-sm" style={{ color: MUTED }}>Delivery status, rider assignments, and order fulfillment</p>
                 </div>
                 <Button
                   icon={<DownloadOutlined />}
                   onClick={handleExport}
-                  className="rounded-xl border-[#F59E0B] text-[#FDE68A] hover:bg-white/10 hover:border-[#F59E0B] transition-all duration-200"
+                  style={GHOST_BTN}
                 >
                   Export CSV
                 </Button>
@@ -271,20 +317,21 @@ const DeliveryReport = () => {
 
         {/* Filters */}
         <Col span={24}>
-          <Card variant="borderless" size="small" className="rounded-xl border border-[#F5EDE0] shadow-sm">
+          <Card variant="borderless" size="small" className="rounded-xl" style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { background: PANEL_BG } }}>
             <Space wrap size="middle">
               <div>
-                <Text type="secondary" className="block text-xs mb-1" style={{ color: "#451A03", fontWeight: 600 }}>Date Range</Text>
+                <Text type="secondary" className="block text-xs mb-1" style={FIELD_LABEL}>Date Range</Text>
                 <RangePicker
                   value={dateRange}
                   onChange={(dates) => setDateRange(dates || [dayjs().startOf("month"), dayjs().endOf("month")])}
                   allowClear={false}
                   size="middle"
                   className="rounded-xl"
+                  popupClassName="nm-dark-select-dropdown"
                 />
               </div>
               <div>
-                <Text type="secondary" className="block text-xs mb-1" style={{ color: "#451A03", fontWeight: 600 }}>Status</Text>
+                <Text type="secondary" className="block text-xs mb-1" style={FIELD_LABEL}>Status</Text>
                 <Select
                   style={{ width: 160 }}
                   value={selectedStatus}
@@ -292,6 +339,7 @@ const DeliveryReport = () => {
                   allowClear
                   placeholder="All Statuses"
                   className="rounded-xl"
+                  popupClassName="nm-dark-select-dropdown"
                   options={[
                     { value: "ready", label: "Ready" },
                     { value: "picked_up", label: "Picked Up" },
@@ -301,7 +349,7 @@ const DeliveryReport = () => {
                 />
               </div>
               <div>
-                <Text type="secondary" className="block text-xs mb-1" style={{ color: "#451A03", fontWeight: 600 }}>Branch</Text>
+                <Text type="secondary" className="block text-xs mb-1" style={FIELD_LABEL}>Branch</Text>
                 <Select
                   style={{ width: 180 }}
                   value={selectedBranch}
@@ -309,11 +357,12 @@ const DeliveryReport = () => {
                   allowClear
                   placeholder="All Branches"
                   className="rounded-xl"
+                  popupClassName="nm-dark-select-dropdown"
                   options={branches.map((b) => ({ value: b.id, label: b.name }))}
                 />
               </div>
               <div>
-                <Text type="secondary" className="block text-xs mb-1" style={{ color: "#451A03", fontWeight: 600 }}>Rider</Text>
+                <Text type="secondary" className="block text-xs mb-1" style={FIELD_LABEL}>Rider</Text>
                 <Select
                   style={{ width: 180 }}
                   value={selectedRider}
@@ -321,6 +370,7 @@ const DeliveryReport = () => {
                   allowClear
                   placeholder="All Riders"
                   className="rounded-xl"
+                  popupClassName="nm-dark-select-dropdown"
                   options={riders.map((r) => ({ value: r.id, label: r.firstname ? `${r.firstname} ${r.lastname || ""}` : r.name }))}
                 />
               </div>
@@ -333,42 +383,42 @@ const DeliveryReport = () => {
           <Col span={24}>
             <Row gutter={[16, 16]}>
               <Col xs={12} sm={6}>
-                <Card variant="borderless" className="rounded-xl border border-[#F5EDE0] shadow-sm" size="small">
+                <Card variant="borderless" size="small" style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { background: PANEL_BG } }}>
                   <Statistic
                     title="Total Deliveries"
                     value={summary.total_deliveries}
                     prefix={<TruckOutlined />}
-                    styles={{ content: { color: "#EA580C" } }}
+                    styles={{ title: { color: MUTED, fontSize: 13 }, content: { color: ACCENT } }}
                   />
                 </Card>
               </Col>
               <Col xs={12} sm={6}>
-                <Card variant="borderless" className="rounded-xl border border-[#F5EDE0] shadow-sm" size="small">
+                <Card variant="borderless" size="small" style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { background: PANEL_BG } }}>
                   <Statistic
                     title="Delivered"
                     value={summary.delivered}
                     prefix={<CheckCircleOutlined />}
-                    styles={{ content: { color: "#16A34A" } }}
+                    styles={{ title: { color: MUTED, fontSize: 13 }, content: { color: ACCENT } }}
                   />
                 </Card>
               </Col>
               <Col xs={12} sm={6}>
-                <Card variant="borderless" className="rounded-xl border border-[#F5EDE0] shadow-sm" size="small">
+                <Card variant="borderless" size="small" style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { background: PANEL_BG } }}>
                   <Statistic
                     title="Out for Delivery"
                     value={summary.out_for_delivery}
                     prefix={<ClockCircleOutlined />}
-                    styles={{ content: { color: "#F97316" } }}
+                    styles={{ title: { color: MUTED, fontSize: 13 }, content: { color: AMBER } }}
                   />
                 </Card>
               </Col>
               <Col xs={12} sm={6}>
-                <Card variant="borderless" className="rounded-xl border border-[#F5EDE0] shadow-sm" size="small">
+                <Card variant="borderless" size="small" style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }} styles={{ body: { background: PANEL_BG } }}>
                   <Statistic
                     title="Ready / Picked Up"
                     value={summary.ready + summary.picked_up}
                     prefix={<ShoppingOutlined />}
-                    styles={{ content: { color: "#D97706" } }}
+                    styles={{ title: { color: MUTED, fontSize: 13 }, content: { color: ACCENT_DEEP } }}
                   />
                 </Card>
               </Col>
@@ -386,8 +436,10 @@ const DeliveryReport = () => {
         <Col span={24}>
           <Card
             variant="borderless"
-            className="rounded-xl border border-[#F5EDE0] shadow-sm"
-            title={<span className="text-[#451A03] font-semibold"><TruckOutlined className="mr-2 text-[#F97316]" />Delivery Orders</span>}
+            className="rounded-xl"
+            style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+            styles={{ body: { background: PANEL_BG } }}
+            title={<span style={{ color: TEXT, fontWeight: 600 }}><TruckOutlined className="mr-2" style={{ color: ACCENT }} />Delivery Orders</span>}
           >
             <Table
               columns={columns}
@@ -414,7 +466,7 @@ const DeliveryReport = () => {
 
       {/* Detail Modal */}
       <Modal
-        title={<span><TruckOutlined className="mr-2 text-[#F97316]" /><span className="text-[#451A03] font-bold">Order #{selectedOrder?.order_number || ""}</span></span>}
+        title={<span><TruckOutlined className="mr-2" style={{ color: ACCENT }} /><span style={{ color: TEXT, fontWeight: "bold" }}>Order #{selectedOrder?.order_number || ""}</span></span>}
         open={detailModalVisible}
         onCancel={() => { setDetailModalVisible(false); setSelectedOrder(null); }}
         footer={null}
@@ -425,13 +477,14 @@ const DeliveryReport = () => {
           <div className="space-y-4">
             <Descriptions column={2} size="small" bordered
               styles={{
-                label: { color: "#451A03", fontWeight: 600 },
+                label: { color: MUTED, fontWeight: 600 },
+                content: { color: TEXT },
               }}>
               <Descriptions.Item label="Customer">{selectedOrder.customer_name}</Descriptions.Item>
               <Descriptions.Item label="Phone">{selectedOrder.customer_phone || "N/A"}</Descriptions.Item>
               <Descriptions.Item label="Delivery Address" span={2}>
                 <div className="flex items-center gap-1">
-                  <EnvironmentOutlined className="text-[#F97316]" />
+                  <EnvironmentOutlined style={{ color: ACCENT }} />
                   {selectedOrder.delivery_address || "N/A"}
                 </div>
               </Descriptions.Item>
@@ -441,7 +494,7 @@ const DeliveryReport = () => {
                   {selectedOrder.rider_name}
                 </Tag>
                 {selectedOrder.rider_phone && (
-                  <Text className="ml-2 text-xs text-gray-500">
+                  <Text className="ml-2 text-xs" style={{ color: MUTED }}>
                     <PhoneOutlined /> {selectedOrder.rider_phone}
                   </Text>
                 )}
@@ -455,7 +508,7 @@ const DeliveryReport = () => {
                 <Tag>{selectedOrder.payment_method?.toUpperCase() || "N/A"}</Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Total">
-                <span className="font-bold text-lg text-[#EA580C]">₱{Number(selectedOrder.total).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="text-lg font-bold" style={{ color: ACCENT }}>₱{Number(selectedOrder.total).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </Descriptions.Item>
               <Descriptions.Item label="Items">{selectedOrder.items_count}</Descriptions.Item>
               <Descriptions.Item label="Date">{dayjs(selectedOrder.created_at).format("MMM D, YYYY h:mm A")}</Descriptions.Item>
@@ -466,21 +519,20 @@ const DeliveryReport = () => {
 
             {selectedOrder.delivery_photo && (
               <div>
-                <Text strong className="block mb-2 text-[#451A03]">Delivery Photo Proof</Text>
+                <Text strong className="mb-2 block" style={{ color: TEXT }}>Delivery Photo Proof</Text>
                 <Image
                   src={selectedOrder.delivery_photo}
                   alt="Delivery proof"
-                  style={{ maxHeight: 300, borderRadius: 8 }}
-                  className="border border-[#F5EDE0]"
+                  style={{ maxHeight: 300, borderRadius: 8, border: `1px solid ${BORDER}` }}
                 />
               </div>
             )}
 
             {selectedOrder.delivery_notes && (
               <div>
-                <Text strong className="block mb-1 text-[#451A03]">Delivery Notes</Text>
-                <div className="bg-[#FFF1E6] p-3 rounded-lg border border-[#F5EDE0]">
-                  <Text>{selectedOrder.delivery_notes}</Text>
+                <Text strong className="mb-1 block" style={{ color: TEXT }}>Delivery Notes</Text>
+                <div className="p-3" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30`, borderRadius: 12 }}>
+                  <Text style={{ color: TEXT }}>{selectedOrder.delivery_notes}</Text>
                 </div>
               </div>
             )}

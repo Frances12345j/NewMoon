@@ -193,7 +193,16 @@ export default function RiderDashboard() {
                 onPress={() => router.push('/Rider/Profile' as unknown as any)}
                 activeOpacity={0.7}
               >
+                {user?.avatar_url ? (
+                <Image
+                  key={user.avatar_url}
+                  source={{ uri: user.avatar_url }}
+                  className="w-full h-full rounded-full"
+                  resizeMode="cover"
+                />
+              ) : (
                 <Text className="text-[#EA580C] font-extrabold text-base">{userInitial}</Text>
+              )}
               </TouchableOpacity>
               <TouchableOpacity
                 className="w-10 h-10 rounded-full bg-white items-center justify-center border border-[#FED7AA]"

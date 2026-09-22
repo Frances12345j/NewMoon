@@ -14,6 +14,45 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from "@/config/api";
 
+// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
+};
+
 const fetchStaff = async () => {
   try {
     const response = await api.get("/staff?paginate=false");
@@ -240,12 +279,12 @@ function BranchAssignments() {
   const handleDeleteAssignment = (record) => {
     Modal.confirm({
       title: "Delete Branch Assignment",
-      icon: <DeleteOutlined className="text-[#DC2626]" />,
+      icon: <DeleteOutlined style={{ color: RED }} />,
       content: (
         <div>
           <p className="mb-2">Are you sure you want to remove this branch assignment?</p>
-          <p className="text-sm text-gray-500">User: <strong>{record.user?.firstname} {record.user?.lastname}</strong></p>
-          <p className="text-sm text-gray-500">Branch: <strong>{record.branch?.name}</strong></p>
+          <p className="text-sm" style={{ color: MUTED }}>User: <strong style={{ color: TEXT }}>{record.user?.firstname} {record.user?.lastname}</strong></p>
+          <p className="text-sm" style={{ color: MUTED }}>Branch: <strong style={{ color: TEXT }}>{record.branch?.name}</strong></p>
         </div>
       ),
       okText: "Delete",
@@ -264,8 +303,8 @@ function BranchAssignments() {
       content: (
         <div>
           <p className="mb-2">{nextActive ? "This user will be assigned to this branch." : "This user will no longer be assigned to this branch."}</p>
-          <p className="text-sm text-gray-500">User: <strong>{record.user?.firstname} {record.user?.lastname}</strong></p>
-          <p className="text-sm text-gray-500">Branch: <strong>{record.branch?.name}</strong></p>
+          <p className="text-sm" style={{ color: MUTED }}>User: <strong style={{ color: TEXT }}>{record.user?.firstname} {record.user?.lastname}</strong></p>
+          <p className="text-sm" style={{ color: MUTED }}>Branch: <strong style={{ color: TEXT }}>{record.branch?.name}</strong></p>
         </div>
       ),
       okText: nextActive ? "Activate" : "Deactivate",
@@ -293,19 +332,22 @@ function BranchAssignments() {
       title: "No.",
       key: "index",
       width: 60,
-      render: (_, __, idx) => <span className="text-gray-500">{idx + 1}</span>,
+      render: (_, __, idx) => <span style={{ color: MUTED }}>{idx + 1}</span>,
     },
     {
       title: "User",
       key: "user",
       render: (_, r) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#EA580C] to-[#F97316] rounded-full flex items-center justify-center text-white text-sm">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-full text-sm text-white"
+            style={{ background: GRADIENT_BTN.background }}
+          >
             {r.firstname?.charAt(0)?.toUpperCase() || <UserOutlined />}
           </div>
           <div>
-            <div className="font-semibold text-[#451A03]">{r.firstname} {r.lastname}</div>
-            <div className="text-gray-400 text-xs">{r.username}</div>
+            <div className="font-semibold" style={{ color: TEXT }}>{r.firstname} {r.lastname}</div>
+            <div className="text-xs" style={{ color: FAINT }}>{r.username}</div>
           </div>
         </div>
       ),
@@ -315,26 +357,26 @@ function BranchAssignments() {
       key: "type",
       render: (_, r) =>
         r.role === 'delivery_rider'
-          ? <Tag color="#F97316" icon={<CarOutlined />}>Rider</Tag>
-          : <Tag color="#D97706" icon={<TeamOutlined />}>Staff</Tag>,
+          ? <Tag icon={<CarOutlined />} style={{ background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}40` }}>Rider</Tag>
+          : <Tag icon={<TeamOutlined />} style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>Staff</Tag>,
     },
     {
       title: "Branch",
       key: "branch",
       render: (_, r) =>
         r.assignment
-          ? <Tag color="#16A34A">{r.branch?.name || "N/A"}</Tag>
-          : <Tag>Not Assigned</Tag>,
+          ? <Tag style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>{r.branch?.name || "N/A"}</Tag>
+          : <Tag style={{ background: PANEL_BG_2, color: MUTED, border: `1px solid ${BORDER}` }}>Not Assigned</Tag>,
     },
     {
       title: "Position",
       key: "position",
-      render: (_, r) => r.position || "—",
+      render: (_, r) => <span style={{ color: TEXT }}>{r.position || "—"}</span>,
     },
     {
       title: "Daily Rate",
       key: "daily_rate",
-      render: (_, r) => <span className="text-[#EA580C] font-medium">₱{r.daily_rate || 0}</span>,
+      render: (_, r) => <span className="font-medium" style={{ color: ACCENT }}>₱{r.daily_rate || 0}</span>,
     },
     {
       title: "Status",
@@ -342,9 +384,9 @@ function BranchAssignments() {
       render: (_, r) =>
         r.assignment
           ? r.is_active
-            ? <Tag color="#16A34A">Active</Tag>
-            : <Tag color="#DC2626">Inactive</Tag>
-          : <Tag color="#D97706">Unassigned</Tag>,
+            ? <Tag style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>Active</Tag>
+            : <Tag style={{ background: RED_SOFT, color: "#F87171", border: `1px solid ${RED}40` }}>Inactive</Tag>
+          : <Tag style={{ background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}40` }}>Unassigned</Tag>,
     },
     {
       title: "Actions",
@@ -362,7 +404,7 @@ function BranchAssignments() {
                 />
               </Tooltip>
               <Tooltip title="Edit Assignment">
-                <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(r)} className="!text-[#F97316] hover:!text-[#EA580C]" />
+                <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(r)} style={{ color: ACCENT }} />
               </Tooltip>
               <Tooltip title="Delete Assignment">
                 <Button type="link" size="small" danger icon={<DeleteOutlined />} onClick={() => handleDeleteAssignment(r)} />
@@ -372,7 +414,7 @@ function BranchAssignments() {
             <Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => {
               setShowAddModal(true);
               setTimeout(() => form.setFieldsValue({ user_id: r.id }), 0);
-            }} className="rounded-xl bg-gradient-to-br from-[#EA580C] to-[#F59E0B] border-none shadow-[0_2px_8px_rgba(234,88,12,0.3)] hover:brightness-110">
+            }} style={GRADIENT_BTN}>
               Assign
             </Button>
           )}
@@ -382,56 +424,101 @@ function BranchAssignments() {
   ];
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
-      {/* Hero Header */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-        <div className="px-8 py-6 relative">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
+      
+
+      {/* Hero Header — dark plum with mint accents */}
+      <div
+        className="mb-6 overflow-hidden rounded-2xl"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+      >
+        <div className="relative px-8 py-6">
+          {/* Decorative circles */}
           <div className="absolute right-0 top-0 opacity-10">
-            <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
+            <div
+              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
+              style={{ background: ACCENT }}
+            />
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
           </div>
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
 
-          <div className="flex items-center justify-between relative z-10 flex-wrap gap-4">
+          {/* Accent line */}
+          <div
+            className="absolute left-0 right-0 top-0 h-1"
+            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+          />
+
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
-                <BankOutlined className="mr-2 text-[#F97316]" />
+              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                <BankOutlined className="mr-2" style={{ color: ACCENT }} />
                 Branch Assignments
               </h1>
-              <p className="text-white/80 text-sm">Manage staff and rider branch assignments</p>
+              <p className="text-sm" style={{ color: MUTED }}>
+                Manage staff and rider branch assignments
+              </p>
             </div>
           </div>
 
           {/* KPI Chips */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 relative z-10">
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs">Total Staff</p>
-              <p className="text-white font-bold text-xl mt-1">{totalStaff}</p>
+          <div className="relative z-10 mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <TeamOutlined style={{ color: ACCENT }} /> Total Staff
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{totalStaff}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs">Total Riders</p>
-              <p className="text-white font-bold text-xl mt-1">{totalRiders}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <CarOutlined style={{ color: ACCENT }} /> Total Riders
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{totalRiders}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs">Assigned</p>
-              <p className="text-white font-bold text-xl mt-1">{assignedCount}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <TeamOutlined style={{ color: ACCENT }} /> Assigned
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: ACCENT }}>{assignedCount}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs">Unassigned</p>
-              <p className="text-white font-bold text-xl mt-1">{unassignedCount}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <UserOutlined style={{ color: AMBER }} /> Unassigned
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{unassignedCount}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs">Total Branches</p>
-              <p className="text-white font-bold text-xl mt-1">{totalBranches}</p>
+            <div
+              className="rounded-2xl px-4 py-3"
+              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+            >
+              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
+                <BankOutlined style={{ color: ACCENT }} /> Total Branches
+              </p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{totalBranches}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <Card variant="borderless" className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Space>
           <Button
             icon={<ReloadOutlined />}
@@ -441,7 +528,7 @@ function BranchAssignments() {
               queryClient.invalidateQueries({ queryKey: ['branches'] });
             }}
             loading={loading}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
+            style={GHOST_BTN}
           >
             Refresh
           </Button>
@@ -452,7 +539,7 @@ function BranchAssignments() {
               form.resetFields();
               setShowAddModal(true);
             }}
-            className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            style={GRADIENT_BTN}
           >
             Add Assignment
           </Button>
@@ -461,31 +548,40 @@ function BranchAssignments() {
 
       {/* Section Header */}
       <div className="mb-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg shadow-sm">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: ACCENT_SOFT, color: ACCENT }}
+            >
               <TeamOutlined />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#451A03]">Staff & Riders Directory</h2>
-              <p className="text-sm text-stone-400">View and manage all member assignments</p>
+              <h2 className="text-lg font-bold" style={{ color: TEXT }}>Staff & Riders Directory</h2>
+              <p className="text-sm" style={{ color: MUTED }}>View and manage all member assignments</p>
             </div>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag
+            className="rounded-full px-3 py-1 text-sm font-semibold"
+            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
             {totalUsers} {totalUsers === 1 ? "Member" : "Members"}
           </Tag>
         </div>
       </div>
 
       {/* Table */}
-      <Card variant="borderless" className="rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Table
           columns={columns}
           dataSource={usersWithAssignment}
           rowKey="id"
           loading={loading}
           pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} members` }}
-          locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><TeamOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No staff or riders found</p><p className="text-gray-400 text-sm">Add assignments to get started</p></div> }}
+          locale={{ emptyText: <div className="py-10 text-center"><div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}><TeamOutlined className="text-3xl" /></div><p className="font-semibold" style={{ color: TEXT }}>No staff or riders found</p><p className="text-sm" style={{ color: MUTED }}>Add assignments to get started</p></div> }}
         />
       </Card>
 
@@ -493,12 +589,12 @@ function BranchAssignments() {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg shadow-sm">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl text-lg" style={{ background: ACCENT_SOFT, color: ACCENT }}>
               <PlusOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">Add Branch Assignment</p>
-              <p className="text-xs font-normal text-stone-400">Assign a staff member to a branch</p>
+              <p className="font-bold" style={{ color: TEXT }}>Add Branch Assignment</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Assign a staff member to a branch</p>
             </div>
           </div>
         }
@@ -510,7 +606,7 @@ function BranchAssignments() {
       >
         <Form form={form} layout="vertical" onFinish={handleAddAssignment} initialValues={{ position: "", daily_rate: "" }}>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">User</span>}
+            label={<span style={FIELD_LABEL}>User</span>}
             name="user_id"
             rules={[{ required: true, message: "Please select a user" }]}
           >
@@ -518,7 +614,7 @@ function BranchAssignments() {
               placeholder="Select User"
               showSearch
               optionFilterProp="children"
-              className="rounded-xl"
+              popupClassName="nm-dark-select-dropdown"
             >
               {allUsers.map((u) => (
                 <Select.Option key={u.id} value={u.id}>
@@ -528,7 +624,7 @@ function BranchAssignments() {
             </Select>
           </Form.Item>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Branch</span>}
+            label={<span style={FIELD_LABEL}>Branch</span>}
             name="branch_id"
             rules={[{ required: true, message: "Please select a branch" }]}
           >
@@ -536,7 +632,7 @@ function BranchAssignments() {
               placeholder="Select Branch"
               showSearch
               optionFilterProp="children"
-              className="rounded-xl"
+              popupClassName="nm-dark-select-dropdown"
             >
               {branchesList.map((b) => (
                 <Select.Option key={b.id} value={b.id}>{b.name}</Select.Option>
@@ -544,27 +640,28 @@ function BranchAssignments() {
             </Select>
           </Form.Item>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Position</span>}
+            label={<span style={FIELD_LABEL}>Position</span>}
             name="position"
           >
             <Input
               placeholder="Auto-filled based on role"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
             />
           </Form.Item>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Daily Rate</span>}
+            label={<span style={FIELD_LABEL}>Daily Rate</span>}
             name="daily_rate"
           >
             <Input
               type="number"
               placeholder="Auto-filled based on role"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
             />
           </Form.Item>
-          <div className="p-3 mb-4 rounded-xl bg-[#FFF1E6]">
-            <p className="text-xs text-[#451A03] mb-0">
-              <InfoCircleOutlined className="mr-1 text-[#F97316]" />
+          <div
+            className="mb-4 rounded-xl p-3"
+            style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}
+          >
+            <p className="mb-0 text-xs" style={{ color: ACCENT }}>
+              <InfoCircleOutlined className="mr-1" />
               Position and daily rate are auto-filled based on the selected user's role. You can override them manually.
             </p>
           </div>
@@ -573,7 +670,7 @@ function BranchAssignments() {
               <Button
                 onClick={() => { setShowAddModal(false); form.resetFields(); }}
                 disabled={addMutation.isPending}
-                className="!rounded-xl"
+                style={SECONDARY_BTN}
               >
                 Cancel
               </Button>
@@ -581,7 +678,7 @@ function BranchAssignments() {
                 type="primary"
                 htmlType="submit"
                 loading={addMutation.isPending}
-                className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+                style={GRADIENT_BTN}
               >
                 Add Assignment
               </Button>
@@ -594,12 +691,12 @@ function BranchAssignments() {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg shadow-sm">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl text-lg" style={{ background: ACCENT_SOFT, color: ACCENT }}>
               <EditOutlined />
             </div>
             <div>
-              <p className="font-bold text-[#451A03]">Edit Branch Assignment</p>
-              <p className="text-xs font-normal text-stone-400">Update assignment details</p>
+              <p className="font-bold" style={{ color: TEXT }}>Edit Branch Assignment</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Update assignment details</p>
             </div>
           </div>
         }
@@ -611,7 +708,7 @@ function BranchAssignments() {
       >
         <Form form={editForm} layout="vertical" onFinish={handleUpdateAssignment}>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">User</span>}
+            label={<span style={FIELD_LABEL}>User</span>}
             name="user_id"
             rules={[{ required: true, message: "Please select a user" }]}
           >
@@ -619,7 +716,7 @@ function BranchAssignments() {
               placeholder="Select User"
               showSearch
               optionFilterProp="children"
-              className="rounded-xl"
+              popupClassName="nm-dark-select-dropdown"
             >
               {allUsers.map((u) => (
                 <Select.Option key={u.id} value={u.id}>
@@ -629,7 +726,7 @@ function BranchAssignments() {
             </Select>
           </Form.Item>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Branch</span>}
+            label={<span style={FIELD_LABEL}>Branch</span>}
             name="branch_id"
             rules={[{ required: true, message: "Please select a branch" }]}
           >
@@ -637,7 +734,7 @@ function BranchAssignments() {
               placeholder="Select Branch"
               showSearch
               optionFilterProp="children"
-              className="rounded-xl"
+              popupClassName="nm-dark-select-dropdown"
             >
               {branchesList.map((b) => (
                 <Select.Option key={b.id} value={b.id}>{b.name}</Select.Option>
@@ -645,22 +742,20 @@ function BranchAssignments() {
             </Select>
           </Form.Item>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Position</span>}
+            label={<span style={FIELD_LABEL}>Position</span>}
             name="position"
           >
             <Input
               placeholder="Enter position"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
             />
           </Form.Item>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Daily Rate</span>}
+            label={<span style={FIELD_LABEL}>Daily Rate</span>}
             name="daily_rate"
           >
             <Input
               type="number"
               placeholder="Enter daily rate"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
             />
           </Form.Item>
           <Form.Item className="mb-0">
@@ -668,7 +763,7 @@ function BranchAssignments() {
               <Button
                 onClick={() => { setShowEditModal(false); setEditingAssignment(null); editForm.resetFields(); }}
                 disabled={updateMutation.isPending}
-                className="!rounded-xl"
+                style={SECONDARY_BTN}
               >
                 Cancel
               </Button>
@@ -676,7 +771,7 @@ function BranchAssignments() {
                 type="primary"
                 htmlType="submit"
                 loading={updateMutation.isPending}
-                className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+                style={GRADIENT_BTN}
               >
                 Update Assignment
               </Button>

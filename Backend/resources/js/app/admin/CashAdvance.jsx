@@ -11,6 +11,52 @@ import { faPesoSign } from '@fortawesome/free-solid-svg-icons';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/config/api";
 
+// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
+const PANEL_BG = "#2A2438";
+const PANEL_BG_2 = "#332C45";
+const BORDER = "rgba(255,255,255,0.06)";
+const TEXT = "#FFFFFF";
+const MUTED = "#A5A0B5";
+const FAINT = "#6E6A7E";
+const ACCENT = "#22D3A8";
+const ACCENT_DEEP = "#16B48C";
+const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const AMBER = "#F59E0B";
+const AMBER_SOFT = "rgba(245,158,11,0.15)";
+const GREEN = "#22D3A8";
+const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const RED = "#EF4444";
+const RED_SOFT = "rgba(239,68,68,0.15)";
+
+// Inline style tokens
+const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const GRADIENT_BTN = {
+  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  border: "none",
+  color: "#1F1A2E",
+  fontWeight: 700,
+  boxShadow: "none",
+};
+const SECONDARY_BTN = {
+  background: PANEL_BG_2,
+  border: `1px solid ${BORDER}`,
+  color: TEXT,
+  fontWeight: 500,
+};
+const GHOST_BTN = {
+  background: "transparent",
+  border: `1px solid ${ACCENT}40`,
+  color: ACCENT,
+  fontWeight: 500,
+};
+const RED_BTN = {
+  background: "linear-gradient(135deg, #EF4444, #DC2626)",
+  border: "none",
+  color: "#FFFFFF",
+  fontWeight: 700,
+  boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+};
+
 const { TextArea } = Input;
 
 function CashAdvance() {
@@ -69,12 +115,12 @@ function CashAdvance() {
 
   const statusTag = (status) => {
     const m = {
-      pending: { color: "#D97706", icon: <ClockCircleOutlined />, text: "Pending" },
-      approved: { color: "#16A34A", icon: <CheckCircleOutlined />, text: "Approved" },
-      rejected: { color: "#DC2626", icon: <CloseCircleOutlined />, text: "Rejected" },
+      pending: { soft: AMBER_SOFT, color: AMBER, icon: <ClockCircleOutlined />, text: "Pending" },
+      approved: { soft: GREEN_SOFT, color: ACCENT, icon: <CheckCircleOutlined />, text: "Approved" },
+      rejected: { soft: RED_SOFT, color: "#F87171", icon: <CloseCircleOutlined />, text: "Rejected" },
     };
     const c = m[status] || m.pending;
-    return <Tag color={c.color} icon={c.icon}>{c.text}</Tag>;
+    return <Tag className="rounded-full px-3 py-1" icon={c.icon} style={{ background: c.soft, color: c.color, border: `1px solid ${c.color}30` }}>{c.text}</Tag>;
   };
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
@@ -88,7 +134,7 @@ function CashAdvance() {
       render: (_, r) => (
         <div>
           <div className="font-semibold"><UserOutlined className="mr-1" />{r.user?.firstname} {r.user?.lastname}</div>
-          <div className="text-gray-500 text-xs">ID: {r.user?.id}</div>
+          <div className="text-xs" style={{ color: MUTED }}>ID: {r.user?.id}</div>
         </div>
       ),
     },
@@ -96,13 +142,13 @@ function CashAdvance() {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (v) => <span className="font-bold text-[#EA580C]">{fmtCurrency(v)}</span>,
+      render: (v) => <span className="font-bold" style={{ color: ACCENT }}>{fmtCurrency(v)}</span>,
     },
     {
       title: "Reason",
       dataIndex: "reason",
       key: "reason",
-      render: (v) => v || <span className="text-gray-400">-</span>,
+      render: (v) => v || <span style={{ color: MUTED }}>-</span>,
     },
     {
       title: "Status",
@@ -120,16 +166,16 @@ function CashAdvance() {
       title: "Processed At",
       key: "processed",
       render: (_, r) => {
-        if (r.status === "approved" && r.approved_at) return <span className="text-green-600">{fmtDate(r.approved_at)}</span>;
-        if (r.status === "rejected" && r.rejected_at) return <span className="text-red-600">{fmtDate(r.rejected_at)}</span>;
-        return <span className="text-gray-400">-</span>;
+        if (r.status === "approved" && r.approved_at) return <span style={{ color: ACCENT }}>{fmtDate(r.approved_at)}</span>;
+        if (r.status === "rejected" && r.rejected_at) return <span style={{ color: "#F87171" }}>{fmtDate(r.rejected_at)}</span>;
+        return <span style={{ color: MUTED }}>-</span>;
       },
     },
     {
       title: "Admin Notes",
       dataIndex: "admin_notes",
       key: "admin_notes",
-      render: (v) => v || <span className="text-gray-400">-</span>,
+      render: (v) => v || <span style={{ color: MUTED }}>-</span>,
     },
     {
       title: "Actions",
@@ -141,20 +187,20 @@ function CashAdvance() {
               <Tooltip title="Approve">
                 <Button type="primary" size="small" icon={<CheckOutlined />}
                   onClick={() => { setSelected(r); setShowApproveModal(true); }}
-                  className="rounded-xl bg-gradient-to-br from-[#16A34A] to-[#22C55E] border-none text-white shadow-[0_4px_15px_rgba(34,197,94,0.3)] hover:brightness-110">
+                  style={GRADIENT_BTN}>
                   Approve
                 </Button>
               </Tooltip>
               <Tooltip title="Reject">
-                <Button danger size="small" icon={<CloseOutlined />}
+                <Button size="small" icon={<CloseOutlined />}
                   onClick={() => { setSelected(r); setShowRejectModal(true); }}
-                  className="rounded-xl bg-gradient-to-br from-[#DC2626] to-[#EF4444] border-none text-white shadow-[0_4px_15px_rgba(220,38,38,0.3)] hover:brightness-110">
+                  style={RED_BTN}>
                   Reject
                 </Button>
               </Tooltip>
             </>
           )}
-          {r.status !== "pending" && <span className="text-gray-400 text-sm">No actions</span>}
+          {r.status !== "pending" && <span className="text-sm" style={{ color: MUTED }}>No actions</span>}
         </Space>
       ),
     },
@@ -169,62 +215,77 @@ function CashAdvance() {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
-      {/* Header - NewMoon Roasted Style */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
-        <div className="px-8 py-6 relative">
+    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
+      
+
+      {/* Header */}
+      <div
+        className="mb-6 overflow-hidden rounded-2xl"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+      >
+        <div className="relative px-8 py-6">
           {/* Decorative circles */}
           <div className="absolute right-0 top-0 opacity-10">
-            <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
+            <div className="-mr-32 -mt-32 h-64 w-64 rounded-full" style={{ background: ACCENT }} />
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
           </div>
 
-          {/* Flame accent line */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
+          {/* Accent line */}
+          <div
+            className="absolute left-0 right-0 top-0 h-1"
+            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
+          />
 
-          <div className="flex items-center justify-between relative z-10">
+          <div className="relative z-10 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-1">
-                <FontAwesomeIcon icon={faPesoSign} className="mr-2 text-[#F97316]" />
+              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
+                <FontAwesomeIcon icon={faPesoSign} className="mr-2" style={{ color: ACCENT }} />
                 Cash Advance Management
               </h1>
-              <p className="text-white/80 text-sm">Approve or reject staff cash advance requests</p>
+              <p className="text-sm" style={{ color: MUTED }}>
+                Approve or reject staff cash advance requests
+              </p>
             </div>
           </div>
 
           {/* Quick Stats in Header */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 relative z-10">
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs">Total Requests</p>
-              <p className="text-white font-bold text-xl mt-1">{stats.total}</p>
+          <div className="relative z-10 mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="text-xs" style={{ color: MUTED }}>Total Requests</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.total}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs">Pending</p>
-              <p className="text-white font-bold text-xl mt-1 text-[#FDE68A]">{stats.pending}</p>
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="text-xs" style={{ color: MUTED }}>Pending</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.pending}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs">Approved</p>
-              <p className="text-white font-bold text-xl mt-1 text-[#FDE68A]">{stats.approved}</p>
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="text-xs" style={{ color: MUTED }}>Approved</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.approved}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
-              <p className="text-white/70 text-xs">Approved Amount</p>
-              <p className="text-white font-bold text-xl mt-1 text-[#FDE68A]">{fmtCurrency(stats.totalAmount)}</p>
+            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
+              <p className="text-xs" style={{ color: MUTED }}>Approved Amount</p>
+              <p className="mt-1 text-xl font-bold" style={{ color: ACCENT }}>{fmtCurrency(stats.totalAmount)}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons - NewMoon Style */}
-      <Card className="mb-6 rounded-xl border border-[#F5EDE0] shadow-sm">
+      {/* Action Buttons */}
+      <Card
+        className="mb-6"
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Space>
-          <span className="text-[#451A03] font-medium text-sm">Filter by status:</span>
+          <span className="text-sm font-medium" style={{ color: MUTED }}>Filter by status:</span>
           <Select
             value={statusFilter}
             onChange={setStatusFilter}
             style={{ width: 150 }}
             className="rounded-xl"
+            popupClassName="nm-dark-select-dropdown"
           >
             <Select.Option value="all">All</Select.Option>
             <Select.Option value="pending">Pending</Select.Option>
@@ -235,48 +296,72 @@ function CashAdvance() {
             icon={<ReloadOutlined />}
             onClick={() => refetch()}
             loading={isLoading}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
+            style={GHOST_BTN}
           >
             Refresh
           </Button>
         </Space>
       </Card>
 
-      {/* Requests Section - NewMoon Style */}
+      {/* Requests Section */}
       <div className="mb-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-[#451A03]">
-              <FontAwesomeIcon icon={faPesoSign} className="mr-2 text-[#F97316]" />
+            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
+              <FontAwesomeIcon icon={faPesoSign} className="mr-2" style={{ color: ACCENT }} />
               Cash Advance Requests
             </h2>
-            <p className="text-sm text-gray-500 mt-1">Review and process staff advance requests</p>
+            <p className="mt-1 text-sm" style={{ color: MUTED }}>
+              Review and process staff advance requests
+            </p>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag
+            className="rounded-full px-3 py-1 text-sm"
+            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+          >
             {filtered.length} request(s)
           </Tag>
         </div>
       </div>
 
-      <Card className="rounded-xl border border-[#F5EDE0] shadow-sm">
+      <Card
+        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+        styles={{ body: { background: PANEL_BG } }}
+      >
         <Table
           columns={columns}
           dataSource={filtered}
           rowKey="id"
           loading={isLoading}
           pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} requests` }}
-          locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><FontAwesomeIcon icon={faPesoSign} className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No cash advance requests found</p><p className="text-gray-400 text-sm">Try adjusting your filter</p></div> }}
+          locale={{
+            emptyText: (
+              <div className="py-10 text-center">
+                <div
+                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
+                  style={{ background: ACCENT_SOFT, color: ACCENT }}
+                >
+                  <FontAwesomeIcon icon={faPesoSign} className="text-3xl" />
+                </div>
+                <p className="font-semibold" style={{ color: TEXT }}>No cash advance requests found</p>
+                <p className="text-sm" style={{ color: MUTED }}>Try adjusting your filter</p>
+              </div>
+            ),
+          }}
         />
       </Card>
 
-      {/* Approve Modal - NewMoon Style */}
+      {/* Approve Modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg"><CheckOutlined /></div>
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: ACCENT_SOFT, color: ACCENT }}
+            ><CheckOutlined /></div>
             <div>
-              <p className="font-bold text-[#451A03]">Approve Cash Advance</p>
-              <p className="text-xs font-normal text-stone-400">Approve this staff cash advance request</p>
+              <p className="font-bold" style={{ color: TEXT }}>Approve Cash Advance</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Approve this staff cash advance request</p>
             </div>
           </div>
         }
@@ -287,15 +372,15 @@ function CashAdvance() {
         className="rounded-2xl"
       >
         {selected && (
-          <div className="mb-4 p-4 rounded-xl bg-[#FFF1E6]">
-            <div className="font-semibold text-[#451A03]">{selected.user?.firstname} {selected.user?.lastname}</div>
-            <div className="text-lg font-bold text-[#16A34A]">{fmtCurrency(selected.amount)}</div>
-            {selected.reason && <div className="text-gray-600 text-sm mt-1">Reason: {selected.reason}</div>}
+          <div className="mb-4 rounded-xl p-4" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
+            <div className="font-semibold" style={{ color: TEXT }}>{selected.user?.firstname} {selected.user?.lastname}</div>
+            <div className="text-lg font-bold" style={{ color: ACCENT }}>{fmtCurrency(selected.amount)}</div>
+            {selected.reason && <div className="mt-1 text-sm" style={{ color: MUTED }}>Reason: {selected.reason}</div>}
           </div>
         )}
         <Form form={approveForm} layout="vertical" onFinish={handleApprove} initialValues={{ admin_notes: "" }}>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Admin Notes (Optional)</span>}
+            label={<span className="text-sm font-semibold" style={{ color: TEXT }}>Admin Notes (Optional)</span>}
             name="admin_notes"
             rules={[{ max: 500, message: "Notes cannot exceed 500 characters" }]}
           >
@@ -305,11 +390,11 @@ function CashAdvance() {
               maxLength={500}
               showCount
               disabled={approveMutation.isPending}
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
+              className="rounded-xl"
             />
           </Form.Item>
-          <div className="p-3 mb-4 rounded-xl bg-[#FFF1E6]">
-            <p className="text-xs text-[#451A03] mb-0">
+          <div className="mb-4 rounded-xl p-3" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
+            <p className="mb-0 text-xs" style={{ color: ACCENT }}>
               <InfoCircleOutlined className="mr-1" />
               This action will mark the cash advance as approved and notify the staff member.
             </p>
@@ -319,7 +404,7 @@ function CashAdvance() {
               <Button
                 onClick={() => { setShowApproveModal(false); approveForm.resetFields(); setSelected(null); }}
                 disabled={approveMutation.isPending}
-                className="rounded-xl"
+                style={SECONDARY_BTN}
               >
                 Cancel
               </Button>
@@ -328,7 +413,7 @@ function CashAdvance() {
                 htmlType="submit"
                 loading={approveMutation.isPending}
                 icon={<CheckOutlined />}
-                className="rounded-xl bg-gradient-to-br from-[#16A34A] to-[#22C55E] border-none shadow-[0_4px_15px_rgba(34,197,94,0.3)] hover:brightness-110"
+                style={GRADIENT_BTN}
               >
                 Approve
               </Button>
@@ -337,14 +422,17 @@ function CashAdvance() {
         </Form>
       </Modal>
 
-      {/* Reject Modal - NewMoon Style */}
+      {/* Reject Modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] flex items-center justify-center text-[#F97316] text-lg"><CloseOutlined /></div>
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
+              style={{ background: RED_SOFT, color: "#F87171" }}
+            ><CloseOutlined /></div>
             <div>
-              <p className="font-bold text-[#451A03]">Reject Cash Advance</p>
-              <p className="text-xs font-normal text-stone-400">Reject this staff cash advance request</p>
+              <p className="font-bold" style={{ color: TEXT }}>Reject Cash Advance</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Reject this staff cash advance request</p>
             </div>
           </div>
         }
@@ -355,15 +443,15 @@ function CashAdvance() {
         className="rounded-2xl"
       >
         {selected && (
-          <div className="mb-4 p-4 rounded-xl bg-[#FFF1E6]">
-            <div className="font-semibold text-[#451A03]">{selected.user?.firstname} {selected.user?.lastname}</div>
-            <div className="text-lg font-bold text-[#DC2626]">{fmtCurrency(selected.amount)}</div>
-            {selected.reason && <div className="text-gray-600 text-sm mt-1">Reason: {selected.reason}</div>}
+          <div className="mb-4 rounded-xl p-4" style={{ background: RED_SOFT, border: `1px solid ${RED}30` }}>
+            <div className="font-semibold" style={{ color: TEXT }}>{selected.user?.firstname} {selected.user?.lastname}</div>
+            <div className="text-lg font-bold" style={{ color: "#F87171" }}>{fmtCurrency(selected.amount)}</div>
+            {selected.reason && <div className="mt-1 text-sm" style={{ color: MUTED }}>Reason: {selected.reason}</div>}
           </div>
         )}
         <Form form={rejectForm} layout="vertical" onFinish={handleReject} initialValues={{ admin_notes: "" }}>
           <Form.Item
-            label={<span className="text-sm font-semibold text-[#451A03]">Rejection Reason (Optional)</span>}
+            label={<span className="text-sm font-semibold" style={{ color: TEXT }}>Rejection Reason (Optional)</span>}
             name="admin_notes"
             rules={[{ max: 500, message: "Reason cannot exceed 500 characters" }]}
           >
@@ -373,11 +461,11 @@ function CashAdvance() {
               maxLength={500}
               showCount
               disabled={rejectMutation.isPending}
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
+              className="rounded-xl"
             />
           </Form.Item>
-          <div className="p-3 mb-4 rounded-xl bg-red-50">
-            <p className="text-xs text-red-700 mb-0">
+          <div className="mb-4 rounded-xl p-3" style={{ background: RED_SOFT, border: `1px solid ${RED}30` }}>
+            <p className="mb-0 text-xs" style={{ color: "#F87171" }}>
               <InfoCircleOutlined className="mr-1" />
               This action will reject the cash advance and notify the staff member.
             </p>
@@ -387,16 +475,15 @@ function CashAdvance() {
               <Button
                 onClick={() => { setShowRejectModal(false); rejectForm.resetFields(); setSelected(null); }}
                 disabled={rejectMutation.isPending}
-                className="rounded-xl"
+                style={SECONDARY_BTN}
               >
                 Cancel
               </Button>
               <Button
-                danger
                 htmlType="submit"
                 loading={rejectMutation.isPending}
                 icon={<CloseOutlined />}
-                className="rounded-xl bg-gradient-to-br from-[#DC2626] to-[#EF4444] border-none shadow-[0_4px_15px_rgba(220,38,38,0.3)] hover:brightness-110"
+                style={RED_BTN}
               >
                 Reject
               </Button>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Events\MessageSent;
 use App\Models\Message;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -52,6 +53,8 @@ class ChatController extends Controller
             'sender_id' => $user->id,
             'body' => $validated['body'],
         ]);
+
+        MessageSent::dispatch($message);
 
         return response()->json($message->load('sender'), 201);
     }

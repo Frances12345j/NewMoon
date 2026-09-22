@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
@@ -12,7 +12,7 @@ interface ChatOrder {
   total: number;
   created_at: string;
   branch: { id: number; name: string };
-  rider?: { id: number; firstname: string; lastname: string } | null;
+  rider?: { id: number; firstname: string; lastname: string; avatar_url?: string | null } | null;
 }
 
 const CHAT_STATUSES = ['picked_up', 'out_for_delivery'];
@@ -103,14 +103,25 @@ export default function ChatScreen() {
           })().map(([riderId, order]) => {
             const rider = order.rider!;
             const fullName = `${rider.firstname} ${rider.lastname}`.trim();
+            const riderInitial = (rider.firstname?.[0] || rider.lastname?.[0] || 'R').toUpperCase();
             return (
               <TouchableOpacity
                 key={riderId}
-                className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm flex-row items-center justify-between"
+                className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm flex-row items-center"
                 activeOpacity={0.7}
                 onPress={() => router.push(`/Customer/orderChat?orderId=${order.id}`)}
               >
-                <Text className="text-base font-bold text-gray-900">{fullName}</Text>
+                <View className="w-12 h-12 rounded-full bg-[#FFF1E6] items-center justify-center overflow-hidden mr-3">
+                  {rider.avatar_url ? (
+                    <Image key={rider.avatar_url} source={{ uri: rider.avatar_url }} className="w-full h-full" resizeMode="cover" />
+                  ) : (
+                    <Text className="text-[#EA580C] font-extrabold text-lg">{riderInitial}</Text>
+                  )}
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900">{fullName}</Text>
+                  <Text className="text-xs text-gray-500 mt-0.5">Delivery Rider</Text>
+                </View>
                 <View className="flex-row items-center">
                   <Ionicons name="chatbubble-ellipses-outline" size={18} color="#F59E0B" style={{ marginRight: 6 }} />
                   <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />

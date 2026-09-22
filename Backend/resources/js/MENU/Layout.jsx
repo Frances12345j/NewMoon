@@ -3,7 +3,7 @@ import MenuSidebar from "./Sidebar";
 
 function MenuLayout({ children }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#FFF8ED" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#1F1A2E" }}>
       <MenuSidebar />
       <div
         style={{
@@ -12,7 +12,7 @@ function MenuLayout({ children }) {
           overflowY: "auto",
           overflowX: "hidden",
           height: "100vh",
-          background: "#FFF8ED",
+          background: "#1F1A2E",
           padding: "20px 24px",
         }}
       >

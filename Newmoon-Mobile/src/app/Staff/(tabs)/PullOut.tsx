@@ -176,7 +176,7 @@ const StockOutScreen = () => {
       return response.data;
     },
     onSuccess: () => {
-      Alert.alert('Success', 'Stock out request submitted for approval');
+      Alert.alert('Success', 'Pull out request submitted for approval');
       setShowRequestModal(false);
       setSelectedProduct(null);
       setRequestQuantity('');
@@ -186,9 +186,9 @@ const StockOutScreen = () => {
       queryClient.invalidateQueries({ queryKey: ['stockOutStatistics'] });
     },
     onError: (error: any) => {
-      console.warn('Stock out request error:', error?.message || error);
+      console.warn('Pull out request error:', error?.message || error);
 
-      let message = 'Failed to submit stock out request';
+      let message = 'Failed to submit pull out request';
 
       if (error?.response?.data?.message) {
         message = error.response.data.message;
@@ -259,7 +259,7 @@ const StockOutScreen = () => {
     return (
       <SafeAreaView className="flex-1 bg-[#FFF7ED] items-center justify-center">
         <ActivityIndicator size="large" color="#EA580C" />
-        <Text className="text-stone-500 font-medium mt-4">Loading Stock Out...</Text>
+        <Text className="text-stone-500 font-medium mt-4">Loading Pull Out...</Text>
       </SafeAreaView>
     );
   }
@@ -315,7 +315,7 @@ const StockOutScreen = () => {
               <Ionicons name="flame" size={13} color="#EA580C" />
               <Text className="text-[#EA580C] text-[10px] font-extrabold tracking-widest uppercase ml-1">Inventory Management</Text>
             </View>
-            <Text className="text-2xl font-extrabold text-[#171717]">Stock Out</Text>
+            <Text className="text-2xl font-extrabold text-[#171717]">Pull Out</Text>
             <Text className="text-sm text-stone-500 mt-1">Request items to be removed from inventory</Text>
           </View>
         </View>
@@ -356,19 +356,19 @@ const StockOutScreen = () => {
             activeOpacity={0.85}
           >
             <Ionicons name="add-circle" size={22} color="#FFFFFF" />
-            <Text className="text-white font-extrabold text-base ml-2">New Stock Out Request</Text>
+            <Text className="text-white font-extrabold text-base ml-2">New Pull Out Request</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ===== STOCK OUT REQUESTS ===== */}
+        {/* ===== PULL OUT REQUESTS ===== */}
         <View className="mt-6">
           <View className="px-5">
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
                 <Ionicons name="flame" size={18} color="#EA580C" />
                 <View className="ml-2">
-                  <Text className="text-xl font-extrabold text-[#171717]">Stock Out Requests</Text>
-                  <Text className="text-sm text-stone-500 mt-0.5">Track your stock out requests</Text>
+                  <Text className="text-xl font-extrabold text-[#171717]">Pull Out Requests</Text>
+                  <Text className="text-sm text-stone-500 mt-0.5">Track your pull out requests</Text>
                 </View>
               </View>
               <View className="bg-[#FFF1E6] px-2.5 py-1 rounded-full ml-2">
@@ -385,7 +385,7 @@ const StockOutScreen = () => {
                 </View>
                 <Text className="text-[#171717] font-bold text-lg">No Requests Yet</Text>
                 <Text className="text-stone-500 text-sm mt-2 text-center leading-5">
-                  Tap the button above to request a stock out.
+                  Tap the button above to request a pull out.
                 </Text>
               </View>
             ) : (
@@ -488,13 +488,13 @@ const StockOutScreen = () => {
                 <Ionicons name="information-circle-outline" size={20} color="#EA580C" />
               </View>
               <View className="flex-1">
-                <Text className="text-[#171717] font-bold text-base">Stock Out Guidelines</Text>
+                <Text className="text-[#171717] font-bold text-base">Pull Out Guidelines</Text>
               </View>
             </View>
             <View className="gap-3">
               <View className="flex-row items-start">
                 <Text className="text-[#EA580C] text-sm font-extrabold mr-2">•</Text>
-                <Text className="text-stone-600 text-sm leading-5 flex-1">Stock out requests are for items leaving the inventory</Text>
+                <Text className="text-stone-600 text-sm leading-5 flex-1">Pull out requests are for items leaving the inventory</Text>
               </View>
               <View className="flex-row items-start">
                 <Text className="text-[#EA580C] text-sm font-extrabold mr-2">•</Text>
@@ -542,7 +542,7 @@ const StockOutScreen = () => {
                   <Ionicons name="remove-circle-outline" size={22} color="#EA580C" />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-[#171717] text-lg font-extrabold">New Stock Out Request</Text>
+                  <Text className="text-[#171717] text-lg font-extrabold">New Pull Out Request</Text>
                   <Text className="text-stone-500 text-xs mt-0.5">Record items being removed from inventory.</Text>
                 </View>
                 <TouchableOpacity
@@ -619,7 +619,7 @@ const StockOutScreen = () => {
                   <TextInput
                     className="bg-[#FFF7ED] border border-[#FED7AA] rounded-2xl px-4 py-3.5 text-[#171717] text-base"
                     textAlignVertical="top"
-                    placeholder="Additional details about the stock out..."
+                    placeholder="Additional details about the pull out..."
                     placeholderTextColor="#A8A29E"
                     multiline
                     numberOfLines={3}

@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\SalesTargetController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\UserController;
 
 // PUBLIC ROUTES
 Route::post('/login', [AuthController::class, 'login']);
@@ -33,12 +34,18 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/check-username', [RegisterController::class, 'checkUsername']);
 Route::post('/check-email', [RegisterController::class, 'checkEmail']);
 
+// Forgot password (customer / rider / staff) — OTP via email
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/forgot-password/verify', [AuthController::class, 'verifyOtp']);
+Route::post('/forgot-password/reset', [AuthController::class, 'resetPassword']);
+
 // PROTECTED ROUTES
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/me', [AuthController::class, 'updateProfile']);
+    Route::post('/me/avatar', [AuthController::class, 'updateAvatar']);
     
     // Branches
     Route::get('/branches/user', [BranchController::class, 'getUserBranches']);
@@ -64,6 +71,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/staff/orders', [OrderController::class, 'staffIndex']);
     Route::post('/staff/orders/{id}/status', [OrderController::class, 'staffUpdateStatus']);
     Route::apiResource('staff', StaffController::class);
+
+    // User profiles (admin view for staff, riders, customers)
+    Route::get('/users', [UserController::class, 'index']);
     
     // Staff Assignments - Add these routes
 Route::get('staff-assignments', [StaffAssignmentController::class, 'index']);
@@ -116,6 +126,7 @@ Route::get('/staff/{userId}/assignment', [StaffAssignmentController::class, 'get
     Route::get('/back-to-sales/{id}', [BackToSaleController::class, 'show']);
     Route::post('/back-to-sales/{id}/approve', [BackToSaleController::class, 'approve']);
     Route::post('/back-to-sales/{id}/reject', [BackToSaleController::class, 'reject']);
+    Route::post('/back-to-sales/approve-all', [BackToSaleController::class, 'approveAll']);
     
     // Face enrollment (attendance)
     Route::get('/face/status', [FaceEnrollmentController::class, 'status']);
@@ -150,6 +161,9 @@ Route::get('/staff/{userId}/assignment', [StaffAssignmentController::class, 'get
     // Rider Tracking
     Route::post('/rider/orders/{id}/location', [OrderController::class, 'updateLocation']);
     Route::post('/rider/orders/{id}/assign', [OrderController::class, 'assignRider']);
+
+    // Admin Dashboard (online orders + online sales overview)
+    Route::get('/admin/orders/overview', [OrderController::class, 'adminOverview']);
 
     // Chat (order-based, works for both customer and rider)
     Route::get('/chat/{orderId}/messages', [ChatController::class, 'index']);

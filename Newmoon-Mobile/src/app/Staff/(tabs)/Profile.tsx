@@ -8,6 +8,7 @@ import {
   Alert,
   Modal,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,7 @@ import api from '../../../../lib/api';
 import { cacheFaceStatus, getCachedFaceStatus } from '../../../../lib/dataCache';
 import { getUser, saveUser } from '../../../../lib/userStorage';
 import { useAuth } from '../../../../context/authContext';
+import { useAvatarPicker } from '../../../../hooks/useAvatarPicker';
 import { COLORS, GRADIENT, CARD } from '../../../lib/staffTheme';
 
 
@@ -25,14 +27,20 @@ type ProfileData = {
   lastname?: string;
   middlename?: string | null;
   address?: string | null;
+  email?: string | null;
+  phone?: string | null;
 };
 
 const ProfileScreen = () => {
   const router = useRouter();
+  const { user, updateUser } = useAuth();
+  const { pickAvatar, uploading } = useAvatarPicker();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [middleName, setMiddleName] = useState('');
   const [address, setAddress] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [faceEnrolled, setFaceEnrolled] = useState(false);
   const [faceStatusLoading, setFaceStatusLoading] = useState(true);
@@ -51,6 +59,8 @@ const ProfileScreen = () => {
     setLastName(data.lastname || '');
     setMiddleName(data.middlename || '');
     setAddress(data.address || '');
+    setEmail(data.email || '');
+    setPhone(data.phone || '');
   };
 
   const loadProfile = async () => {
@@ -76,6 +86,8 @@ const ProfileScreen = () => {
       lastname: lastName.trim(),
       middlename: middleName.trim() || null,
       address: address.trim() || null,
+      email: email.trim() || null,
+      phone: phone.trim() || null,
     };
 
     try {
@@ -85,6 +97,7 @@ const ProfileScreen = () => {
       const cachedUser = (await getUser<Record<string, unknown>>()) ?? {};
       const mergedUser = { ...cachedUser, ...payload };
       await saveUser(mergedUser);
+      await updateUser({ ...payload });
       applyProfileData(mergedUser);
 
       if (responseData) {
@@ -196,19 +209,67 @@ const ProfileScreen = () => {
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
         {/* Profile Avatar */}
         <View style={{ alignItems: 'center', marginBottom: 32 }}>
-          <LinearGradient
-            colors={GRADIENT.PRIMARY}
+          <TouchableOpacity
+            disabled={uploading}
+            onPress={pickAvatar}
+            activeOpacity={0.8}
+            style={{ alignItems: 'center' }}
+          >
+            {user?.avatar_url ? (
+              <Image
+                key={user.avatar_url}
+                source={{ uri: user.avatar_url }}
+                style={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: 48,
+                  borderWidth: 2,
+                  borderColor: COLORS.CARD_BORDER,
+                  marginBottom: 12,
+                }}
+                resizeMode="cover"
+              />
+            ) : (
+              <LinearGradient
+                colors={GRADIENT.PRIMARY}
+                style={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: 48,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: 12,
+                }}
+              >
+                <Icon name="person" size={50} color="#FFFFFF" />
+              </LinearGradient>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            disabled={uploading}
+            onPress={pickAvatar}
             style={{
-              width: 96,
-              height: 96,
-              borderRadius: 48,
-              justifyContent: 'center',
+              flexDirection: 'row',
               alignItems: 'center',
+              backgroundColor: COLORS.INPUT_BG,
+              borderWidth: 1,
+              borderColor: COLORS.CARD_BORDER,
+              borderRadius: 24,
+              paddingVertical: 8,
+              paddingHorizontal: 18,
               marginBottom: 12,
+              opacity: uploading ? 0.7 : 1,
             }}
           >
-            <Icon name="person" size={50} color="#FFFFFF" />
-          </LinearGradient>
+            {uploading ? (
+              <ActivityIndicator size="small" color={COLORS.PRIMARY_RED} />
+            ) : (
+              <Icon name="photo-camera" size={16} color={COLORS.PRIMARY_RED} style={{ marginRight: 6 }} />
+            )}
+            <Text style={{ color: COLORS.PRIMARY_RED, fontWeight: '600', fontSize: 13 }}>
+              {uploading ? 'Uploading...' : 'Change Photo'}
+            </Text>
+          </TouchableOpacity>
           <Text style={{ color: COLORS.TEXT_PRIMARY, fontSize: 24, fontWeight: 'bold' }}>
             {firstName && lastName ? `${firstName} ${lastName}` : 'Staff Member'}
           </Text>
@@ -299,6 +360,49 @@ const ProfileScreen = () => {
               multiline
               numberOfLines={3}
               textAlignVertical="top"
+            />
+          </View>
+
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ color: COLORS.TEXT_SECONDARY, fontSize: 14, marginBottom: 4 }}>Email</Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: isEditing ? COLORS.INPUT_BORDER : COLORS.CARD_BORDER,
+                backgroundColor: isEditing ? COLORS.INPUT_BG : COLORS.CARD_BG,
+                color: COLORS.TEXT_PRIMARY,
+                borderRadius: 12,
+                padding: 12,
+                fontSize: 16,
+              }}
+              value={email}
+              onChangeText={setEmail}
+              editable={isEditing}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholder="Enter your email"
+              placeholderTextColor="#6B7280"
+            />
+          </View>
+
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ color: COLORS.TEXT_SECONDARY, fontSize: 14, marginBottom: 4 }}>Phone</Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: isEditing ? COLORS.INPUT_BORDER : COLORS.CARD_BORDER,
+                backgroundColor: isEditing ? COLORS.INPUT_BG : COLORS.CARD_BG,
+                color: COLORS.TEXT_PRIMARY,
+                borderRadius: 12,
+                padding: 12,
+                fontSize: 16,
+              }}
+              value={phone}
+              onChangeText={setPhone}
+              editable={isEditing}
+              keyboardType="phone-pad"
+              placeholder="Enter your phone number"
+              placeholderTextColor="#6B7280"
             />
           </View>
         </View>

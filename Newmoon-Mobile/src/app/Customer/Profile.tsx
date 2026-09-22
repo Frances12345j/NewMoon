@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, ScrollView, StatusBar, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, ScrollView, StatusBar, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '../../../context/authContext';
+import { useAvatarPicker } from '../../../hooks/useAvatarPicker';
 import api from '../../../lib/api';
 import { saveUser } from '../../../lib/userStorage';
 
 export default function ProfileScreen() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  const { pickAvatar, uploading } = useAvatarPicker();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     firstname: '',
     lastname: '',
+    middlename: '',
     email: '',
     phone: '',
+    address: '',
   });
 
   useEffect(() => {
@@ -23,8 +27,10 @@ export default function ProfileScreen() {
       setForm({
         firstname: user.firstname || '',
         lastname: user.lastname || '',
+        middlename: user.middlename || '',
         email: user.email || '',
         phone: user.phone || '',
+        address: user.address || '',
       });
     }
   }, [user]);
@@ -32,14 +38,18 @@ export default function ProfileScreen() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await api.put('/me', {
-        firstname: form.firstname,
-        lastname: form.lastname,
-        email: form.email,
-        phone: form.phone,
-      });
+      const payload = {
+        firstname: form.firstname.trim(),
+        lastname: form.lastname.trim(),
+        middlename: form.middlename.trim() || null,
+        email: form.email.trim() || null,
+        phone: form.phone.trim() || null,
+        address: form.address.trim() || null,
+      };
+      const res = await api.put('/me', payload);
       const updated = res.data?.user || res.data;
       await saveUser(updated);
+      await updateUser({ ...payload });
       setEditing(false);
       Alert.alert('Saved', 'Profile updated successfully.');
     } catch (err: any) {
@@ -106,15 +116,23 @@ export default function ProfileScreen() {
       <ScrollView className="flex-1">
         <View className="items-center pt-8 pb-6">
           <View className="relative mb-4">
-            <View className="w-20 h-20 rounded-full bg-[#E8F0FE] items-center justify-center border-2 border-[#007AFF]/20">
-              <Ionicons name="person" size={40} color="#007AFF" />
+            <View className="w-20 h-20 rounded-full bg-[#E8F0FE] items-center justify-center border-2 border-[#007AFF]/20 overflow-hidden">
+              {user?.avatar_url ? (
+                <Image key={user.avatar_url} source={{ uri: user.avatar_url }} className="w-full h-full" resizeMode="cover" />
+              ) : (
+                <Ionicons name="person" size={40} color="#007AFF" />
+              )}
             </View>
             <TouchableOpacity
               className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#007AFF] items-center justify-center border-2 border-white"
-              onPress={() => setEditing(true)}
+              onPress={pickAvatar}
               activeOpacity={0.7}
             >
-              <Ionicons name="pencil" size={14} color="white" />
+              {uploading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons name="camera" size={14} color="white" />
+              )}
             </TouchableOpacity>
           </View>
           <Text className="text-gray-900 text-xl font-bold">
@@ -135,9 +153,11 @@ export default function ProfileScreen() {
 
         <View className="mx-4 bg-white rounded-2xl border border-gray-200 overflow-hidden mb-6">
           {renderField('First Name', 'firstname', 'person-outline')}
+          {renderField('Middle Name', 'middlename', 'person-outline')}
           {renderField('Last Name', 'lastname', 'person-outline')}
           {renderField('Email', 'email', 'mail-outline')}
           {renderField('Phone', 'phone', 'call-outline')}
+          {renderField('Address', 'address', 'home-outline')}
         </View>
       </ScrollView>
     </SafeAreaView>

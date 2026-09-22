@@ -12,11 +12,11 @@ import { FACE_DETECTOR_WEB_HTML } from '../utils/faceDetectorWebHtml';
 
 export type FaceWebDetectResult =
   | {
-      ok: true;
-      box: { x: number; y: number; width: number; height: number };
-      landmarks: { x: number; y: number }[];
-      descriptor?: number[];
-    }
+    ok: true;
+    box: { x: number; y: number; width: number; height: number };
+    landmarks: { x: number; y: number }[];
+    descriptor?: number[];
+  }
   | { ok: false; code: string; error?: string };
 
 export type FaceDetectionWebViewHandle = {

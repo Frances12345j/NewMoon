@@ -154,7 +154,7 @@ function StockInForm({ form, product, branches, onSubmit, onCancel, currentUserN
           <Button
             type="primary"
             htmlType="submit"
-            className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
           >
             Add Stock
           </Button>
@@ -259,7 +259,7 @@ function StockOutForm({ form, product, branches, onSubmit, onCancel, currentUser
           <Button
             type="primary"
             htmlType="submit"
-            className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
           >
             Save Stock Out
           </Button>
@@ -391,7 +391,7 @@ function StockAdjustForm({ form, product, branches, onSubmit, onCancel, currentU
           <Button
             type="primary"
             htmlType="submit"
-            className="rounded-xl bg-gradient-to-br from-[#F59E0B] via-[#F97316] to-[#EA580C] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            className="rounded-xl bg-linear-to-br from-[#F59E0B] via-[#F97316] to-[#EA580C] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
           >
             Save Adjustment
           </Button>
@@ -830,7 +830,7 @@ function ProductList() {
               className="w-11 h-11 object-cover rounded-xl border border-[#F5EDE0] shadow-sm bg-white"
             />
           ) : (
-            <div className="w-11 h-11 bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-xl flex items-center justify-center text-[#F97316] text-sm shadow-sm">
+            <div className="w-11 h-11 bg-linear-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-xl flex items-center justify-center text-[#F97316] text-sm shadow-sm">
               <ShoppingOutlined />
             </div>
           )}
@@ -858,7 +858,7 @@ function ProductList() {
               <span className="text-xs text-gray-500">Stock</span>
             </div>
             <div className="w-32 bg-[#F5EDE0] rounded-full h-1.5 mt-1">
-              <div className={`h-1.5 rounded-full ${isLowStock ? 'bg-gradient-to-r from-[#EA580C] to-[#F59E0B]' : 'bg-gradient-to-r from-[#22C55E] to-[#16A34A]'}`} style={{ width: `${stockPercentage}%` }} />
+              <div className={`h-1.5 rounded-full ${isLowStock ? 'bg-linear-to-r from-[#EA580C] to-[#F59E0B]' : 'bg-linear-to-r from-[#22C55E] to-[#16A34A]'}`} style={{ width: `${stockPercentage}%` }} />
             </div>
           </div>
         );
@@ -899,7 +899,7 @@ function ProductList() {
       title: "Actions",
       key: "actions",
       render: (_, r) => (
-        <div className="flex flex-wrap gap-1.5 w-[170px]">
+        <div className="flex flex-wrap gap-1.5 w-42.5">
           <Tooltip title="Restock">
             <Button
               size="small"
@@ -916,7 +916,7 @@ function ProductList() {
                 });
                 setIsRestockModalVisible(true);
               }}
-              className="rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none text-[11px] hover:brightness-110 transition-all duration-200 shadow-[0_2px_8px_rgba(234,88,12,0.3)]"
+              className="rounded-full bg-linear-to-br from-[#EA580C] to-[#F59E0B] text-white border-none text-[11px] hover:brightness-110 transition-all duration-200 shadow-[0_2px_8px_rgba(234,88,12,0.3)]"
             >
               Restock
             </Button>
@@ -1001,11 +1001,10 @@ function ProductList() {
                 setStatusAction(!isProductActive(r.product?.is_active));
                 setIsStatusModalVisible(true);
               }}
-              className={`rounded-full text-[11px] transition-all duration-200 ${
-                isProductActive(r.product?.is_active)
-                  ? "border border-stone-300 text-stone-500 hover:bg-stone-100"
-                  : "bg-gradient-to-br from-[#EA580C] to-[#F59E0B] border-none text-white hover:brightness-110"
-              }`}
+              className={`rounded-full text-[11px] transition-all duration-200 ${isProductActive(r.product?.is_active)
+                ? "border border-stone-300 text-stone-500 hover:bg-stone-100"
+                : "bg-linear-to-br from-[#EA580C] to-[#F59E0B] border-none text-white hover:brightness-110"
+                }`}
             >
               {isProductActive(r.product?.is_active) ? "Disable" : "Enable"}
             </Button>
@@ -1016,9 +1015,9 @@ function ProductList() {
   ];
 
   return (
-    <div className="p-6 bg-gradient-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
+    <div className="p-6 bg-linear-to-br from-[#FFF8ED]/80 via-[#FFFDF9] to-[#FFF1E6]/80 min-h-screen">
       {/* Header - NewMoon Roasted Style */}
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-gradient-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
+      <div className="mb-6 rounded-2xl overflow-hidden shadow-[0_12px_35px_rgba(69,26,3,0.25)] bg-linear-to-br from-[#171717] via-[#3B2418] to-[#451A03]">
         <div className="px-8 py-6 relative">
           {/* Decorative circles */}
           <div className="absolute right-0 top-0 opacity-10">
@@ -1029,7 +1028,7 @@ function ProductList() {
           </div>
 
           {/* Flame accent line */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
 
           <div className="flex items-center justify-between relative z-10">
             <div>
@@ -1043,23 +1042,23 @@ function ProductList() {
 
           {/* Quick Stats in Header */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-5 relative z-10">
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
+            <div className="bg-white/8 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
               <p className="text-white/70 text-xs flex items-center gap-1.5">
                 <ShoppingOutlined className="text-[#F97316]" /> Total Products
               </p>
               <p className="text-white font-bold text-xl mt-1">{totalProducts}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
+            <div className="bg-white/8 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
               <p className="text-white/70 text-xs flex items-center gap-1.5">
                 <BoxPlotOutlined className="text-[#F97316]" /> Total Stock Value
               </p>
-              <p className="text-white font-bold text-xl mt-1 text-[#FDE68A]">{formatCurrency(totalStockValue)}</p>
+              <p className="font-bold text-xl mt-1 text-[#FDE68A]">{formatCurrency(totalStockValue)}</p>
             </div>
-            <div className="bg-white/[0.08] backdrop-blur-sm rounded-2xl px-4 py-3 col-span-2 md:col-span-1 border border-white/10">
+            <div className="bg-white/8 backdrop-blur-sm rounded-2xl px-4 py-3 col-span-2 md:col-span-1 border border-white/10">
               <p className="text-white/70 text-xs flex items-center gap-1.5">
                 <InfoCircleOutlined className="text-[#F97316]" /> Average Price
               </p>
-              <p className="text-white font-bold text-xl mt-1 text-[#FDE68A]">{formatCurrency(avgPrice)}</p>
+              <p className="font-bold text-xl mt-1 text-[#FDE68A]">{formatCurrency(avgPrice)}</p>
             </div>
           </div>
         </div>
@@ -1115,7 +1114,7 @@ function ProductList() {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setIsCreateModalVisible(true)}
-            className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
           >
             Create New Product
           </Button>
@@ -1132,22 +1131,22 @@ function ProductList() {
             </h2>
             <p className="text-sm text-gray-500 mt-1">Track stock levels across all branches</p>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-gradient-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag className="text-sm px-3 py-1 rounded-full bg-linear-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
             {filteredTableData.length} stock entries
           </Tag>
         </div>
       </div>
 
       <Card
-className="rounded-xl border border-[#F5EDE0] shadow-sm"
-        >
+        className="rounded-xl border border-[#F5EDE0] shadow-sm"
+      >
         <Table
           columns={columns}
           dataSource={filteredTableData}
           rowKey="id"
           loading={loading}
           pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} entries` }}
-          locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-gradient-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><BoxPlotOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No products found</p><p className="text-gray-400 text-sm">Try adjusting your search or filter</p></div> }}
+          locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-linear-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><BoxPlotOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No products found</p><p className="text-gray-400 text-sm">Try adjusting your search or filter</p></div> }}
         />
       </Card>
 
@@ -1173,7 +1172,7 @@ className="rounded-xl border border-[#F5EDE0] shadow-sm"
           >
             <Input
               placeholder="Enter product name"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
+              className="rounded-xl border-[#F5EDE0]"
             />
           </Form.Item>
           <Form.Item
@@ -1186,7 +1185,7 @@ className="rounded-xl border border-[#F5EDE0] shadow-sm"
               min={0}
               step={10}
               placeholder="Enter price"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
+              className="rounded-xl border-[#F5EDE0]"
             />
           </Form.Item>
           <div className="mb-4">
@@ -1235,7 +1234,7 @@ className="rounded-xl border border-[#F5EDE0] shadow-sm"
               <Button
                 type="primary"
                 htmlType="submit"
-                className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+                className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
               >
                 Create Product
               </Button>
@@ -1266,7 +1265,7 @@ className="rounded-xl border border-[#F5EDE0] shadow-sm"
           >
             <Input
               placeholder="Enter product name"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
+              className="rounded-xl border-[#F5EDE0]"
             />
           </Form.Item>
           <Form.Item
@@ -1279,7 +1278,7 @@ className="rounded-xl border border-[#F5EDE0] shadow-sm"
               min={0}
               step={10}
               placeholder="Enter price"
-              className="rounded-xl border-[#F5EDE0] focus:border-[#F97316]"
+              className="rounded-xl border-[#F5EDE0]"
             />
           </Form.Item>
           {editTarget?.image && (
@@ -1321,7 +1320,7 @@ className="rounded-xl border border-[#F5EDE0] shadow-sm"
               <Button
                 type="primary"
                 htmlType="submit"
-                className="rounded-xl bg-gradient-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+                className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
               >
                 Update Product
               </Button>
@@ -1588,17 +1587,17 @@ className="rounded-xl border border-[#F5EDE0] shadow-sm"
             },
             ...(isAdmin
               ? [{
-                  title: "Action",
-                  key: "action",
-                  align: "center",
-                  render: (_, r) => (
-                    <Tooltip title="Reverse & restore stock">
-                      <Button danger size="small" icon={<UndoOutlined />} onClick={() => setReverseTarget(r)}>
-                        Undo
-                      </Button>
-                    </Tooltip>
-                  ),
-                }]
+                title: "Action",
+                key: "action",
+                align: "center",
+                render: (_, r) => (
+                  <Tooltip title="Reverse & restore stock">
+                    <Button danger size="small" icon={<UndoOutlined />} onClick={() => setReverseTarget(r)}>
+                      Undo
+                    </Button>
+                  </Tooltip>
+                ),
+              }]
               : []),
           ]}
         />

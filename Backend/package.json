@@ -33,13 +33,13 @@
         "recharts": "^3.9.2"
     },
     "devDependencies": {
-        "@tailwindcss/vite": "^4.0.0",
+        "@tailwindcss/vite": "^4.3.3",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^3.1",
-        "tailwindcss": "^4.0.0",
+        "tailwindcss": "^4.3.3",
         "vite": "^8.0.0"
     }
 }
