@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NewMoon Lechon Manok & Liempo House</title>
     @viteReactRefresh
-    @vite(['resources/css/app.css', 'resources/js/app.jsx'])
+    @vite(['resources/css/app.css', 'resources/js/App.jsx'])
 </head>
 <body class="antialiased bg-[#FFF8ED]">
     <div id="root"></div>
