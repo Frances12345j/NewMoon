@@ -30,8 +30,8 @@ function TabBarIcon({
   inactiveName: React.ComponentProps<typeof Ionicons>['name'];
 }) {
   return (
-    <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
-      <Ionicons name={focused ? activeName : inactiveName} size={22} color={color} />
+    <View style={styles.iconContainer}>
+      <Ionicons name={focused ? activeName : inactiveName} size={24} color={color} />
     </View>
   );
 }
@@ -41,26 +41,24 @@ export default function TabsLayout() {
     <View style={styles.container}>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#EA580C',
-          tabBarInactiveTintColor: '#A8A29E',
+          tabBarActiveTintColor: '#EF5B2B',
+          tabBarInactiveTintColor: '#9CA3AF',
           tabBarStyle: {
             backgroundColor: '#FFFFFF',
             borderTopWidth: 1,
-            borderTopColor: '#FED7AA',
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
+            borderTopColor: '#F5F5F5',
             height: 72,
-            paddingTop: 8,
+            paddingTop: 10,
             paddingBottom: 10,
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            elevation: 10,
-            shadowColor: '#451A03',
-            shadowOffset: { width: 0, height: -3 },
-            shadowOpacity: 0.08,
-            shadowRadius: 12,
+            elevation: 0,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.04,
+            shadowRadius: 8,
           },
           tabBarLabelStyle: {
             fontSize: 11,
@@ -80,8 +78,7 @@ export default function TabsLayout() {
             ),
             tabBarLabel: ({ focused, children }) => (
               <View style={styles.labelWrap}>
-                <Text style={[styles.label, { color: focused ? '#EA580C' : '#A8A29E' }]}>{children}</Text>
-                {focused && <View style={styles.activeIndicator} />}
+                <Text style={[styles.label, { color: focused ? '#EF5B2B' : '#9CA3AF' }]}>{children}</Text>
               </View>
             ),
           }}
@@ -96,8 +93,7 @@ export default function TabsLayout() {
             ),
             tabBarLabel: ({ focused, children }) => (
               <View style={styles.labelWrap}>
-                <Text style={[styles.label, { color: focused ? '#EA580C' : '#A8A29E' }]}>{children}</Text>
-                {focused && <View style={styles.activeIndicator} />}
+                <Text style={[styles.label, { color: focused ? '#EF5B2B' : '#9CA3AF' }]}>{children}</Text>
               </View>
             ),
           }}
@@ -112,8 +108,22 @@ export default function TabsLayout() {
             ),
             tabBarLabel: ({ focused, children }) => (
               <View style={styles.labelWrap}>
-                <Text style={[styles.label, { color: focused ? '#EA580C' : '#A8A29E' }]}>{children}</Text>
-                {focused && <View style={styles.activeIndicator} />}
+                <Text style={[styles.label, { color: focused ? '#EF5B2B' : '#9CA3AF' }]}>{children}</Text>
+              </View>
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="Profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon focused={focused} color={color} activeName="person" inactiveName="person-outline" />
+            ),
+            tabBarLabel: ({ focused, children }) => (
+              <View style={styles.labelWrap}>
+                <Text style={[styles.label, { color: focused ? '#EF5B2B' : '#9CA3AF' }]}>{children}</Text>
               </View>
             ),
           }}
@@ -126,17 +136,13 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF7ED',
+    backgroundColor: '#FFFFFF',
   },
   iconContainer: {
-    width: 46,
-    height: 34,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 17,
-  },
-  iconContainerActive: {
-    backgroundColor: '#FFF1E6',
   },
   labelWrap: {
     alignItems: 'center',
@@ -145,13 +151,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 11,
     fontWeight: '600',
-  },
-  activeIndicator: {
-    width: 18,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: '#EA580C',
-    marginTop: 3,
   },
   cartIconWrapper: {
     position: 'relative',
@@ -164,7 +163,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -6,
     right: -10,
-    backgroundColor: '#EA580C',
+    backgroundColor: '#EF5B2B',
     borderRadius: 10,
     minWidth: 18,
     height: 18,

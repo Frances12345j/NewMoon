@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\StockOut;
+use App\Models\Pullouts;
 use App\Models\StaffAssignment;
 use Illuminate\Http\Request;
 
-class StockOutController extends Controller
+class PulloutController extends Controller
 {
     /**
-     * Get stock-out requests for the authenticated user
+     * Get pull-out requests for the authenticated user
      */
     public function index(Request $request)
     {
         $user = $request->user();
 
-        $stockOuts = StockOut::where('user_id', $user->id)
+        $stockOuts = Pullouts::where('user_id', $user->id)
             ->with(['user', 'product', 'branch', 'approver', 'rejecter'])
             ->orderBy('pulled_out_at', 'desc')
             ->paginate(5);
@@ -25,11 +25,11 @@ class StockOutController extends Controller
     }
 
     /**
-     * Get all stock-out requests (for admin)
+     * Get all pull-out requests (for admin)
      */
     public function getall(Request $request)
     {
-        $query = StockOut::with(['user', 'product', 'branch', 'approver', 'rejecter'])
+        $query = Pullouts::with(['user', 'product', 'branch', 'approver', 'rejecter'])
             ->orderBy('pulled_out_at', 'desc');
 
         if ($request->has('branch_id')) {
@@ -42,11 +42,11 @@ class StockOutController extends Controller
 
         // Compute stats from ALL records (unpaginated)
         $stats = [
-            'total' => StockOut::count(),
-            'pending' => StockOut::where('status', 'pending')->count(),
-            'approved' => StockOut::where('status', 'approved')->count(),
-            'rejected' => StockOut::where('status', 'rejected')->count(),
-            'total_quantity' => StockOut::where('status', 'approved')->sum('quantity'),
+            'total' => Pullouts::count(),
+            'pending' => Pullouts::where('status', 'pending')->count(),
+            'approved' => Pullouts::where('status', 'approved')->count(),
+            'rejected' => Pullouts::where('status', 'rejected')->count(),
+            'total_quantity' => Pullouts::where('status', 'approved')->sum('quantity'),
         ];
 
         // Return paginated data
@@ -66,7 +66,7 @@ class StockOutController extends Controller
     }
 
     /**
-     * Store a new stock-out request (pending approval)
+     * Store a new pull-out request (pending approval)
      */
     public function store(Request $request)
     {
@@ -89,8 +89,8 @@ class StockOutController extends Controller
                 return response()->json(['message' => 'No active branch assignment found for user'], 400);
             }
 
-            // Create stock-out record with pending status
-            $stockOut = StockOut::create([
+            // Create pull-out record with pending status
+            $stockOut = Pullouts::create([
                 'user_id' => $user->id,
                 'product_id' => $validated['product_id'],
                 'branch_id' => $staffAssignment->branch_id,
@@ -113,7 +113,7 @@ class StockOutController extends Controller
     public function show($id)
     {
         try {
-            $stockOut = StockOut::with(['user', 'product', 'branch', 'approver', 'rejecter'])
+            $stockOut = Pullouts::with(['user', 'product', 'branch', 'approver', 'rejecter'])
                 ->findOrFail($id);
 
             return response()->json($stockOut);
@@ -130,8 +130,8 @@ class StockOutController extends Controller
         $user = $request->user();
 
         $stats = [
-            'total_pulled_out' => StockOut::where('user_id', $user->id)->count(),
-            'total_quantity' => StockOut::where('user_id', $user->id)->sum('quantity'),
+            'total_pulled_out' => Pullouts::where('user_id', $user->id)->count(),
+            'total_quantity' => Pullouts::where('user_id', $user->id)->sum('quantity'),
         ];
 
         return response()->json($stats);
@@ -145,7 +145,7 @@ class StockOutController extends Controller
         $admin = $request->user();
 
         try {
-            $stockOut = StockOut::findOrFail($id);
+            $stockOut = Pullouts::findOrFail($id);
 
             if ($stockOut->status !== 'pending') {
                 return response()->json(['message' => 'Stock-out can only be approved if pending'], 400);
@@ -172,7 +172,7 @@ class StockOutController extends Controller
         $admin = $request->user();
 
         try {
-            $stockOut = StockOut::findOrFail($id);
+            $stockOut = Pullouts::findOrFail($id);
 
             if ($stockOut->status !== 'pending') {
                 return response()->json(['message' => 'Stock-out can only be rejected if pending'], 400);

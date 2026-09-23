@@ -2,7 +2,7 @@ import Echo from 'laravel-echo';
 import PusherModule from 'pusher-js/react-native';
 import { getToken } from './authStorage';
 
-const WS_HOST = '192.168.254.105';
+const WS_HOST = '10.42.28.76';
 const WS_PORT = 8080;
 const REVERB_KEY = 'newmoon-app-key';
 
@@ -20,7 +20,7 @@ export const getEcho = async (): Promise<Echo<any> | null> => {
       wssPort: WS_PORT,
       forceTLS: false,
       enabledTransports: ['ws', 'wss'],
-      authEndpoint: 'http://192.168.254.105:8000/broadcasting/auth',
+      authEndpoint: 'http://10.42.28.76:8000/broadcasting/auth',
       auth: {
         headers: {
           Authorization: `Bearer ${await getToken()}`,

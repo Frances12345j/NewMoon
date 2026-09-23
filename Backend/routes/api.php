@@ -1,6 +1,8 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\PulloutController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\BranchController;
@@ -13,7 +15,6 @@ use App\Http\Controllers\Api\DeductionIncentiveController;
 use App\Http\Controllers\Api\FaceEnrollmentController;
 use App\Http\Controllers\Api\CashAdvanceController;
 use App\Http\Controllers\Api\SupplyRequestController;
-use App\Http\Controllers\Api\StockOutController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\OrderController;
@@ -111,13 +112,13 @@ Route::get('/staff/{userId}/assignment', [StaffAssignmentController::class, 'get
     Route::post('/supply-requests/{id}/reject', [SupplyRequestController::class, 'reject']);
     
     // Stock Out Requests (staff request → admin approval)
-    Route::get('/stock-outs', [StockOutController::class, 'index']);
-    Route::get('/stock-outs/getall', [StockOutController::class, 'getall']);
-    Route::post('/stock-outs', [StockOutController::class, 'store']);
-    Route::get('/stock-outs/statistics', [StockOutController::class, 'statistics']);
-    Route::get('/stock-outs/{id}', [StockOutController::class, 'show']);
-    Route::post('/stock-outs/{id}/approve', [StockOutController::class, 'approve']);
-    Route::post('/stock-outs/{id}/reject', [StockOutController::class, 'reject']);
+    Route::get('/pull-outs', [PulloutController::class, 'index']);
+    Route::get('/pull-outs/getall', [PulloutController::class, 'getall']);
+    Route::post('/pull-outs', [PulloutController::class, 'store']);
+    Route::get('/pull-outs/statistics', [PulloutController::class, 'statistics']);
+    Route::get('/pull-outs/{id}', [PulloutController::class, 'show']);
+    Route::post('/pull-outs/{id}/approve', [PulloutController::class, 'approve']);
+    Route::post('/pull-outs/{id}/reject', [PulloutController::class, 'reject']);
 
     // Back-to-Sales
     Route::get('/back-to-sales', [BackToSaleController::class, 'index']);

@@ -129,110 +129,108 @@ export default function BranchMenuScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#F59E0B" />
-        <Text className="text-gray-500 text-base mt-4">Loading menu...</Text>
+      <View className="flex-1 justify-center items-center bg-[#FFF7ED]">
+        <View className="w-20 h-20 rounded-full bg-[#FFF1E6] items-center justify-center mb-4">
+          <Ionicons name="restaurant-outline" size={36} color="#F97316" />
+        </View>
+        <ActivityIndicator size="large" color="#F97316" />
+        <Text className="text-[#7C2D12] font-extrabold mt-4 text-base">Loading menu...</Text>
+        <Text className="text-[#7C2D12]/60 text-xs mt-1">{branchName}</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-[#FFF7ED]">
       <ScrollView
-        className="flex-1 bg-gray-50"
+        className="flex-1 bg-[#FFF7ED]"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 160 }}
+        contentContainerStyle={{ paddingBottom: 180 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#f49110']}
-            tintColor="#F59E0B"
+            colors={['#F97316']}
+            tintColor="#F97316"
           />
         }
       >
-        {/* Header */}
-        <View className="bg-[#fbbf24] pt-8 pb-6 px-6 rounded-b-3xl">
-          <View className="flex-row items-center mb-4">
-            <TouchableOpacity
-              className="w-10 h-10 rounded-full bg-white items-center justify-center"
-              onPress={() => router.back()}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="arrow-back" size={22} color="#78350F" />
-            </TouchableOpacity>
-            <View className="flex-1 ml-3">
-              <Text className="text-yellow-900/80 text-xs font-medium tracking-wider uppercase">
-                Menu Items
-              </Text>
-              <Text className="text-yellow-900 text-2xl font-bold mt-0.5" numberOfLines={1}>
-                {branchName}
-              </Text>
-            </View>
-          </View>
+        {/* Header: Menu title */}
+        <View className="px-5 pt-4 pb-3 flex-row items-center justify-between">
+          <TouchableOpacity
+            className="flex-row items-center"
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="chevron-back" size={22} color="#7C2D12" />
+            <Text className="text-[#7C2D12] text-[26px] font-extrabold ml-1">Menu</Text>
+          </TouchableOpacity>
+        </View>
 
-          {/* Branch info */}
-          <View className="flex-row items-center">
-            <View className="w-10 h-10 rounded-full bg-white/30 items-center justify-center mr-3">
-              <Ionicons name="storefront-outline" size={20} color="#78350F" />
-            </View>
-            <View className="flex-1">
-              {branchAddress ? (
-                <Text className="text-yellow-900/80 text-xs" numberOfLines={2}>
-                  {branchAddress}
-                </Text>
-              ) : null}
-              {branchPhone ? (
-                <Text className="text-yellow-900/60 text-xs mt-0.5">{branchPhone}</Text>
-              ) : null}
-            </View>
-          </View>
-
-          {/* Search Bar */}
-          <View className="bg-white rounded-xl px-4 py-1 flex-row items-center mt-4" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}>
-            <Ionicons name="search-outline" size={22} color="#6B7280" />
+        {/* Search Bar */}
+        <View className="px-5 mt-1">
+          <View
+            className="bg-white rounded-full px-5 flex-row items-center"
+            style={{
+              shadowColor: '#7C2D12',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 3,
+            }}
+          >
+            <Ionicons name="search" size={18} color="#F97316" />
             <TextInput
-              className="flex-1 ml-2 text-base text-gray-800 py-3"
-              placeholder="Search in this branch..."
-              placeholderTextColor="#9CA3AF"
+              className="flex-1 ml-2.5 text-[14px] text-[#7C2D12] py-3.5"
+              placeholder="Search"
+              placeholderTextColor="#A8A29E"
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={22} color="#9CA3AF" />
+                <Ionicons name="close-circle" size={20} color="#F97316" />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Menu Items - Grid Style */}
-        <View className="mt-6 px-6">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-bold text-gray-800">Menu</Text>
-            <Text className="text-gray-400 text-sm">
+        {/* Popular section */}
+        <View className="mt-6 px-5">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-[#7C2D12] text-[20px] font-extrabold">Popular</Text>
+            <Text className="text-[#7C2D12]/60 text-[12px] font-medium">
               {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
             </Text>
           </View>
 
           {filteredProducts.length === 0 ? (
-            <View className="bg-white rounded-xl p-8 items-center border border-gray-100" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}>
-              <Ionicons name="restaurant-outline" size={48} color="#9CA3AF" />
-              <Text className="text-gray-800 text-base font-medium mt-3 text-center">
+            <View className="bg-white rounded-3xl p-8 items-center"
+              style={{
+                shadowColor: '#7C2D12',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.08,
+                shadowRadius: 12,
+                elevation: 3,
+              }}
+            >
+              <View className="w-16 h-16 rounded-full bg-[#FFF1E6] items-center justify-center mb-3">
+                <Ionicons name="restaurant-outline" size={30} color="#F97316" />
+              </View>
+              <Text className="text-[#7C2D12] text-base font-extrabold mt-1 text-center">
                 {searchQuery.trim() ? 'No items match your search' : 'No items available in this branch'}
               </Text>
               {searchQuery.trim() && (
-                <Text className="text-gray-500 text-sm text-center mt-1">
+                <Text className="text-[#7C2D12]/60 text-sm text-center mt-1">
                   Try adjusting your search terms
                 </Text>
               )}
             </View>
           ) : (
             <View className="flex-row flex-wrap justify-between">
-              {filteredProducts.map((item, index) => {
+              {filteredProducts.map((item) => {
                 const stock = getBranchStock(item, branchId);
                 const quantity = stock ? Number(stock.quantity) : 0;
-                const isBestSeller = index < 2;
 
                 const addToCart = () => {
                   if (quantity <= 0) return;
@@ -250,58 +248,59 @@ export default function BranchMenuScreen() {
                 return (
                   <TouchableOpacity
                     key={item.id}
-                    activeOpacity={quantity > 0 ? 0.7 : 1}
+                    activeOpacity={quantity > 0 ? 0.85 : 1}
                     onPress={addToCart}
                     disabled={quantity <= 0}
-                    className="bg-white rounded-xl mb-4 border border-gray-100 overflow-hidden"
-                    style={{ width: '48%', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}
+                    className="bg-white rounded-3xl mb-4 overflow-hidden"
+                    style={{
+                      width: '48%',
+                      shadowColor: '#7C2D12',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.08,
+                      shadowRadius: 12,
+                      elevation: 3,
+                    }}
                   >
-                    {isBestSeller && (
-                      <View className="bg-red-500 px-3 py-0.5 self-start rounded-br-lg">
-                        <Text className="text-white text-[10px] font-bold tracking-wider">
-                          BEST SELLER
-                        </Text>
-                      </View>
-                    )}
-
                     <View className="p-3">
                       {item.image ? (
                         <Image
-                          source={{ uri: `${(api.defaults?.baseURL ?? '').replace('/api', '')}/storage/${item.image}` }}
-                          className="w-full h-28 rounded-lg"
+                          source={{
+                            uri: `${(api.defaults?.baseURL ?? '').replace('/api', '')}/storage/${item.image}`,
+                          }}
+                          className="w-full h-24 rounded-2xl"
                           resizeMode="cover"
                         />
                       ) : (
-                        <View className="w-full h-28 bg-gray-100 rounded-lg items-center justify-center">
-                          <Ionicons name="restaurant-outline" size={32} color="#9CA3AF" />
+                        <View className="w-full h-24 bg-[#FFF1E6] rounded-2xl items-center justify-center">
+                          <Ionicons name="restaurant-outline" size={30} color="#F97316" />
                         </View>
                       )}
 
-                      <Text className="text-sm font-bold text-gray-800 mt-2" numberOfLines={1}>
+                      <Text className="text-[13px] font-extrabold text-[#7C2D12] mt-3" numberOfLines={1}>
                         {item.name}
                       </Text>
                       {item.description && (
-                        <Text className="text-xs text-gray-500 mt-0.5" numberOfLines={1}>
+                        <Text className="text-[11px] text-[#7C2D12]/60 mt-0.5" numberOfLines={1}>
                           {item.description}
                         </Text>
                       )}
 
-                      <View className="flex-row items-center justify-between mt-2">
-                        <Text className="text-base font-bold text-yellow-600">
+                      <View className="flex-row items-center justify-between mt-2.5">
+                        <Text className="text-[14px] font-extrabold text-[#F97316]">
                           {formatPrice(item.price)}
                         </Text>
 
                         <TouchableOpacity
                           className={`w-7 h-7 rounded-full items-center justify-center ${
-                            quantity > 0 ? 'bg-yellow-400' : 'bg-gray-200'
+                            quantity > 0 ? 'bg-[#F97316]' : 'bg-[#F5F5F5]'
                           }`}
                           disabled={quantity <= 0}
                           onPress={addToCart}
                         >
                           <Ionicons
                             name="add"
-                            size={18}
-                            color={quantity > 0 ? "#78350F" : "#9CA3AF"}
+                            size={16}
+                            color={quantity > 0 ? '#FFFFFF' : '#9CA3AF'}
                           />
                         </TouchableOpacity>
                       </View>
@@ -326,22 +325,45 @@ export default function BranchMenuScreen() {
           onPress={() => setCartVisible(false)}
         >
           <Pressable
-            style={{ backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '70%', paddingBottom: 34 }}
+            style={{
+              backgroundColor: '#fff',
+              borderTopLeftRadius: 28,
+              borderTopRightRadius: 28,
+              maxHeight: '70%',
+              paddingBottom: 34,
+            }}
             onPress={(e) => e.stopPropagation()}
           >
             {/* Handle bar */}
             <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
-              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1D5DB' }} />
+              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#FED7AA' }} />
             </View>
 
             {/* Header */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingHorizontal: 20,
+                paddingVertical: 12,
+              }}
+            >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="cart-outline" size={22} color="#78350F" />
-                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#78350F', marginLeft: 8 }}>Your Cart</Text>
+                <Ionicons name="cart-outline" size={22} color="#F97316" />
+                <Text style={{ fontSize: 18, fontWeight: '800', color: '#7C2D12', marginLeft: 8 }}>
+                  Your Cart
+                </Text>
               </View>
-              <View style={{ backgroundColor: '#FEF3C7', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2 }}>
-                <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#92400E' }}>
+              <View
+                style={{
+                  backgroundColor: '#FFF1E6',
+                  borderRadius: 999,
+                  paddingHorizontal: 10,
+                  paddingVertical: 2,
+                }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '800', color: '#F97316' }}>
                   {itemCount} {itemCount === 1 ? 'item' : 'items'}
                 </Text>
               </View>
@@ -349,8 +371,8 @@ export default function BranchMenuScreen() {
 
             {cartItems.length === 0 ? (
               <View style={{ alignItems: 'center', paddingVertical: 32, paddingHorizontal: 20 }}>
-                <Ionicons name="cart-outline" size={48} color="#D1D5DB" />
-                <Text style={{ fontSize: 15, color: '#9CA3AF', marginTop: 8 }}>Your cart is empty</Text>
+                <Ionicons name="cart-outline" size={48} color="#FED7AA" />
+                <Text style={{ fontSize: 15, color: '#A8A29E', marginTop: 8 }}>Your cart is empty</Text>
               </View>
             ) : (
               <>
@@ -366,49 +388,87 @@ export default function BranchMenuScreen() {
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        backgroundColor: '#FFFBEB',
-                        borderRadius: 12,
+                        backgroundColor: '#FFFBF5',
+                        borderRadius: 16,
                         padding: 12,
                         marginBottom: 8,
                         borderWidth: 1,
-                        borderColor: '#FDE68A',
+                        borderColor: '#FED7AA',
                       }}
                     >
-                      {/* Item image or placeholder */}
                       {item.image ? (
                         <Image
-                          source={{ uri: `${(api.defaults?.baseURL ?? '').replace('/api', '')}/storage/${item.image}` }}
-                          style={{ width: 48, height: 48, borderRadius: 10 }}
+                          source={{
+                            uri: `${(api.defaults?.baseURL ?? '').replace('/api', '')}/storage/${item.image}`,
+                          }}
+                          style={{ width: 48, height: 48, borderRadius: 12 }}
                           resizeMode="cover"
                         />
                       ) : (
-                        <View style={{ width: 48, height: 48, borderRadius: 10, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' }}>
-                          <Ionicons name="restaurant-outline" size={22} color="#9CA3AF" />
+                        <View
+                          style={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: 12,
+                            backgroundColor: '#FFF1E6',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <Ionicons name="restaurant-outline" size={22} color="#F97316" />
                         </View>
                       )}
 
-                      {/* Name + Price */}
                       <View style={{ flex: 1, marginLeft: 12 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#1F2937' }} numberOfLines={1}>{item.name}</Text>
-                        <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#D97706', marginTop: 2 }}>{formatPrice(item.price)}</Text>
+                        <Text
+                          style={{ fontSize: 14, fontWeight: '700', color: '#7C2D12' }}
+                          numberOfLines={1}
+                        >
+                          {item.name}
+                        </Text>
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#F97316', marginTop: 2 }}>
+                          {formatPrice(item.price)}
+                        </Text>
                       </View>
 
-                      {/* Qty controls */}
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TouchableOpacity
                           onPress={() => updateQuantity(item.productId, item.quantity - 1)}
-                          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' }}
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            backgroundColor: '#F5F5F5',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
                         >
-                          <Ionicons name="remove" size={16} color="#6B7280" />
+                          <Ionicons name="remove" size={16} color="#7C2D12" />
                         </TouchableOpacity>
-                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1F2937', marginHorizontal: 10, minWidth: 20, textAlign: 'center' }}>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: '800',
+                            color: '#7C2D12',
+                            marginHorizontal: 10,
+                            minWidth: 20,
+                            textAlign: 'center',
+                          }}
+                        >
                           {item.quantity}
                         </Text>
                         <TouchableOpacity
                           onPress={() => updateQuantity(item.productId, item.quantity + 1)}
-                          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#FBBF24', alignItems: 'center', justifyContent: 'center' }}
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            backgroundColor: '#F97316',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
                         >
-                          <Ionicons name="add" size={16} color="#78350F" />
+                          <Ionicons name="add" size={16} color="#FFFFFF" />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -417,9 +477,18 @@ export default function BranchMenuScreen() {
 
                 {/* Subtotal + View Cart */}
                 <View style={{ paddingHorizontal: 20, paddingTop: 12 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <Text style={{ fontSize: 14, color: '#6B7280' }}>Subtotal</Text>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#78350F' }}>{formatPrice(subtotal)}</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 12,
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, color: '#7C2D12', opacity: 0.6 }}>Subtotal</Text>
+                    <Text style={{ fontSize: 18, fontWeight: '800', color: '#7C2D12' }}>
+                      {formatPrice(subtotal)}
+                    </Text>
                   </View>
 
                   <TouchableOpacity
@@ -427,11 +496,25 @@ export default function BranchMenuScreen() {
                       setCartVisible(false);
                       router.push('/Customer/Cart');
                     }}
-                    style={{ backgroundColor: '#F59E0B', borderRadius: 14, paddingVertical: 14, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}
-                    activeOpacity={0.8}
+                    style={{
+                      backgroundColor: '#F97316',
+                      borderRadius: 16,
+                      paddingVertical: 14,
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      shadowColor: '#F97316',
+                      shadowOffset: { width: 0, height: 6 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 12,
+                      elevation: 4,
+                    }}
+                    activeOpacity={0.85}
                   >
-                    <Ionicons name="cart-outline" size={18} color="#78350F" />
-                    <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#78350F', marginLeft: 8 }}>View Cart</Text>
+                    <Ionicons name="cart-outline" size={18} color="#FFFFFF" />
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: '#FFFFFF', marginLeft: 8 }}>
+                      View Cart
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </>
@@ -442,29 +525,35 @@ export default function BranchMenuScreen() {
 
       {/* Floating Cart */}
       {!cartVisible && itemCount > 0 && (
-        <View className="absolute left-4 right-4" style={{ bottom: 20 }}>
+        <View className="absolute left-4 right-4" style={{ bottom: 100 }}>
           <TouchableOpacity
             onPress={() => setCartVisible(true)}
-            className="bg-[#78350F] rounded-2xl px-4 py-3 flex-row items-center justify-between"
-            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 }}
+            className="bg-[#7C2D12] rounded-2xl px-4 py-3 flex-row items-center justify-between"
+            style={{
+              shadowColor: '#7C2D12',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.3,
+              shadowRadius: 12,
+              elevation: 8,
+            }}
             activeOpacity={0.9}
           >
             <View className="flex-row items-center flex-1">
-              <View className="w-10 h-10 rounded-full bg-[#F59E0B] items-center justify-center mr-3">
-                <Ionicons name="cart" size={18} color="#78350F" />
+              <View className="w-10 h-10 rounded-full bg-[#F97316] items-center justify-center mr-3">
+                <Ionicons name="cart" size={18} color="#FFFFFF" />
               </View>
               <View className="flex-1">
                 <Text className="text-white text-sm font-bold">
                   {itemCount} {itemCount === 1 ? 'item' : 'items'}
                 </Text>
-                <Text className="text-yellow-300 text-xs font-medium mt-0.5">
+                <Text className="text-[#FFEDD5] text-xs font-medium mt-0.5">
                   Subtotal: {formatPrice(subtotal)}
                 </Text>
               </View>
             </View>
             <View className="flex-row items-center">
-              <Text className="text-yellow-300 text-sm font-bold mr-1">View Cart</Text>
-              <Ionicons name="arrow-forward" size={18} color="#FCD34D" />
+              <Text className="text-[#FFEDD5] text-sm font-bold mr-1">View Cart</Text>
+              <Ionicons name="arrow-forward" size={18} color="#FFEDD5" />
             </View>
           </TouchableOpacity>
         </View>

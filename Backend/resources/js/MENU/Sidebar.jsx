@@ -25,7 +25,6 @@ import {
 } from "@ant-design/icons";
 import { api } from "../config/api";
 import logo from "../assets/logooos.jpg";
-import chicken from "../assets/chicken.jpg";
 
 const NAV_GROUPS = [
   {
@@ -92,7 +91,7 @@ function tagStyle(color) {
   return { fontSize: 9, padding: "2px 6px", borderRadius: 4, background: c.bg, color: c.text, fontWeight: 600, flexShrink: 0, alignSelf: "flex-start", marginTop: 2 };
 }
 
-function MenuSidebar() {
+function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -198,11 +197,11 @@ function MenuSidebar() {
           zIndex: 100,
         }}
       >
-        {/* Brand Header — green block with logo + name + rounded avatar overlap */}
+        {/* Brand Header — green block with logo + name + toggle */}
         <div
           style={{
             background: HEADER_BG,
-            padding: collapsed ? "14px 0 22px" : "16px 18px 26px",
+            padding: collapsed ? "14px 0 14px" : "16px 18px 16px",
             position: "relative",
             flexShrink: 0,
             display: "flex",
@@ -306,54 +305,11 @@ function MenuSidebar() {
           >
             {collapsed ? <RightOutlined style={{ fontSize: 10 }} /> : <LeftOutlined style={{ fontSize: 10 }} />}
           </button>
-
-          {/* Avatar overlapping the green header bottom */}
-          {!collapsed && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: -32,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 64,
-                height: 64,
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: `4px solid ${BG}`,
-                background: BG,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-              }}
-            >
-              <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #F97316, #EA580C)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 22 }}>
-                {(user.name || user.username || "A")[0].toUpperCase()}
-              </div>
-            </div>
-          )}
-          {collapsed && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: -16,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                overflow: "hidden",
-                border: `3px solid ${BG}`,
-                background: BG,
-              }}
-            >
-              <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #F97316, #EA580C)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 12 }}>
-                {(user.name || user.username || "A")[0].toUpperCase()}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* User name block under avatar (expanded only) */}
+        {/* User name block (expanded only) */}
         {!collapsed && (
-          <div style={{ textAlign: "center", padding: "40px 16px 8px", flexShrink: 0 }}>
+          <div style={{ textAlign: "center", padding: "16px 16px 8px", flexShrink: 0 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: TEXT, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {user.name || user.username || "Admin"}
             </div>
@@ -362,7 +318,7 @@ function MenuSidebar() {
             </div>
           </div>
         )}
-        {collapsed && <div style={{ height: 24, flexShrink: 0 }} />}
+        {collapsed && <div style={{ height: 8, flexShrink: 0 }} />}
 
         {/* Navigation */}
         <div className="nm-scroll" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "12px 0 8px" }}>
@@ -533,4 +489,4 @@ function MenuSidebar() {
   );
 }
 
-export default MenuSidebar;
+export default Sidebar;

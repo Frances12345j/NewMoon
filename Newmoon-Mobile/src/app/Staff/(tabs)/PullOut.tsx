@@ -64,13 +64,10 @@ type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 const STOCK_OUT_REASONS = [
   'Sales',
   'Damage',
-  'Pull-out',
   'Spoilage',
   'Expired',
   'Wastage',
   'Breakage',
-  'Adjustment',
-  'Other',
 ];
 
 const REASON_COLORS: Record<string, string> = {
@@ -139,11 +136,11 @@ const StockOutScreen = () => {
   const {
     data: stockOutsData,
     isLoading: stockOutsLoading,
-    error: stockOutsError,
+    error: PullOutsError,
     refetch: refetchStockOuts,
   } = useQuery({
     queryKey: ['stockOuts'],
-    queryFn: () => api.get('/stock-outs'),
+    queryFn: () => api.get('/pull-outs'),
   });
 
   // Fetch products
@@ -166,13 +163,13 @@ const StockOutScreen = () => {
     refetch: refetchStats,
   } = useQuery({
     queryKey: ['stockOutStatistics'],
-    queryFn: () => api.get('/stock-outs/statistics'),
+    queryFn: () => api.get('/pull-outs/statistics'),
   });
 
   // Submit mutation
   const submitMutation = useMutation({
     mutationFn: async (data: { product_id: number; quantity: number; reason: string; notes: string | null }) => {
-      const response = await api.post('/stock-outs', data);
+      const response = await api.post('/pull-outs', data);
       return response.data;
     },
     onSuccess: () => {

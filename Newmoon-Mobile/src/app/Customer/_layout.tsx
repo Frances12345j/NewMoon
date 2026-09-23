@@ -15,7 +15,6 @@ export default function CustomerLayout() {
             <Stack.Screen name="Checkout" />
             <Stack.Screen name="OrderDetail" />
             <Stack.Screen name="RiderTracking" />
-            <Stack.Screen name="Profile" />
             <Stack.Screen name="BranchMenu" />
             <Stack.Screen name="orderChat" />
           </Stack>

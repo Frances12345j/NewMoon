@@ -33,6 +33,12 @@ function isStaffUser(u: any): boolean {
 
 function attendanceErrorMessage(error: any): string {
   const code = error?.response?.data?.code;
+  if (code === 'TIME_IN_CLOSED') {
+    return 'Time In is closed. Time In is only available from 9:00 AM to 9:30 AM.';
+  }
+  if (code === 'TIME_OUT_CLOSED') {
+    return 'Time Out is closed. Time Out is only available from 9:00 PM to 10:00 PM.';
+  }
   if (code === 'FACE_MISMATCH') {
     return 'Face not recognized. Match your enrollment pose and lighting.';
   }
@@ -66,18 +72,38 @@ function attendanceErrorMessage(error: any): string {
   return error?.message ?? 'Something went wrong.';
 }
 
-function TimeOutCountdown({ until }: { until: number }) {
-  const [now, setNow] = useState(Date.now());
+// Asia/Manila fixed-offset helper (UTC+8, no DST).
+function secondsUntilPhilippinesClock(target: string): number {
+  const now = new Date();
+  const off = 8 * 3600 * 1000;
+  const local = now.getTime() + now.getTimezoneOffset() * 60000 + off;
+  const y = new Date(local).getUTCFullYear();
+  const m = new Date(local).getUTCMonth();
+  const d = new Date(local).getUTCDate();
+  const [h, min, s] = target.split(':').map(Number);
+  const targetMs = Date.UTC(y, m, d, h, min, s || 0);
+  let diff = (targetMs - (local - (local % 1000))) / 1000;
+  if (diff <= 0) diff += 24 * 3600;
+  return Math.floor(diff);
+}
+
+function TimeOutOpensCountdown() {
+  const [totalSec, setTotalSec] = useState(() => secondsUntilPhilippinesClock('21:00:00'));
   useEffect(() => {
-    if (until <= Date.now()) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [until]);
-  const ms = Math.max(0, until - now);
-  const total = Math.ceil(ms / 1000);
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return <>{`${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`}</>;
+    const t = setInterval(() => setTotalSec(secondsUntilPhilippinesClock('21:00:00')), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const hh = Math.floor(totalSec / 3600);
+  const mm = Math.floor((totalSec % 3600) / 60);
+  const ss = totalSec % 60;
+  const fmt = (n: number) => String(n).padStart(2, '0');
+  return (
+    <View className="flex-row items-center justify-center mt-2">
+      <Text className="text-xs font-medium text-amber-600">
+        Time Out opens in {fmt(hh)}:{fmt(mm)}:{fmt(ss)}
+      </Text>
+    </View>
+  );
 }
 
 function ScreenCenter(props: { title?: string; subtitle?: string; children?: React.ReactNode }) {
@@ -197,40 +223,7 @@ export default function AttendanceScreen() {
   const faceWebRef = useRef<FaceDetectionWebViewHandle | null>(null);
   const scanInFlightRef = useRef(false);
   const scanCooldownUntilRef = useRef<number>(0);
-  const TIME_OUT_LOCK_MS = 2 * 60 * 1000;
-  const TIME_OUT_LOCK_KEY = 'attendance_timeOutLockUntil';
-  const [timeOutLockUntil, setTimeOutLockUntil] = useState<number>(0);
-
-  const timeOutLocked = timeOutLockUntil > Date.now();
-
-  const startTimeOutLock = async (source: 'auto_time_in' | 'manual_time_in') => {
-    const until = Date.now() + TIME_OUT_LOCK_MS;
-    setTimeOutLockUntil(until);
-    console.log('[ATTENDANCE] time-out lock start', { source, until, ms: TIME_OUT_LOCK_MS });
-    try {
-      if (Platform.OS === 'web') {
-        localStorage.setItem(TIME_OUT_LOCK_KEY, String(until));
-      } else {
-        await SecureStore.setItemAsync(TIME_OUT_LOCK_KEY, String(until));
-      }
-    } catch (e) {
-      console.log('[ATTENDANCE] failed saving time-out lock', e);
-    }
-  };
-
-  const clearTimeOutLock = async (source: 'time_out' | 'expired' | 'load' | 'new_day') => {
-    setTimeOutLockUntil(0);
-    console.log('[ATTENDANCE] time-out lock clear', { source });
-    try {
-      if (Platform.OS === 'web') {
-        localStorage.removeItem(TIME_OUT_LOCK_KEY);
-      } else {
-        await SecureStore.deleteItemAsync(TIME_OUT_LOCK_KEY);
-      }
-    } catch (e) {
-      console.log('[ATTENDANCE] failed clearing time-out lock', e);
-    }
-  };
+  const [clockTick, setClockTick] = useState(0);
 
   function getPhilippinesTime() {
     const now = new Date();
@@ -244,6 +237,30 @@ export default function AttendanceScreen() {
     });
     return { date, time };
   }
+
+  const philippinesClock = () => {
+    const t = getPhilippinesTime().time;
+    const parts = t.split(':');
+    return parts.map((p) => String(p).padStart(2, '0')).join(':');
+  };
+  const isWithinTimeInWindow = () => {
+    const c = philippinesClock();
+    return c >= '09:00:00' && c <= '09:30:00';
+  };
+  const isWithinTimeOutWindow = () => {
+    const c = philippinesClock();
+    return c >= '21:00:00' && c <= '22:00:00';
+  };
+  const isTimeInClosed = () => {
+    return philippinesClock() > '09:30:00';
+  };
+  const isWaitingForTimeOut = () => {
+    const c = philippinesClock();
+    return c >= '09:30:01' && c < '21:00:00';
+  };
+  const isTimeOutClosed = () => {
+    return philippinesClock() >= '22:00:01';
+  };
 
   const getAttendanceDate = (record: any) => {
     const rawDate = record?.date || record?.created_at || '';
@@ -262,41 +279,16 @@ export default function AttendanceScreen() {
   const hasTimedInToday = isTodayAttendance && hasTimedIn;
   const staffNeedsFace = user ? isStaffUser(user) : false;
   const staffFaceReady = !staffNeedsFace || (!faceStatusLoading && faceEnrolled);
+  const timeInOpenWindow = staffFaceReady && !attendanceLoading && isWithinTimeInWindow();
+  const timeOutOpenWindow = staffFaceReady && !attendanceLoading && isWithinTimeOutWindow();
   const canTimeIn =
-    staffFaceReady && !attendanceLoading && !hasOpenAttendance && !hasCompletedToday;
-  const canTimeOut = staffFaceReady && !attendanceLoading && hasOpenAttendance;
-  const canTimeOutEffective = canTimeOut && !timeOutLocked;
+    staffFaceReady && !attendanceLoading && !hasOpenAttendance && !hasCompletedToday && isWithinTimeInWindow();
+  const canTimeOut = staffFaceReady && !attendanceLoading && hasOpenAttendance && isWithinTimeOutWindow();
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const raw = Platform.OS === 'web'
-          ? localStorage.getItem(TIME_OUT_LOCK_KEY)
-          : await SecureStore.getItemAsync(TIME_OUT_LOCK_KEY);
-        const n = raw ? Number(raw) : 0;
-        if (!mounted) return;
-        if (Number.isFinite(n) && n > Date.now()) {
-          setTimeOutLockUntil(n);
-          console.log('[ATTENDANCE] restored time-out lock', { until: n });
-        } else if (Number.isFinite(n) && n > 0) {
-          await clearTimeOutLock('load');
-        }
-      } catch (e) {
-        console.log('[ATTENDANCE] failed restoring time-out lock', e);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const t = setInterval(() => setClockTick((c) => c + 1), 15000);
+    return () => clearInterval(t);
   }, []);
-
-  useEffect(() => {
-    if (!timeOutLocked && timeOutLockUntil > 0) {
-      clearTimeOutLock('expired');
-    }
-  }, [timeOutLocked, timeOutLockUntil]);
 
   // Daily reset logic: check if day has changed and reset state
   useEffect(() => {
@@ -307,7 +299,6 @@ export default function AttendanceScreen() {
         setCurrentDate(today);
         setAttendance(null);
         setMode('time_in');
-        clearTimeOutLock('new_day');
         // Reload attendance for the new day
         if (user?.id && branchId) {
           loadAttendanceRecord(user.id, branchId);
@@ -682,6 +673,14 @@ export default function AttendanceScreen() {
     if (!isStaffUser(user) || !faceEnrolled) return;
     if (loading || enrollingFace) return;
 
+    const clock = (() => {
+      const t = getPhilippinesTime().time;
+      return t.split(':').map((p) => String(p).padStart(2, '0')).join(':');
+    })();
+    const timeInNow = clock >= '09:00:00' && clock <= '09:30:00';
+    const timeOutNow = clock >= '21:00:00' && clock <= '22:00:00';
+    if (!timeInNow && !timeOutNow) return;
+
     const now = Date.now();
     if (scanInFlightRef.current) return;
     if (now < scanCooldownUntilRef.current) {
@@ -693,8 +692,8 @@ export default function AttendanceScreen() {
       return;
     }
 
-    const shouldTimeIn = mode === 'time_in' && canTimeIn;
-    const shouldTimeOut = mode === 'time_out' && canTimeOutEffective;
+    const shouldTimeIn = mode === 'time_in' && canTimeIn && timeInNow;
+    const shouldTimeOut = mode === 'time_out' && canTimeOut && timeOutNow;
     if (!shouldTimeIn && !shouldTimeOut) {
       if (scanPhase === 'checking') {
         setScanPhase('scanning');
@@ -729,7 +728,6 @@ export default function AttendanceScreen() {
         const responseData = response.data as Record<string, unknown>;
         setAttendance(extractAttendanceRecord(responseData));
         setMode('time_out');
-        startTimeOutLock('auto_time_in');
         const sim = responseData?.similarity;
         const th = responseData?.threshold;
         if (typeof sim === 'number') setScanConfidence(sim);
@@ -756,7 +754,6 @@ export default function AttendanceScreen() {
         const responseData = response.data as Record<string, unknown>;
         setAttendance(extractAttendanceRecord(responseData));
         setMode('time_in');
-        clearTimeOutLock('time_out');
         const sim = responseData?.similarity;
         const th = responseData?.threshold;
         if (typeof sim === 'number') setScanConfidence(sim);
@@ -811,6 +808,13 @@ export default function AttendanceScreen() {
     if (faceStatusLoading) return;
 
     const id = setInterval(() => {
+      const c = (() => {
+        const t = getPhilippinesTime().time;
+        return t.split(':').map((p) => String(p).padStart(2, '0')).join(':');
+      })();
+      const timeInNow = c >= '09:00:00' && c <= '09:30:00';
+      const timeOutNow = c >= '21:00:00' && c <= '22:00:00';
+      if (!timeInNow && !timeOutNow) return;
       submitAutoAttendance();
     }, 1600);
 
@@ -828,6 +832,9 @@ export default function AttendanceScreen() {
     attendance?.id,
     loading,
     enrollingFace,
+    timeInOpenWindow,
+    timeOutOpenWindow,
+    clockTick,
   ]);
 
   const handleRegisterFace = async () => {
@@ -879,6 +886,14 @@ export default function AttendanceScreen() {
       return;
     }
 
+    if (!isWithinTimeInWindow()) {
+      Alert.alert(
+        'Time In is closed',
+        'Time In is only available from 9:00 AM to 9:30 AM.'
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       const { date, time } = getPhilippinesTime();
@@ -919,7 +934,6 @@ export default function AttendanceScreen() {
         setScanThreshold(null);
       }, 2200);
       setMode('time_out');
-      startTimeOutLock('manual_time_in');
       Alert.alert('Success', `Time In recorded at ${time}`);
       addDebug(`Time In successful`);
     } catch (error: any) {
@@ -939,11 +953,10 @@ export default function AttendanceScreen() {
       return;
     }
 
-    if (timeOutLocked) {
-      console.log('[ATTENDANCE] time-out blocked (cooldown)', { msLeft: timeOutLockUntil - Date.now() });
+    if (!isWithinTimeOutWindow()) {
       Alert.alert(
-        'Please wait',
-        `Time Out will be available in ${((w) => { const t = Math.ceil(Math.max(0, w) / 1000); const m = Math.floor(t / 60); const s = t % 60; return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; })(Math.max(0, timeOutLockUntil - Date.now()))}.`
+        'Time Out is closed',
+        'Time Out is only available from 9:00 PM to 10:00 PM.'
       );
       return;
     }
@@ -994,7 +1007,6 @@ export default function AttendanceScreen() {
         setScanThreshold(null);
       }, 2200);
       setMode('time_in');
-      clearTimeOutLock('time_out');
       Alert.alert('Success', `Time Out recorded at ${time}`);
       addDebug(`Time Out successful`);
     } catch (error: any) {
@@ -1221,6 +1233,79 @@ export default function AttendanceScreen() {
         </View>
       </ScrollView>
     );
+  } else if (staffUser && !faceStatusLoading && faceEnrolled && !hasTimedInToday && !hasOpenAttendance && isTimeInClosed()) {
+    console.log('[ATTENDANCE UI] Time In window closed; showing Time In closed state');
+    attendanceBody = (
+      <View style={{ flex: 1, backgroundColor: COLORS.BG_PAGE, paddingHorizontal: 20, paddingTop: 64, paddingBottom: 40 }}>
+        <View className="items-center">
+          <Pill text="Time In Closed" tone="danger" />
+          <Text style={{ color: COLORS.TEXT_PRIMARY, fontSize: 22, fontWeight: '800', marginTop: 16, textAlign: 'center' }}>
+            Time In window has closed
+          </Text>
+          <Text style={{ color: COLORS.TEXT_SECONDARY, fontSize: 14, textAlign: 'center', marginTop: 8 }}>
+            Time In is only available from 9:00 AM to 9:30 AM. Please time in tomorrow.
+          </Text>
+        </View>
+
+        <View className="mt-5">
+          <PrimaryButton
+            label={attendanceLoading ? 'Refreshing...' : 'Refresh Status'}
+            onPress={() => loadAttendanceRecord(user.id, branchId)}
+            tone="blue"
+            loading={attendanceLoading}
+          />
+        </View>
+      </View>
+    );
+  } else if (staffUser && !faceStatusLoading && faceEnrolled && hasTimedInToday && !hasTimedOut && isTimeOutClosed()) {
+    console.log('[ATTENDANCE UI] Time Out window closed; showing Time Out closed state');
+    attendanceBody = (
+      <View style={{ flex: 1, backgroundColor: COLORS.BG_PAGE, paddingHorizontal: 20, paddingTop: 64, paddingBottom: 40 }}>
+        <View className="items-center">
+          <Pill text="Time Out Closed" tone="danger" />
+          <Text style={{ color: COLORS.TEXT_PRIMARY, fontSize: 22, fontWeight: '800', marginTop: 16, textAlign: 'center' }}>
+            Time Out window has closed
+          </Text>
+          <Text style={{ color: COLORS.TEXT_SECONDARY, fontSize: 14, textAlign: 'center', marginTop: 8 }}>
+            Time Out is only available from 9:00 PM to 10:00 PM. Please contact your supervisor for approval.
+          </Text>
+        </View>
+
+        <View className="mt-5">
+          <PrimaryButton
+            label={attendanceLoading ? 'Refreshing...' : 'Refresh Status'}
+            onPress={() => loadAttendanceRecord(user.id, branchId)}
+            tone="blue"
+            loading={attendanceLoading}
+          />
+        </View>
+      </View>
+    );
+  } else if (staffUser && !faceStatusLoading && faceEnrolled && hasTimedInToday && !hasTimedOut && isWaitingForTimeOut()) {
+    console.log('[ATTENDANCE UI] Waiting for Time Out window; showing waiting state');
+    attendanceBody = (
+      <View style={{ flex: 1, backgroundColor: COLORS.BG_PAGE, paddingHorizontal: 20, paddingTop: 64, paddingBottom: 40 }}>
+        <View className="items-center">
+          <Pill text="Waiting" tone="warning" />
+          <Text style={{ color: COLORS.TEXT_PRIMARY, fontSize: 22, fontWeight: '800', marginTop: 16, textAlign: 'center' }}>
+            Waiting for Time Out
+          </Text>
+          <Text style={{ color: COLORS.TEXT_SECONDARY, fontSize: 14, textAlign: 'center', marginTop: 8 }}>
+            You have already timed in. Time Out opens at 9:00 PM.
+          </Text>
+          <TimeOutOpensCountdown />
+        </View>
+
+        <View className="mt-5">
+          <PrimaryButton
+            label={attendanceLoading ? 'Refreshing...' : 'Refresh Status'}
+            onPress={() => loadAttendanceRecord(user.id, branchId)}
+            tone="blue"
+            loading={attendanceLoading}
+          />
+        </View>
+      </View>
+    );
   } else if (hasCompletedToday) {
     console.log('[ATTENDANCE UI] Completed for today; showing return tomorrow state');
     attendanceBody = (
@@ -1228,7 +1313,7 @@ export default function AttendanceScreen() {
         <View className="items-center">
           <Pill text="Done for today" tone="success" />
           <Text style={{ color: COLORS.TEXT_PRIMARY, fontSize: 22, fontWeight: '800', marginTop: 16, textAlign: 'center' }}>
-            Time in and time out complete
+            Attendance Complete
           </Text>
           <Text style={{ color: COLORS.TEXT_SECONDARY, fontSize: 14, textAlign: 'center', marginTop: 8 }}>
             You are all set for today. Please return tomorrow for your next attendance.
@@ -1240,6 +1325,7 @@ export default function AttendanceScreen() {
             <Text style={{ color: COLORS.TEXT_PRIMARY, fontWeight: '700', marginBottom: 12 }}>Today&apos;s record</Text>
             <InfoRow label="Time in" value={attendance?.time_in || '—'} />
             <InfoRow label="Time out" value={attendance?.time_out || '—'} />
+            <InfoRow label="Hours worked" value={attendance?.hours_worked ? `${attendance.hours_worked} hrs` : '—'} />
             {Boolean(attendance?.is_late) ? (
               <View className="mt-2">
                 <Pill text={`Late by ${attendance?.late_minutes} min`} tone="warning" />
@@ -1301,17 +1387,17 @@ export default function AttendanceScreen() {
 
               <TouchableOpacity
                 onPress={() => setMode('time_out')}
-                disabled={!canTimeOutEffective && mode !== 'time_out'}
+                disabled={!canTimeOut && mode !== 'time_out'}
                 className={`flex-1 py-3 rounded-xl ${mode === 'time_out'
                     ? ''
-                    : !canTimeOutEffective
+                    : !canTimeOut
                       ? 'opacity-50'
                       : ''
                   }`}
                 style={{
                   backgroundColor: mode === 'time_out'
                     ? COLORS.PRIMARY_NAVY
-                    : !canTimeOutEffective
+                    : !canTimeOut
                       ? 'transparent'
                       : 'rgba(26,35,126,0.08)',
                 }}
@@ -1357,9 +1443,9 @@ export default function AttendanceScreen() {
               <Text style={{ color: COLORS.TEXT_SECONDARY, fontSize: 11 }}>
                 {staffUser ? 'Auto scan' : 'Manual scan'} • {mode === 'time_in' ? 'Time In' : 'Time Out'}
               </Text>
-              {mode === 'time_out' && timeOutLocked ? (
-                <Text style={{ color: '#D97706', fontSize: 11, marginTop: 2 }}>
-                  Time Out available in <TimeOutCountdown until={timeOutLockUntil} />
+              {(mode === 'time_in' && timeInOpenWindow) || (mode === 'time_out' && timeOutOpenWindow) ? (
+                <Text style={{ color: '#15803D', fontSize: 11, marginTop: 2 }}>
+                  {mode === 'time_in' ? 'Time In open until 9:30 AM' : 'Time Out open until 10:00 PM'}
                 </Text>
               ) : null}
             </View>
@@ -1372,9 +1458,7 @@ export default function AttendanceScreen() {
                       ? 'Mismatch'
                       : scanPhase === 'checking'
                         ? 'Checking…'
-                        : mode === 'time_out' && timeOutLocked
-                          ? 'Standby'
-                          : 'Ready'
+                        : 'Ready'
                   : loading
                     ? 'Working…'
                     : 'Ready'
@@ -1384,9 +1468,7 @@ export default function AttendanceScreen() {
                   ? 'success'
                   : staffUser && scanPhase === 'mismatch'
                     ? 'danger'
-                    : mode === 'time_out' && timeOutLocked
-                      ? 'neutral'
-                      : 'success'
+                    : 'success'
               }
             />
           </View>
@@ -1406,8 +1488,8 @@ export default function AttendanceScreen() {
           <View className="absolute bottom-10 left-0 right-0 items-center px-6">
             <TouchableOpacity
               onPress={mode === 'time_in' ? handleTimeIn : handleTimeOut}
-              disabled={loading || (mode === 'time_in' ? !canTimeIn : !canTimeOutEffective)}
-              className={`w-20 h-20 rounded-full justify-center items-center shadow-lg ${loading || (mode === 'time_in' ? !canTimeIn : !canTimeOutEffective)
+              disabled={loading || (mode === 'time_in' ? !canTimeIn : !canTimeOut)}
+              className={`w-20 h-20 rounded-full justify-center items-center shadow-lg ${loading || (mode === 'time_in' ? !canTimeIn : !canTimeOut)
                   ? 'bg-gray-500/80'
                   : 'bg-white'
                 }`}
@@ -1426,15 +1508,11 @@ export default function AttendanceScreen() {
                     ? 'Time In already recorded today'
                     : 'Time Out previous record first'
                   : 'Tap to Time In'
-                : timeOutLocked
-                  ? <>
-                    Please wait <TimeOutCountdown until={timeOutLockUntil} />
-                  </>
-                  : hasTimedOut
-                    ? 'Time Out already recorded today'
-                    : !hasTimedIn
-                      ? 'Time In first'
-                      : 'Tap to Time Out'}
+                : hasTimedOut
+                  ? 'Time Out already recorded today'
+                  : !hasTimedIn
+                    ? 'Time In first'
+                    : 'Tap to Time Out'}
             </Text>
           </View>
         )}

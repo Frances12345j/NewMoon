@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StockOut extends Model
+class Pullouts extends Model
 {
     use HasFactory;
 
-    protected $table = 'stock_outs';
+    protected $table = 'pull_outs';
 
     protected $fillable = [
         'user_id',

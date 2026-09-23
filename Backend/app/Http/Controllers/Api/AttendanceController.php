@@ -7,10 +7,16 @@ use App\Models\Attendance;
 use App\Models\UserFaceTemplate;
 use App\Models\StaffAssignment;
 use App\Services\FaceTemplateMatcher;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
+    const TIME_IN_START = '09:00:00';
+    const TIME_IN_END = '09:30:00';
+    const TIME_OUT_START = '21:00:00';
+    const TIME_OUT_END = '22:00:00';
+
     public function getAttendance(Request $request)
     {
         $query = Attendance::with(['user', 'branch']);
@@ -76,6 +82,45 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Unauthorized attendance action.', 'error' => 'user_id mismatch'], 403);
         }
 
+        // Verify active branch assignment.
+        $assignment = StaffAssignment::where('user_id', $validated['user_id'])
+            ->where('branch_id', $validated['branch_id'])
+            ->where('is_active', true)
+            ->first();
+
+        if (!$assignment) {
+            return response()->json([
+                'message' => 'No active branch assignment found.',
+                'error' => 'This staff member is not assigned to the selected branch.',
+            ], 422);
+        }
+
+        // Time In window: 09:00:00 - 09:30:00 Asia/Manila.
+        // The server is the final authority for whether Time In is allowed.
+        $philippinesNow = Carbon::now('Asia/Manila');
+        $clock = $philippinesNow->format('H:i:s');
+        if ($clock < self::TIME_IN_START || $clock > self::TIME_IN_END) {
+            return response()->json([
+                'message' => 'Time In is closed. Time In is only available from 9:00 AM to 9:30 AM.',
+                'code' => 'TIME_IN_CLOSED',
+            ], 422);
+        }
+
+        $date = $validated['date'] ?? $philippinesNow->toDateString();
+
+        // Verify the staff has not already timed in today (Philippines date).
+        $existingAttendance = Attendance::where('user_id', $validated['user_id'])
+            ->whereDate('date', $date)
+            ->first();
+
+        if ($existingAttendance && $existingAttendance->time_in) {
+            return response()->json([
+                'message' => 'Time in already recorded for today.',
+                'error' => 'You cannot time in again until the next day.',
+                'attendance' => $existingAttendance,
+            ], 409);
+        }
+
         // Staff attendance: enrolled face template required + embedding must match
         $authRole = strtolower((string) ($authUser->role ?? ''));
         if ($authRole === 'staff') {
@@ -127,35 +172,9 @@ class AttendanceController extends Controller
             }
         }
 
-        $assignment = StaffAssignment::where('user_id', $validated['user_id'])
-            ->where('branch_id', $validated['branch_id'])
-            ->where('is_active', true)
-            ->first();
-
-        if (!$assignment) {
-            return response()->json([
-                'message' => 'No active branch assignment found.',
-                'error' => 'This staff member is not assigned to the selected branch.',
-            ], 422);
-        }
-
-        $date = $validated['date'] ?? now()->toDateString();
-
-        $existingAttendance = Attendance::where('user_id', $validated['user_id'])
-            ->whereDate('date', $date)
-            ->first();
-
-        if ($existingAttendance && $existingAttendance->time_in) {
-            return response()->json([
-                'message' => 'Time in already recorded for today.',
-                'error' => 'You cannot time in again until the next day.',
-                'attendance' => $existingAttendance,
-            ], 409);
-        }
-
         // Check if user is late (after 9:00 AM)
-        $timeIn = \Carbon\Carbon::parse($date . ' ' . $validated['time_in']);
-        $cutoff = \Carbon\Carbon::parse($date . ' 09:00');
+        $timeIn = Carbon::parse($date . ' ' . $validated['time_in']);
+        $cutoff = Carbon::parse($date . ' 09:00');
         $isLate = $timeIn->gt($cutoff);
         $lateMinutes = $isLate ? $cutoff->diffInMinutes($timeIn) : 0;
 
@@ -199,6 +218,34 @@ class AttendanceController extends Controller
             $authUser = $request->user();
             if ((int) $attendance->user_id !== (int) $authUser->id) {
                 return response()->json(['message' => 'Unauthorized attendance action.', 'error' => 'not your record'], 403);
+            }
+
+            // Time Out requires a prior successful Time In.
+            if (!$attendance->time_in) {
+                return response()->json([
+                    'message' => 'Time in is required before time out.',
+                    'error' => 'Please time in first.',
+                ], 422);
+            }
+
+            // Time Out can only be recorded once per attendance record.
+            if ($attendance->time_out) {
+                return response()->json([
+                    'message' => 'Time out already recorded for today.',
+                    'error' => 'You cannot time out again for the same attendance record.',
+                    'attendance' => $attendance,
+                ], 409);
+            }
+
+            // Time Out window: 21:00:00 - 22:00:00 Asia/Manila.
+            // The server is the final authority for whether Time Out is allowed.
+            $philippinesNow = Carbon::now('Asia/Manila');
+            $clock = $philippinesNow->format('H:i:s');
+            if ($clock < self::TIME_OUT_START || $clock > self::TIME_OUT_END) {
+                return response()->json([
+                    'message' => 'Time Out is closed. Time Out is only available from 9:00 PM to 10:00 PM.',
+                    'code' => 'TIME_OUT_CLOSED',
+                ], 422);
             }
 
             $authRole = strtolower((string) ($authUser->role ?? ''));
@@ -251,23 +298,8 @@ class AttendanceController extends Controller
                 }
             }
 
-            if (!$attendance->time_in) {
-                return response()->json([
-                    'message' => 'Time in is required before time out.',
-                    'error' => 'Please time in first.',
-                ], 422);
-            }
-
-            if ($attendance->time_out) {
-                return response()->json([
-                    'message' => 'Time out already recorded for today.',
-                    'error' => 'You cannot time out again for the same attendance record.',
-                    'attendance' => $attendance,
-                ], 409);
-            }
-
-            $timeIn = \Carbon\Carbon::parse($attendance->time_in);
-            $timeOut = \Carbon\Carbon::parse($timeIn->toDateString() . ' ' . $validated['time_out']);
+            $timeIn = Carbon::parse($attendance->time_in);
+            $timeOut = Carbon::parse($timeIn->toDateString() . ' ' . $validated['time_out']);
 
             if ($timeOut->lt($timeIn)) {
                 $timeOut->addDay();
@@ -275,7 +307,7 @@ class AttendanceController extends Controller
 
             $minutesWorked = $timeIn->diffInMinutes($timeOut);
             $hoursWorked = round($minutesWorked / 60, 2);
-            
+
             // Set status: a late staff who completes time in + time out is "Completed Late"
             if ($attendance->is_late) {
                 $status = 'completed_late';

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Product;
 use App\Models\ProductStock;
-use App\Models\StockOut;
+use App\Models\Pullouts;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\StaffAssignment;
@@ -585,7 +585,7 @@ class ReportController extends Controller
 {
     try {
         // ✅ BASE QUERY WITH RELATIONSHIPS
-        $query = \App\Models\StockOut::with(['user', 'product', 'branch']);
+        $query = Pullouts::with(['user', 'product', 'branch']);
 
         // ✅ FILTERS
         if ($request->filled('start_date') && $request->filled('end_date')) {
@@ -647,8 +647,8 @@ class ReportController extends Controller
         // ✅ SUMMARY - FIXED to use the original query with proper counting
         $summary = [
             'total_transfers' => $pullOuts->total(),
-            'completed' => \App\Models\StockOut::where('status', 'approved')->count(),
-            'pending' => \App\Models\StockOut::where('status', 'pending')->count(),
+            'completed' => Pullouts::where('status', 'approved')->count(),
+            'pending' => Pullouts::where('status', 'pending')->count(),
             'total_value' => $pullOuts->getCollection()->sum(function ($item) {
                 return ($item->quantity ?? 0) * (optional($item->product)->price ?? 0);
             }),

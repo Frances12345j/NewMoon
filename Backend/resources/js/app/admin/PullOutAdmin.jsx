@@ -15,7 +15,7 @@ import { api } from "@/config/api";
 
 const { TextArea } = Input;
 
-// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
+// ─── Palette — matches Sidebar / Dashboard (dark plum + mint) ─────
 const PANEL_BG = "#2A2438";
 const PANEL_BG_2 = "#332C45";
 const BORDER = "rgba(255,255,255,0.06)";
@@ -71,7 +71,7 @@ function PullOutAdmin() {
     queryFn: () => {
       const params = { page: currentPage, per_page: pageSize };
       if (statusFilter !== "all") params.status = statusFilter;
-      return api.get("/stock-outs/getall", { params });
+      return api.get("/pull-outs/getall", { params });
     },
   });
 
@@ -82,7 +82,7 @@ function PullOutAdmin() {
   // Approve mutation
   const approveMutation = useMutation({
     mutationFn: ({ id, adminNotes }) => 
-      api.post(`/stock-outs/${id}/approve`, { admin_notes: adminNotes }),
+      api.post(`/pull-outs/${id}/approve`, { admin_notes: adminNotes }),
     onSuccess: () => {
       message.success("Stock out approved successfully");
       setShowApproveModal(false);
@@ -91,14 +91,14 @@ function PullOutAdmin() {
       queryClient.invalidateQueries({ queryKey: ['pullOutsAll'] });
     },
     onError: (error) => {
-      message.error(error.response?.data?.message || "Failed to approve stock-out");
+      message.error(error.response?.data?.message || "Failed to approve Pull-Out");
     },
   });
 
   // Reject mutation
   const rejectMutation = useMutation({
     mutationFn: ({ id, adminNotes }) => 
-      api.post(`/stock-outs/${id}/reject`, { admin_notes: adminNotes }),
+      api.post(`/pull-outs/${id}/reject`, { admin_notes: adminNotes }),
     onSuccess: () => {
       message.success("Stock out rejected successfully");
       setShowRejectModal(false);
@@ -107,7 +107,7 @@ function PullOutAdmin() {
       queryClient.invalidateQueries({ queryKey: ['pullOutsAll'] });
     },
     onError: (error) => {
-      message.error(error.response?.data?.message || "Failed to reject stock-out");
+      message.error(error.response?.data?.message || "Failed to reject Pull-Out");
     },
   });
 
@@ -316,7 +316,7 @@ function PullOutAdmin() {
             <div>
               <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
                 <InboxOutlined className="mr-2" style={{ color: ACCENT }} />
-                Stock Out Management
+                Pull Out Management
               </h1>
               <p className="text-sm" style={{ color: MUTED }}>
                 Approve or reject product stock-out requests
@@ -463,8 +463,8 @@ function PullOutAdmin() {
               <CheckOutlined />
             </div>
             <div>
-              <p className="font-bold" style={{ color: TEXT }}>Approve Stock Out</p>
-              <p className="text-xs font-normal" style={{ color: MUTED }}>Confirm the stock-out request</p>
+              <p className="font-bold" style={{ color: TEXT }}>Approve Pull-Out</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Confirm the pull-out request</p>
             </div>
           </div>
         }
@@ -559,7 +559,7 @@ function PullOutAdmin() {
                 className="rounded-xl"
                 style={GRADIENT_BTN}
               >
-                Approve Stock Out
+                Approve Pull-Out
               </Button>
             </Space>
           </Form.Item>
@@ -577,8 +577,8 @@ function PullOutAdmin() {
               <CloseOutlined />
             </div>
             <div>
-              <p className="font-bold" style={{ color: TEXT }}>Reject Stock Out</p>
-              <p className="text-xs font-normal" style={{ color: MUTED }}>Decline the stock-out request</p>
+              <p className="font-bold" style={{ color: TEXT }}>Reject Pull-Out</p>
+              <p className="text-xs font-normal" style={{ color: MUTED }}>Decline the pull-out request</p>
             </div>
           </div>
         }
@@ -673,7 +673,7 @@ function PullOutAdmin() {
                 icon={<CloseOutlined />}
                 className="rounded-xl"
               >
-                Reject Stock Out
+                Reject Pull-Out
               </Button>
             </Space>
           </Form.Item>

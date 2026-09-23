@@ -218,8 +218,11 @@ export default function CheckoutScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <View className="bg-white px-4 py-4 border-b border-gray-100">
+    <SafeAreaView className="flex-1 bg-[#FFF7ED]">
+      <RNStatusBar barStyle="dark-content" backgroundColor="#FFF7ED" />
+
+      {/* Header */}
+      <View className="bg-[#FFF7ED] px-4 pt-3 pb-4">
         <View className="flex-row items-center">
           <TouchableOpacity
             onPress={() => router.back()}
@@ -227,138 +230,226 @@ export default function CheckoutScreen() {
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="arrow-back" size={24} color="#1F2937" />
+            <Ionicons name="chevron-back" size={26} color="#7C2D12" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-gray-900 flex-1">Checkout</Text>
+          <View className="flex-1">
+            <Text className="text-2xl font-extrabold text-[#7C2D12]">Checkout</Text>
+            <Text className="text-[11px] text-[#7C2D12]/60 mt-0.5">
+              Review your order and complete payment
+            </Text>
+          </View>
         </View>
       </View>
 
       <ScrollView
-        className="flex-1 px-4 pt-4 bg-gray-50"
+        className="flex-1 px-4 bg-[#FFF7ED]"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 160 }}
       >
-        <View className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm">
-          <View className="flex-row items-center mb-2">
-            <Ionicons name="location-outline" size={18} color="#F59E0B" />
-            <Text className="text-gray-900 font-bold text-sm ml-2">Delivery Address</Text>
+        {/* Delivery Address */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={openAddressModal}
+          className="bg-white rounded-3xl p-4 mb-3"
+          style={{
+            shadowColor: '#7C2D12',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.06,
+            shadowRadius: 12,
+            elevation: 3,
+          }}
+        >
+          <View className="flex-row items-start">
+            <View className="w-12 h-12 rounded-full bg-[#F97316] items-center justify-center mr-3">
+              <Ionicons name="location" size={22} color="#FFFFFF" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-[#7C2D12] text-[15px] font-extrabold">Delivery Address</Text>
+              {selectedAddress ? (
+                <>
+                  <Text className="text-[#7C2D12]/80 text-[13px] mt-1 leading-5">
+                    {getAddressText()}
+                  </Text>
+                  {selectedAddress.label && (
+                    <View className="bg-[#FFF1E6] self-start rounded-full px-2.5 py-1 mt-2 flex-row items-center">
+                      <Ionicons name="storefront-outline" size={12} color="#F97316" />
+                      <Text className="text-[#F97316] text-[11px] font-bold ml-1">
+                        {selectedAddress.label}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              ) : (
+                <Text className="text-[#7C2D12]/60 text-[13px] mt-1">
+                  Tap to set delivery address
+                </Text>
+              )}
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#A8A29E" />
           </View>
-          {selectedAddress ? (
-            <TouchableOpacity onPress={openAddressModal} activeOpacity={0.7}>
-              {selectedAddress.label && (
-                <Text className="text-yellow-600 text-xs font-semibold">{selectedAddress.label}</Text>
-              )}
-              <Text className="text-gray-700 text-sm mt-0.5" numberOfLines={2}>
-                {getAddressText()}
-              </Text>
-              {selectedAddress.latitude && selectedAddress.longitude && (
-                <Text className="text-gray-400 text-xs mt-1">Coordinates set ✓</Text>
-              )}
-              <View className="flex-row items-center mt-2">
-                <Ionicons name="create-outline" size={14} color="#F59E0B" />
-                <Text className="text-yellow-600 text-xs font-medium ml-1">Change address</Text>
-              </View>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={openAddressModal} activeOpacity={0.7}>
-              <Text className="text-gray-500 text-sm mt-1">No delivery address set</Text>
-              <View className="flex-row items-center mt-2">
-                <Ionicons name="add-circle-outline" size={14} color="#F59E0B" />
-                <Text className="text-yellow-600 text-xs font-medium ml-1">Set delivery address</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        </View>
 
-        <View className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm">
-          <Text className="text-gray-900 font-bold text-sm mb-3">Order Summary</Text>
+          <View className="flex-row items-center justify-end mt-3">
+            <View className="bg-[#FFF1E6] rounded-full px-4 py-2 flex-row items-center">
+              <Ionicons name="pencil" size={13} color="#F97316" />
+              <Text className="text-[#F97316] text-[12px] font-extrabold ml-1.5">Change</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Order Summary */}
+        <View
+          className="bg-white rounded-3xl p-4 mb-3"
+          style={{
+            shadowColor: '#7C2D12',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.06,
+            shadowRadius: 12,
+            elevation: 3,
+          }}
+        >
+          <Text className="text-[#7C2D12] text-[16px] font-extrabold mb-3">Order Summary</Text>
+
           {items.map((item) => (
-            <View key={item.productId} className="flex-row justify-between items-center mb-2">
-              <View className="flex-1">
-                <Text className="text-sm text-gray-800" numberOfLines={1}>{item.name}</Text>
-                <Text className="text-xs text-gray-500">x{item.quantity}</Text>
+            <View key={item.productId} className="flex-row items-center mb-3">
+              <View className="w-14 h-14 rounded-2xl bg-[#FFF1E6] items-center justify-center mr-3 overflow-hidden">
+                {item.image ? (
+                  <Image
+                    source={{
+                      uri: `${(api.defaults?.baseURL ?? '').replace('/api', '')}/storage/${item.image}`,
+                    }}
+                    style={{ width: 56, height: 56 }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Ionicons name="fast-food-outline" size={24} color="#F97316" />
+                )}
               </View>
-              <Text className="text-sm text-gray-800 font-medium">
+              <View className="flex-1">
+                <Text className="text-[#7C2D12] text-[14px] font-extrabold" numberOfLines={1}>
+                  {item.name}
+                </Text>
+                <Text className="text-[#7C2D12]/60 text-[11px] mt-0.5">
+                  x{item.quantity}
+                </Text>
+              </View>
+              <Text className="text-[#7C2D12] text-[14px] font-extrabold">
                 ₱{(item.price * item.quantity).toFixed(2)}
               </Text>
             </View>
           ))}
-          <View className="border-t border-gray-100 pt-3 mt-2">
-            <View className="flex-row justify-between mb-1">
-              <Text className="text-sm text-gray-500">Subtotal</Text>
-              <Text className="text-sm text-gray-800">₱{subtotal.toFixed(2)}</Text>
+
+          <View className="border-t border-[#FFF1E6] pt-3 mt-1">
+            <View className="flex-row justify-between mb-2">
+              <Text className="text-[13px] text-[#7C2D12]/70">Subtotal</Text>
+              <Text className="text-[13px] text-[#7C2D12] font-semibold">
+                ₱{subtotal.toFixed(2)}
+              </Text>
             </View>
-            <View className="flex-row justify-between mb-1">
-              <Text className="text-sm text-gray-500">Delivery Fee</Text>
+            <View className="flex-row justify-between mb-3 items-center">
+              <View className="flex-row items-center">
+                <Text className="text-[13px] text-[#7C2D12]/70">Delivery Fee</Text>
+                <Ionicons name="information-circle-outline" size={13} color="#A8A29E" style={{ marginLeft: 4 }} />
+              </View>
               <View className="flex-row items-center">
                 {feeEstimating && (
-                  <ActivityIndicator size={14} color="#F59E0B" style={{ marginRight: 6 }} />
+                  <ActivityIndicator size={12} color="#F97316" style={{ marginRight: 6 }} />
                 )}
-                <Text className="text-sm text-gray-800">
+                <Text className="text-[13px] text-[#7C2D12] font-semibold">
                   ₱{deliveryFee.toFixed(2)}
                   {deliveryDistanceKm !== null ? ` (~${deliveryDistanceKm} km)` : ''}
                 </Text>
               </View>
             </View>
-            <View className="flex-row justify-between pt-2 border-t border-gray-100 mt-1">
-              <Text className="text-base font-bold text-gray-900">Total</Text>
-              <Text className="text-base font-bold text-yellow-600">₱{total.toFixed(2)}</Text>
+
+            <View className="border-t border-[#FFF1E6] pt-3 flex-row justify-between items-center">
+              <Text className="text-[#7C2D12] text-[16px] font-extrabold">Total</Text>
+              <Text className="text-[#F97316] text-[20px] font-extrabold">
+                ₱{total.toFixed(2)}
+              </Text>
             </View>
           </View>
         </View>
 
-        <View className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm">
-          <Text className="text-gray-900 font-bold text-sm mb-3">Payment Method</Text>
+        {/* Payment Method */}
+        <View
+          className="bg-white rounded-3xl p-4 mb-3"
+          style={{
+            shadowColor: '#7C2D12',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.06,
+            shadowRadius: 12,
+            elevation: 3,
+          }}
+        >
+          <Text className="text-[#7C2D12] text-[16px] font-extrabold mb-3">Payment Method</Text>
 
+          {/* Cash on Delivery */}
           <TouchableOpacity
-            className={`flex-row items-center p-3 rounded-xl mb-2 border ${paymentMethod === 'cod' ? 'bg-yellow-50 border-yellow-400' : 'bg-gray-50 border-gray-200'
-              }`}
+            className={`flex-row items-center p-3.5 rounded-2xl mb-3 border ${
+              paymentMethod === 'cod' ? 'bg-[#FFF1E6] border-[#F97316]' : 'bg-white border-[#F5F5F5]'
+            }`}
             onPress={() => setPaymentMethod('cod')}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <View className={`w-6 h-6 rounded-full border-2 items-center justify-center mr-3 ${paymentMethod === 'cod' ? 'border-yellow-400' : 'border-gray-300'
-              }`}>
-              {paymentMethod === 'cod' && <View className="w-3 h-3 rounded-full bg-yellow-400" />}
+            <View
+              className={`w-6 h-6 rounded-full border-2 items-center justify-center mr-3 ${
+                paymentMethod === 'cod' ? 'border-[#F97316]' : 'border-[#D1D5DB]'
+              }`}
+            >
+              {paymentMethod === 'cod' && <View className="w-3 h-3 rounded-full bg-[#F97316]" />}
             </View>
-            <Ionicons name="cash-outline" size={22} color={paymentMethod === 'cod' ? '#F59E0B' : '#9CA3AF'} />
-            <View className="ml-3">
-              <Text className={`text-sm font-semibold ${paymentMethod === 'cod' ? 'text-gray-900' : 'text-gray-500'}`}>
+
+            <View className="w-12 h-12 rounded-2xl bg-[#F97316] items-center justify-center mr-3">
+              <Ionicons name="cash" size={22} color="#FFFFFF" />
+            </View>
+
+            <View className="flex-1">
+              <Text className="text-[#7C2D12] text-[14px] font-extrabold">
                 Cash on Delivery
               </Text>
-              <Text className="text-xs text-gray-400">Pay when your order arrives</Text>
+              <Text className="text-[#7C2D12]/60 text-[11px] mt-0.5">
+                Pay when your order arrives
+              </Text>
             </View>
           </TouchableOpacity>
 
+          {/* GCash */}
           <TouchableOpacity
-            className={`flex-row items-center p-3 rounded-xl border ${paymentMethod === 'gcash' ? 'bg-blue-50 border-blue-400' : 'bg-gray-50 border-gray-200'
-              }`}
+            className={`flex-row items-center p-3.5 rounded-2xl border ${
+              paymentMethod === 'gcash' ? 'bg-[#EFF6FF] border-[#3B82F6]' : 'bg-white border-[#F5F5F5]'
+            }`}
             onPress={() => setPaymentMethod('gcash')}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <View className={`w-6 h-6 rounded-full border-2 items-center justify-center mr-3 ${paymentMethod === 'gcash' ? 'border-blue-500' : 'border-gray-300'
-              }`}>
-              {paymentMethod === 'gcash' && <View className="w-3 h-3 rounded-full bg-blue-500" />}
+            <View
+              className={`w-6 h-6 rounded-full border-2 items-center justify-center mr-3 ${
+                paymentMethod === 'gcash' ? 'border-[#3B82F6]' : 'border-[#D1D5DB]'
+              }`}
+            >
+              {paymentMethod === 'gcash' && <View className="w-3 h-3 rounded-full bg-[#3B82F6]" />}
             </View>
-            <View style={{ width: 48, height: 48, borderRadius: 12, overflow: 'hidden', marginRight: 12, backgroundColor: '#007DFC', alignItems: 'center', justifyContent: 'center' }}>
+
+            <View className="w-12 h-12 rounded-2xl bg-[#007DFC] items-center justify-center mr-3 overflow-hidden">
               <Image
                 source={require('../../../assets/images/GCash.jpeg')}
                 style={{ width: 48, height: 48, borderRadius: 12 }}
                 resizeMode="cover"
               />
             </View>
-            <View className="ml-3">
-              <Text className={`text-sm font-semibold ${paymentMethod === 'gcash' ? 'text-gray-900' : 'text-gray-500'}`}>
-                GCash
+
+            <View className="flex-1">
+              <Text className="text-[#7C2D12] text-[14px] font-extrabold">GCash</Text>
+              <Text className="text-[#7C2D12]/60 text-[11px] mt-0.5">
+                Pay securely with GCash via PayMongo
               </Text>
-              <Text className="text-xs text-gray-400">Pay securely with GCash via PayMongo</Text>
             </View>
           </TouchableOpacity>
 
           {paymentMethod === 'gcash' && (
-            <View className="bg-blue-50 rounded-xl p-3 mt-3 border border-blue-200">
+            <View className="bg-[#EFF6FF] rounded-2xl p-3 mt-3 border border-[#BFDBFE]">
               <View className="flex-row items-start">
-                <Ionicons name="information-circle-outline" size={16} color="#2563EB" style={{ marginTop: 1, marginRight: 6 }} />
-                <Text className="text-blue-700 text-xs flex-1">
+                <Ionicons name="information-circle" size={16} color="#2563EB" style={{ marginTop: 1, marginRight: 6 }} />
+                <Text className="text-[#1E40AF] text-[12px] flex-1 leading-5">
                   You will be redirected to the GCash checkout page after placing your order. Complete the payment to confirm your order.
                 </Text>
               </View>
@@ -366,41 +457,76 @@ export default function CheckoutScreen() {
           )}
         </View>
 
-        <View className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm">
-          <Text className="text-gray-900 font-bold text-sm mb-2">Order Notes (Optional)</Text>
+        {/* Order Notes */}
+        <View
+          className="bg-white rounded-3xl p-4 mb-3"
+          style={{
+            shadowColor: '#7C2D12',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.06,
+            shadowRadius: 12,
+            elevation: 3,
+          }}
+        >
+          <View className="flex-row items-center mb-3">
+            <Ionicons name="document-text-outline" size={18} color="#F97316" />
+            <Text className="text-[#7C2D12] text-[15px] font-extrabold ml-2">
+              Order Notes <Text className="text-[#7C2D12]/50 font-medium">(Optional)</Text>
+            </Text>
+          </View>
+
           <TextInput
-            className="bg-gray-50 rounded-xl px-4 py-3 text-gray-800 text-sm border border-gray-200"
-            placeholder="Special instructions..."
-            placeholderTextColor="#9CA3AF"
+            className="bg-[#F5F5F5] rounded-2xl px-4 py-3 text-[#7C2D12] text-[13px]"
+            placeholder="e.g. Extra sauce, no onions, etc."
+            placeholderTextColor="#A8A29E"
             value={notes}
-            onChangeText={setNotes}
+            onChangeText={(t) => setNotes(t.slice(0, 200))}
             multiline
             textAlignVertical="top"
+            style={{ minHeight: 70 }}
           />
+
+          <Text className="text-[#7C2D12]/40 text-[10px] font-medium text-right mt-1">
+            {notes.length}/200
+          </Text>
         </View>
       </ScrollView>
 
+      {/* Sticky Place Order button */}
       <View
-        className="absolute left-0 right-0 bg-white border-t border-gray-200 px-4 pt-3"
+        className="absolute left-0 right-0 bg-[#FFF7ED] px-4 pt-3"
         style={{ bottom: 73, paddingBottom: 12 }}
       >
         <TouchableOpacity
-          className={`py-4 rounded-xl items-center ${submitting ? 'bg-gray-300' : 'bg-yellow-400'}`}
+          className={`py-4 rounded-2xl items-center ${
+            submitting ? 'bg-[#FED7AA]' : 'bg-[#F97316]'
+          }`}
+          style={
+            submitting
+              ? undefined
+              : {
+                  shadowColor: '#F97316',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 14,
+                  elevation: 6,
+                }
+          }
           onPress={placeOrder}
           disabled={submitting}
-          activeOpacity={0.7}
+          activeOpacity={0.85}
         >
           {submitting ? (
-            <ActivityIndicator color="#78350F" />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
             <>
               <View className="flex-row items-center">
-                <Text className="text-yellow-900 font-bold text-base mr-2">
+                <Text className="text-white font-extrabold text-[16px] mr-1.5">
                   {paymentMethod === 'cod' ? 'Place Order (COD)' : 'Pay with GCash'}
                 </Text>
-                <Ionicons name="arrow-forward" size={20} color="#78350F" />
+                <Ionicons name="chevron-forward" size={18} color="#FFFFFF" />
               </View>
-              <Text className="text-yellow-800 text-xs mt-1">
+              <Text className="text-white/90 text-[12px] font-medium mt-1">
                 Total: ₱{total.toFixed(2)}
               </Text>
             </>
@@ -408,6 +534,7 @@ export default function CheckoutScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* GCash modal */}
       <Modal
         visible={gcashModalVisible}
         animationType="slide"
@@ -432,13 +559,13 @@ export default function CheckoutScreen() {
         }}
       >
         <SafeAreaView className="flex-1 bg-white">
-          <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
+          <View className="flex-row items-center justify-between px-4 py-3 border-b border-[#F5F5F5]">
             <View className="flex-row items-center">
               <Image
                 source={require('../../../assets/images/GCash.jpeg')}
                 style={{ width: 32, height: 32, resizeMode: 'contain', marginRight: 8 }}
               />
-              <Text className="text-base font-bold text-gray-900">GCash Payment</Text>
+              <Text className="text-base font-extrabold text-[#7C2D12]">GCash Payment</Text>
             </View>
             <TouchableOpacity
               onPress={() => {
@@ -461,15 +588,17 @@ export default function CheckoutScreen() {
                 );
               }}
             >
-              <Ionicons name="close" size={24} color="#6B7280" />
+              <Ionicons name="close" size={24} color="#7C2D12" />
             </TouchableOpacity>
           </View>
+
           {gcashWebViewLoading && (
             <View className="items-center py-8">
               <ActivityIndicator size="large" color="#0073E6" />
-              <Text className="text-gray-500 mt-3 text-sm">Loading GCash checkout...</Text>
+              <Text className="text-[#7C2D12]/60 mt-3 text-sm">Loading GCash checkout...</Text>
             </View>
           )}
+
           <WebView
             source={{ uri: gcashCheckoutUrl }}
             style={{ flex: 1 }}

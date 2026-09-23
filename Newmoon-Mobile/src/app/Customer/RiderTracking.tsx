@@ -50,7 +50,7 @@ const GENERATE_MAP_HTML = () => `
   (function(){
     function initMap(){
       try{
-        var map=L.map('map',{zoomControl:true,attributionControl:true}).setView([14.56,121.02],15);
+        var map=L.map('map',{zoomControl:false,attributionControl:true}).setView([14.56,121.02],15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'\\u00a9 OpenStreetMap'}).addTo(map);
         window.map=map;
         window.riderMarker=null;
@@ -192,7 +192,6 @@ const GENERATE_MAP_HTML = () => `
           if(window.riderMarker)window.riderMarker.setPopupContent(riderPopupContent());
         }
 
-        // Smoothly glide the rider marker to its new position so movement is clearly visible.
         var animRaf=0;
         function animateMarkerTo(targetLat,targetLng){
           var m=window.riderMarker;
@@ -326,8 +325,6 @@ export default function RiderTrackingScreen() {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
-  // Compute rider speed (km/h) from two consecutive GPS fixes.
-  // Uses a low-pass filter + jitter threshold so noise doesn't show fake speed.
   const updateSpeed = (lat: number, lng: number) => {
     const now = Date.now();
     const prev = lastSpeedFixRef.current;
@@ -354,23 +351,20 @@ export default function RiderTrackingScreen() {
     setRiderSpeed(Math.min(999, Math.round(smoothedSpeedRef.current)));
   };
 
-  // Smooth jittery GPS fixes: blend new coords with the last shown position.
-  // Small movements (GPS noise) are blended heavily; large movements pass through.
   const smoothCoords = (lat: number, lng: number) => {
     const prev = riderPosRef.current;
     if (!prev) return { lat, lng };
     const dr = Math.sqrt(Math.pow(lat - prev.lat, 2) + Math.pow(lng - prev.lng, 2));
-    // ~5 meters in lat/lng degrees
     const meters = dr * 111320;
     let alpha: number;
     if (meters < 3) {
-      alpha = 0.15; // tiny jitter -> keep mostly the old position
+      alpha = 0.15;
     } else if (meters < 10) {
       alpha = 0.4;
     } else if (meters < 25) {
       alpha = 0.7;
     } else {
-      alpha = 1; // big jump -> follow immediately
+      alpha = 1;
     }
     return {
       lat: prev.lat + (lat - prev.lat) * alpha,
@@ -378,7 +372,6 @@ export default function RiderTrackingScreen() {
     };
   };
 
-  // Variant used by the live websocket path where we also want movement to be smooth.
   const pushRiderPos = (lat: number, lng: number) => {
     const smoothed = smoothCoords(lat, lng);
     riderPosRef.current = smoothed;
@@ -527,26 +520,48 @@ export default function RiderTrackingScreen() {
     return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'delivered': return 'Delivered';
+      case 'cancelled': return 'Cancelled';
+      case 'out_for_delivery': return 'On the way';
+      case 'picked_up': return 'Rider picked up';
+      case 'ready': return 'Ready for pickup';
+      case 'preparing': return 'Preparing your food';
+      default: return 'Confirmed';
+    }
+  };
+
   if (noId) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <View className="bg-white px-5 py-4 border-b border-gray-100 flex-row items-center">
+      <SafeAreaView className="flex-1 bg-[#FFF7ED]">
+        <StatusBar barStyle="dark-content" backgroundColor="#FFF7ED" />
+        <View className="px-5 pt-4 pb-3 flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-3">
-            <Ionicons name="arrow-back" size={24} color="#1F2937" />
+            <Ionicons name="arrow-back" size={24} color="#7C2D12" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-gray-900">Track Order</Text>
+          <Text className="text-xl font-extrabold text-[#7C2D12]">Track Order</Text>
         </View>
-        <View className="flex-1 items-center justify-center px-6 bg-gray-50">
-          <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-4">
-            <Ionicons name="locate-outline" size={40} color="#9CA3AF" />
+        <View className="flex-1 items-center justify-center px-6">
+          <View className="w-20 h-20 bg-[#FFF1E6] rounded-full items-center justify-center mb-4">
+            <Ionicons name="locate-outline" size={40} color="#F97316" />
           </View>
-          <Text className="text-gray-900 text-xl font-bold">No Order Selected</Text>
-          <Text className="text-gray-500 text-center mt-2 leading-5">
+          <Text className="text-[#7C2D12] text-xl font-extrabold">No Order Selected</Text>
+          <Text className="text-[#7C2D12]/60 text-center mt-2 leading-5">
             Go to an active order in your history to track your rider in real-time.
           </Text>
-          <TouchableOpacity className="mt-8 bg-yellow-400 px-8 py-3.5 rounded-2xl shadow-md" onPress={() => router.back()}>
-            <Text className="text-yellow-900 font-bold text-base">Go Back</Text>
+          <TouchableOpacity
+            className="mt-8 bg-[#F97316] px-8 py-3.5 rounded-2xl"
+            style={{
+              shadowColor: '#F97316',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.3,
+              shadowRadius: 12,
+              elevation: 4,
+            }}
+            onPress={() => router.back()}
+          >
+            <Text className="text-white font-extrabold text-base">Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -555,33 +570,43 @@ export default function RiderTrackingScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center">
-        <ActivityIndicator size="large" color="#F59E0B" />
-        <Text className="text-gray-500 mt-4 text-sm font-medium">Fetching delivery details...</Text>
+      <SafeAreaView className="flex-1 bg-[#FFF7ED] justify-center items-center">
+        <ActivityIndicator size="large" color="#F97316" />
+        <Text className="text-[#7C2D12]/60 mt-4 text-sm font-medium">Fetching delivery details...</Text>
       </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <View className="bg-white px-5 py-4 border-b border-gray-100 flex-row items-center">
+      <SafeAreaView className="flex-1 bg-[#FFF7ED]">
+        <StatusBar barStyle="dark-content" backgroundColor="#FFF7ED" />
+        <View className="px-5 pt-4 pb-3 flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-3">
-            <Ionicons name="arrow-back" size={24} color="#1F2937" />
+            <Ionicons name="arrow-back" size={24} color="#7C2D12" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-gray-900">Track Order</Text>
+          <Text className="text-xl font-extrabold text-[#7C2D12]">Track Order</Text>
         </View>
-        <View className="flex-1 items-center justify-center px-6 bg-gray-50">
-          <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-4">
-            <Ionicons name="person-outline" size={40} color="#9CA3AF" />
+        <View className="flex-1 items-center justify-center px-6">
+          <View className="w-20 h-20 bg-[#FFF1E6] rounded-full items-center justify-center mb-4">
+            <Ionicons name="person-outline" size={40} color="#F97316" />
           </View>
-          <Text className="text-gray-900 text-xl font-bold">No Rider Assigned</Text>
-          <Text className="text-gray-500 text-center mt-2 leading-5">
+          <Text className="text-[#7C2D12] text-xl font-extrabold">No Rider Assigned</Text>
+          <Text className="text-[#7C2D12]/60 text-center mt-2 leading-5">
             We are currently looking for a rider. You will be notified as soon as one accepts your order.
           </Text>
-          <TouchableOpacity className="mt-8 bg-yellow-400 px-8 py-3.5 rounded-2xl shadow-md" onPress={() => router.back()}>
-            <Text className="text-yellow-900 font-bold text-base">Go Back</Text>
+          <TouchableOpacity
+            className="mt-8 bg-[#F97316] px-8 py-3.5 rounded-2xl"
+            style={{
+              shadowColor: '#F97316',
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.3,
+              shadowRadius: 12,
+              elevation: 4,
+            }}
+            onPress={() => router.back()}
+          >
+            <Text className="text-white font-extrabold text-base">Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -589,56 +614,14 @@ export default function RiderTrackingScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <SafeAreaView className="flex-1 bg-[#FFF7ED]">
+      <StatusBar barStyle="dark-content" backgroundColor="#FFF7ED" />
 
-      {/* Header - Like the image */}
-      <View className="bg-white px-5 pt-4 pb-3 border-b border-gray-200">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center flex-1">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center mr-3"
-            >
-              <Ionicons name="arrow-back" size={22} color="#1F2937" />
-            </TouchableOpacity>
-            <View>
-              <View className="flex-row items-center">
-                <Text className="text-lg font-extrabold text-gray-900">Track Order #{id}</Text>
-                <View className="ml-2 bg-green-500 px-2 py-0.5 rounded-full">
-                  <Text className="text-white text-[10px] font-bold">LIVE</Text>
-                </View>
-              </View>
-              <View className="flex-row items-center mt-0.5">
-                <Text className="text-xs text-gray-400 font-medium">
-                  Updated {formatTime(updatedAt)}
-                </Text>
-                {isLive && hasLocation && (
-                  <View className="flex-row items-center ml-2">
-                    <View className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5" />
-                    <Text className="text-green-600 text-[10px] font-bold">LIVE</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Re-center button - Like the image */}
-        <TouchableOpacity
-          className="mt-3 bg-blue-600 px-4 py-2.5 rounded-full flex-row items-center justify-center shadow-sm self-start"
-          onPress={() => injectJS('if(window.__enableFollow){window.__enableFollow()}true;')}
-        >
-          <Ionicons name="locate" size={16} color="#FFFFFF" />
-          <Text className="text-white text-xs font-bold ml-2">Re-center on Rider</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Map */}
-      <View className="flex-1">
+      {/* Full-screen map (rendered FIRST so header floats above) */}
+      <View className="absolute inset-0">
         {!mapLoaded && (
-          <View className="absolute inset-0 items-center justify-center bg-gray-100 z-10">
-            <ActivityIndicator size="large" color="#F59E0B" />
+          <View className="absolute inset-0 items-center justify-center bg-[#FFF1E6] z-10">
+            <ActivityIndicator size="large" color="#F97316" />
           </View>
         )}
 
@@ -672,149 +655,186 @@ export default function RiderTrackingScreen() {
         />
 
         {!hasLocation && mapLoaded && (
-          <View className="absolute inset-0 bg-white/90 items-center justify-center">
-            <ActivityIndicator size="large" color="#F59E0B" />
-            <Text className="text-gray-900 mt-4 text-base font-bold">Waiting for signal...</Text>
-            <Text className="text-gray-500 text-sm mt-1 text-center px-8 leading-5">
+          <View className="absolute inset-0 bg-[#FFF7ED]/95 items-center justify-center">
+            <ActivityIndicator size="large" color="#F97316" />
+            <Text className="text-[#7C2D12] mt-4 text-base font-extrabold">Waiting for signal...</Text>
+            <Text className="text-[#7C2D12]/60 text-sm mt-1 text-center px-8 leading-5">
               The rider's location will update automatically once they start moving.
             </Text>
           </View>
         )}
       </View>
 
-      {/* Bottom Info Card - collapsible */}
+      {/* Floating back button only (top-left, tap-friendly) */}
+      <TouchableOpacity
+        onPress={() => router.back()}
+        activeOpacity={0.85}
+        className="absolute w-12 h-12 rounded-full bg-white items-center justify-center"
+        style={{
+          top: 56,
+          left: 20,
+          zIndex: 30,
+          shadowColor: '#7C2D12',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 10,
+          elevation: 8,
+        }}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Ionicons name="arrow-back" size={24} color="#7C2D12" />
+      </TouchableOpacity>
+
+      {/* Re-center button floating on map */}
+      <TouchableOpacity
+        className="absolute right-5 bg-white rounded-full px-4 py-2.5 flex-row items-center"
+        style={{
+          bottom: 24,
+          zIndex: 20,
+          shadowColor: '#7C2D12',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 10,
+          elevation: 5,
+        }}
+        onPress={() => injectJS('if(window.__enableFollow){window.__enableFollow()}true;')}
+        activeOpacity={0.85}
+      >
+        <Ionicons name="locate" size={16} color="#F97316" />
+        <Text className="text-[#7C2D12] text-xs font-extrabold ml-2">Re-center</Text>
+      </TouchableOpacity>
+
+      {/* Bottom info card (collapsible via Animated) */}
       <Animated.View
         className="absolute bottom-0 left-0 right-0"
         style={{
           paddingHorizontal: 16,
           paddingBottom: 24,
+          zIndex: 20,
           opacity: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
           transform: [
             {
-              translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 640] }),
+              translateY: cardAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 520] }),
             },
           ],
         }}
         pointerEvents={cardCollapsed ? 'none' : 'auto'}
       >
-        <View className="bg-white rounded-2xl p-4 shadow-xl">
-          {/* Delivery Status */}
-          <View className="mb-4">
-            {(() => {
-              const steps = [
-                { key: 'confirmed', label: 'Confirmed', step: 1 },
-                { key: 'preparing', label: 'Preparing', step: 2 },
-                { key: 'ready', label: 'Ready', step: 3 },
-                { key: 'picked_up', label: 'Picked Up', step: 4 },
-                { key: 'out_for_delivery', label: 'On The Way', step: 5 },
-                { key: 'delivered', label: 'Delivered', step: 6 },
-              ];
-              const currentStep = steps.find(s => s.key === orderStatus)?.step ?? 4;
-              const isDelivered = orderStatus === 'delivered';
-              const isCancelled = orderStatus === 'cancelled';
-              return (
-                <>
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-gray-500 text-[11px] font-bold tracking-widest uppercase">Delivery Status</Text>
-                    <View className="flex-row items-center">
-                      {isDelivered ? (
-                        <>
-                          <MaterialIcons name="check-circle" size={16} color="#16A34A" />
-                          <Text className="text-green-600 text-sm font-bold ml-1">Order Successfully Delivered</Text>
-                        </>
-                      ) : isCancelled ? (
-                        <>
-                          <MaterialIcons name="cancel" size={16} color="#EF4444" />
-                          <Text className="text-red-500 text-sm font-bold ml-1">Order Cancelled</Text>
-                        </>
-                      ) : (
-                        <>
-                          <MaterialIcons name="local-shipping" size={16} color="#3B82F6" />
-                          <Text className="text-blue-600 text-sm font-bold ml-1">
-                            {steps.find(s => s.key === orderStatus)?.label || 'In Progress'}
-                          </Text>
-                        </>
-                      )}
-                      <TouchableOpacity
-                        onPress={toggleCard}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                        className="ml-2 p-1"
-                      >
-                        <Ionicons name="chevron-down-circle-outline" size={18} color="#9CA3AF" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View className="flex-row items-center justify-between mt-3 px-1">
-                    {steps.map((s, index) => {
-                      const completed = s.step <= currentStep;
-                      return (
-                        <View key={s.key} className="items-center flex-1">
-                          <View className={`w-6 h-6 rounded-full items-center justify-center ${completed ? 'bg-green-500' : 'bg-gray-300'}`}>
-                            <Ionicons name={completed ? 'checkmark' : 'ellipse-outline'} size={14} color="white" />
-                          </View>
-                          <Text className={`text-[9px] mt-1 font-medium ${completed ? 'text-green-600' : 'text-gray-400'}`}>{s.label}</Text>
-                          {index < steps.length - 1 && (
-                            <View
-                              className="absolute top-3 left-6 right-0 h-0.5"
-                              style={{ backgroundColor: steps[index + 1].step <= currentStep ? '#86EFAC' : '#E5E7EB', right: 0 }}
-                            />
-                          )}
-                        </View>
-                      );
-                    })}
-                  </View>
-                </>
-              );
-            })()}
+        <View
+          className="bg-white rounded-3xl p-5"
+          style={{
+            shadowColor: '#7C2D12',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.15,
+            shadowRadius: 20,
+            elevation: 8,
+          }}
+        >
+          {/* Status pill + collapse toggle */}
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center bg-green-50 rounded-full px-3 py-1.5">
+              <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
+              <Text className="text-green-700 text-[12px] font-extrabold">
+                {getStatusLabel(orderStatus)}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={toggleCard}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              className="p-1"
+            >
+              <Ionicons name="chevron-down-circle-outline" size={22} color="#A8A29E" />
+            </TouchableOpacity>
           </View>
 
-          {/* Rider Info - Like the image */}
-          {rider && (
-            <View className="flex-row items-center bg-gray-50 rounded-xl p-3 mb-3">
-              <View className="w-12 h-12 rounded-full bg-blue-100 items-center justify-center border-2 border-blue-200">
-                <Text className="text-blue-600 font-extrabold text-lg">
-                  {rider.name.charAt(0).toUpperCase()}
-                </Text>
+          {/* ETA */}
+          <View className="mt-4">
+            <Text className="text-[#7C2D12]/60 text-[11px] font-bold uppercase tracking-wider">
+              Arriving in
+            </Text>
+            <Text className="text-[#7C2D12] text-3xl font-extrabold mt-1">
+              15–20 <Text className="text-[#7C2D12]/60 text-xl font-bold">min</Text>
+            </Text>
+          </View>
+
+          {/* Divider */}
+          <View className="h-px bg-[#FFF1E6] my-4" />
+
+          {/* Rider info */}
+          {rider ? (
+            <View className="flex-row items-center">
+              <View className="w-12 h-12 rounded-full bg-[#FFF1E6] items-center justify-center">
+                <FontAwesome5 name="motorcycle" size={20} color="#F97316" />
               </View>
               <View className="ml-3 flex-1">
-                <Text className="text-gray-900 font-extrabold text-base">{rider.name}</Text>
-                {rider.phone ? (
-                  <Text className="text-gray-500 text-xs mt-0.5">{rider.phone}</Text>
-                ) : (
-                  <Text className="text-gray-400 text-xs mt-0.5">No phone available</Text>
-                )}
+                <Text className="text-[#7C2D12] font-extrabold text-[15px]">{rider.name}</Text>
+                <Text className="text-[#7C2D12]/60 text-[12px] mt-0.5">NewMoon Rider</Text>
               </View>
-              <TouchableOpacity
-                className="w-11 h-11 rounded-full items-center justify-center"
-                style={{ backgroundColor: rider.phone ? '#007DFC' : '#D1D5DB' }}
-                onPress={() => rider.phone && Linking.openURL(`tel:${rider.phone}`)}
-              >
-                <Ionicons name="call" size={20} color="#FFFFFF" />
-              </TouchableOpacity>
+              {riderSpeed > 0 && (
+                <View className="bg-[#FFF1E6] rounded-full px-2.5 py-1">
+                  <Text className="text-[#F97316] text-[11px] font-extrabold">
+                    {riderSpeed} km/h
+                  </Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            <View className="flex-row items-center">
+              <View className="w-12 h-12 rounded-full bg-[#FFF1E6] items-center justify-center">
+                <FontAwesome5 name="motorcycle" size={20} color="#F97316" />
+              </View>
+              <View className="ml-3 flex-1">
+                <Text className="text-[#7C2D12] font-extrabold text-[15px]">Assigning rider...</Text>
+                <Text className="text-[#7C2D12]/60 text-[12px] mt-0.5">Please wait</Text>
+              </View>
             </View>
           )}
 
-          {/* Plate and Speed - Like the image */}
-          <View className="flex-row justify-between items-center pt-3 border-t border-gray-100">
-            <View className="items-end">
-              <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">Moving at</Text>
-              <Text className="text-gray-900 font-bold text-sm">{riderSpeed || 0} km/h</Text>
-            </View>
-          </View>
+          {/* Call button */}
+          {rider?.phone && (
+            <TouchableOpacity
+              className="mt-4 bg-[#F97316] rounded-2xl py-3.5 flex-row items-center justify-center"
+              style={{
+                shadowColor: '#F97316',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+                elevation: 4,
+              }}
+              onPress={() => Linking.openURL(`tel:${rider.phone}`)}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="call" size={18} color="#FFFFFF" />
+              <Text className="text-white font-extrabold text-[14px] ml-2">
+                Call Rider
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Updated timestamp */}
+          <Text className="text-center text-[#7C2D12]/40 text-[10px] font-medium mt-3">
+            Updated {formatTime(updatedAt)}
+          </Text>
         </View>
       </Animated.View>
 
-      {/* Floating restore button when the status card is collapsed */}
+      {/* Floating restore button when card is collapsed */}
       {cardCollapsed && (
-        <View style={{ position: 'absolute', bottom: 14, left: 0, right: 0, alignItems: 'center', zIndex: 6 }}>
+        <View style={{ position: 'absolute', bottom: 24, left: 0, right: 0, alignItems: 'center', zIndex: 6 }}>
           <TouchableOpacity
             onPress={toggleCard}
-            activeOpacity={0.8}
-            className="bg-white rounded-full px-4 py-2 flex-row items-center shadow-xl"
+            activeOpacity={0.85}
+            className="bg-white rounded-full px-5 py-2.5 flex-row items-center"
+            style={{
+              shadowColor: '#7C2D12',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              elevation: 6,
+            }}
           >
-            <Ionicons name="chevron-up" size={16} color="#3B82F6" />
-            <Text className="text-blue-600 text-xs font-bold ml-1">Show Status</Text>
+            <Ionicons name="chevron-up" size={16} color="#F97316" />
+            <Text className="text-[#F97316] text-xs font-extrabold ml-1.5">Show Status</Text>
           </TouchableOpacity>
         </View>
       )}
