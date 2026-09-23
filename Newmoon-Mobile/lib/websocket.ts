@@ -2,7 +2,7 @@ import Echo from 'laravel-echo';
 import PusherModule from 'pusher-js/react-native';
 import { getToken } from './authStorage';
 
-const WS_HOST = '10.42.28.76';
+const WS_HOST = '192.168.254.102';
 const WS_PORT = 8080;
 const REVERB_KEY = 'newmoon-app-key';
 
