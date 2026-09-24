@@ -17,6 +17,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, Legend,
   ResponsiveContainer,
 } from "recharts";
+import { clientPagination, serverPagination } from "@/components/Pagination";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart as MuiBarChart } from "@mui/x-charts/BarChart";
 import { PieChart as MuiPieChart } from "@mui/x-charts/PieChart";
@@ -708,7 +709,7 @@ function StaffPerformance() {
                   styles={{ body: { background: PANEL_BG } }}
                 >
                   <Table columns={columns} dataSource={staffDataList} rowKey="id" loading={isLoading}
-                    pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (t) => `Total ${t} staff` }}
+                    pagination={clientPagination({ label: "staff" })}
                     locale={{ emptyText: (
                       <div className="py-10 text-center">
                         <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}>
@@ -817,7 +818,7 @@ function StaffPerformance() {
                   styles={{ body: { background: PANEL_BG } }}
                 >
                   <Table columns={targetColumns} dataSource={targets} rowKey="id" loading={targetsLoading}
-                    pagination={{ pageSize: 10 }}
+                    pagination={clientPagination({ label: "targets" })}
                     locale={{ emptyText: (
                       <div className="py-10 text-center">
                         <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}>

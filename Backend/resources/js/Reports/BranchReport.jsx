@@ -28,6 +28,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { api } from "../config/api";
+import { clientPagination, serverPagination } from "../components/Pagination";
 
 const { Text, Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -40,7 +41,7 @@ const BranchReport = () => {
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [branches, setBranches] = useState([]);
   const [viewMode, setViewMode] = useState("performance");
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 15, total: 0 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 7, total: 0 });
 
   const fetchBranchReport = async (page = 1) => {
     setLoading(true);
@@ -336,7 +337,7 @@ const BranchReport = () => {
                   dataSource={branchData}
                   rowKey="id"
                   loading={loading}
-                  pagination={pagination}
+                  pagination={serverPagination(pagination, { label: "branches" })}
                   onChange={handleTableChange}
                   scroll={{ x: true }}
                 />
@@ -363,7 +364,7 @@ const BranchReport = () => {
                   dataSource={summary.comparison}
                   rowKey="metric"
                   loading={loading}
-                  pagination={false}
+                  pagination={clientPagination({ label: "metrics" })}
                   scroll={{ x: true }}
                 />
               </div>

@@ -12,6 +12,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/config/api";
 import Loading from "@/components/Loading";
+import { clientPagination, useServerPagination } from "@/components/Pagination";
 
 // ─── Palette — matches ProductList (dark plum + mint) ────────────────────
 const PANEL_BG = "#2A2438";
@@ -111,29 +112,23 @@ const statusColorMap = {
 };
 
 function Customers() {
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const PAGE_SIZE = 10;
 
-  const queryKey = ["customers", currentPage, searchTerm];
-
-  const { data, isLoading } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      params.append("per_page", PAGE_SIZE);
-      params.append("page", currentPage);
-      if (searchTerm) params.append("search", searchTerm);
-      const { data } = await api.get(`/customers?${params}`);
-      return data;
-    },
-    keepPreviousData: true,
+  const {
+    data: customers,
+    total,
+    isLoading,
+    pagination,
+    setCurrentPage,
+  } = useServerPagination({
+    queryKey: ["customers", searchTerm],
+    url: "/customers",
+    params: { search: searchTerm || undefined },
+    label: "customers",
+    placeholderData: (prev) => prev,
   });
-
-  const customers = data?.data || [];
-  const pagination = data?.pagination || {};
 
   const { data: customerDetail, isLoading: detailLoading } = useQuery({
     queryKey: ["customer", selectedCustomer?.id],
@@ -350,7 +345,7 @@ function Customers() {
         columns={itemColumns}
         dataSource={items}
         rowKey={(_, i) => i}
-        pagination={false}
+        pagination={clientPagination({ label: "items" })}
         size="small"
         bordered
         summary={() => (
@@ -428,13 +423,7 @@ function Customers() {
           dataSource={customers}
           rowKey="id"
           loading={false}
-          pagination={{
-            current: pagination.current_page || 1,
-            pageSize: PAGE_SIZE,
-            total: pagination.total || 0,
-            onChange: (p) => setCurrentPage(p),
-            showSizeChanger: false,
-          }}
+          pagination={pagination}
           scroll={{ x: 800 }}
           locale={{
             emptyText: (
@@ -519,7 +508,7 @@ function Customers() {
                   columns={saleColumns}
                   dataSource={customerDetail.sales}
                   rowKey="id"
-                  pagination={false}
+                  pagination={clientPagination({ label: "sales" })}
                   size="small"
                   scroll={{ x: 800 }}
                   expandable={{
@@ -542,7 +531,7 @@ function Customers() {
                   columns={orderColumns}
                   dataSource={customerDetail.orders}
                   rowKey="id"
-                  pagination={false}
+                  pagination={clientPagination({ label: "orders" })}
                   size="small"
                   scroll={{ x: 900 }}
                   expandable={{

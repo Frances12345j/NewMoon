@@ -7,9 +7,10 @@ import {
   CheckOutlined, CloseOutlined, UserOutlined, ShoppingCartOutlined, ArrowLeftOutlined, SearchOutlined,
   RollbackOutlined,
 } from "@ant-design/icons";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/config/api";
 import { invalidateCache } from "@/utils/cache";
+import { useServerPagination } from "@/components/Pagination";
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
@@ -57,31 +58,33 @@ function BackToSale() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [dateRange, setDateRange] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selected, setSelected] = useState(null);
   const [rejectForm] = Form.useForm();
   const queryClient = useQueryClient();
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["backToSalesAll", currentPage, pageSize, statusFilter, searchText, dateRange],
-    queryFn: () => {
-      const params = { page: currentPage, per_page: pageSize };
-      if (statusFilter !== "all") params.status = statusFilter;
-      if (searchText.trim()) params.search = searchText.trim();
-      if (dateRange?.[0] && dateRange?.[1]) {
-        params.start_date = dateRange[0].format("YYYY-MM-DD");
-        params.end_date = dateRange[1].format("YYYY-MM-DD");
-      }
-      return api.get("/back-to-sales/all", { params });
+  const {
+    data: records,
+    total,
+    isLoading,
+    pagination,
+    setCurrentPage,
+    refetch,
+    raw: backToSaleData,
+  } = useServerPagination({
+    queryKey: ["backToSalesAll", statusFilter, searchText, dateRange],
+    url: "/back-to-sales/all",
+    params: {
+      status: statusFilter === "all" ? undefined : statusFilter,
+      search: searchText.trim() || undefined,
+      start_date: dateRange?.[0] ? dateRange[0].format("YYYY-MM-DD") : undefined,
+      end_date: dateRange?.[1] ? dateRange[1].format("YYYY-MM-DD") : undefined,
     },
+    label: "records",
   });
 
-  const records = data?.data?.data || [];
-  const stats = data?.data?.stats || {};
-  const paginationMeta = data?.data?.pagination || {};
+  const stats = backToSaleData?.stats || {};
 
   const approveMutation = useMutation({
     mutationFn: ({ id }) => api.post(`/back-to-sales/${id}/approve`),
@@ -402,7 +405,7 @@ function BackToSale() {
             className="rounded-full px-3 py-1 text-sm font-semibold"
             style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
           >
-            {paginationMeta.total || records.length} record(s)
+            {total || records.length} record(s)
           </Tag>
         </div>
       </div>
@@ -414,14 +417,7 @@ function BackToSale() {
           dataSource={records}
           rowKey="id"
           loading={isLoading}
-          pagination={{
-            current: paginationMeta.current_page || 1,
-            pageSize: pageSize,
-            total: paginationMeta.total || 0,
-            onChange: (page, size) => { setCurrentPage(page); setPageSize(size); },
-            showSizeChanger: true,
-            showTotal: (t) => `Total ${t} records`,
-          }}
+          pagination={pagination}
           locale={{
             emptyText: (
               <div className="py-10 text-center">

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import react, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -389,13 +389,24 @@ function Dashboard() {
     0
   );
 
-  const todaySales = sales
-    .filter((sale) => {
-      const today = new Date();
-      const saleDate = new Date(sale.created_at);
+  // Sales are recorded with a PH business date (sale_date) while created_at is
+  // stored/serialized in UTC. Comparing new Date(created_at) against browser
+  // "today" misses sales (e.g. a sale made at 01:25 UTC appears as yesterday).
+  // Always group by the PH sale_date column instead.
+  const phDateKey = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
 
-      return saleDate.toDateString() === today.toDateString();
-    })
+  const phToDate = (date) => new Date(date.getTime() + 8 * 60 * 60 * 1000);
+
+  const saleDateKey = (sale) =>
+    String(sale.sale_date || sale.created_at || "").slice(0, 10);
+
+  const todaySales = sales
+    .filter((sale) => saleDateKey(sale) === phDateKey(currentTime))
     .reduce((sum, sale) => sum + parseFloat(sale.total || 0), 0);
 
   const formatCurrency = (amount) =>
@@ -405,44 +416,43 @@ function Dashboard() {
 
   // ─── Derived salesChartData based on salesPeriod ────────────────
   const salesChartData = (() => {
-    const now = new Date();
+    const now = currentTime;
+    const todayKey = phDateKey(now);
 
     const buckets = [];
     const labelFor = (d) =>
       d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    const addToBucket = (key, sale) => {
+      const bucket = buckets.find((b) => b.key === key);
+      if (bucket) bucket.amount += parseFloat(sale.total || 0);
+    };
 
     if (salesPeriod === "today") {
       for (let h = 0; h < 24; h++) {
         buckets.push({ key: h, label: `${h}:00`, amount: 0 });
       }
       sales.forEach((s) => {
+        if (saleDateKey(s) !== todayKey) return;
         const d = new Date(s.created_at);
-        if (d.toDateString() !== now.toDateString()) return;
-        const h = d.getHours();
+        if (Number.isNaN(d.getTime())) return;
+        const h = phToDate(d).getHours();
         buckets[h].amount += parseFloat(s.total || 0);
       });
     } else if (salesPeriod === "week") {
       for (let i = 6; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(now.getDate() - i);
-        buckets.push({ key: d.toDateString(), label: labelFor(d), amount: 0 });
+        buckets.push({ key: phDateKey(d), label: labelFor(d), amount: 0 });
       }
-      sales.forEach((s) => {
-        const d = new Date(s.created_at);
-        const bucket = buckets.find((b) => b.key === d.toDateString());
-        if (bucket) bucket.amount += parseFloat(s.total || 0);
-      });
+      sales.forEach((s) => addToBucket(saleDateKey(s), s));
     } else {
       for (let i = 29; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(now.getDate() - i);
-        buckets.push({ key: d.toDateString(), label: labelFor(d), amount: 0 });
+        buckets.push({ key: phDateKey(d), label: labelFor(d), amount: 0 });
       }
-      sales.forEach((s) => {
-        const d = new Date(s.created_at);
-        const bucket = buckets.find((b) => b.key === d.toDateString());
-        if (bucket) bucket.amount += parseFloat(s.total || 0);
-      });
+      sales.forEach((s) => addToBucket(saleDateKey(s), s));
     }
 
     return buckets;
@@ -1943,9 +1953,9 @@ function Dashboard() {
               </Button>
 
               <Button
-                type="primary"
+                type="primary"  
                 htmlType="submit"
-                className="h-11! rounded-xl! border-none! bg-[#22D3A8] px-5! font-semibold text-[#1F1A2E] shadow-none hover:bg-[#16B48C]!"
+                className="h-11! rounded-xl! border-none! bg-[#22D3A8] px-5! font-semibold text-page shadow-none hover:bg-accent-deep!"
               >
                 Create Branch
               </Button>

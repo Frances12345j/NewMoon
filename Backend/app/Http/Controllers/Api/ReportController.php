@@ -767,4 +767,124 @@ class ReportController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Inventory (Delivery & Expenses) Report
+     * GET /api/reports/inventory-report
+     * Params: start_date, end_date, branch_id
+     *
+     * Quantity of Lechon Manok / Liempo received per PH day per branch comes
+     * from product_stock_deliveries that were actually received; the Expenses
+     * column comes from the staff-recorded expenses table. Staff are scoped to
+     * their assigned branch; admins see everything (or a chosen branch).
+     */
+    public function inventoryReport(Request $request)
+    {
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'branch_id' => 'nullable|exists:branches,id',
+        ]);
+
+        $user = $request->user();
+        $staffBranchId = null;
+
+        if ($user->role !== 'admin') {
+            $assignment = StaffAssignment::where('user_id', $user->id)
+                ->where('is_active', true)
+                ->first();
+            $staffBranchId = $assignment ? (int) $assignment->branch_id : null;
+        }
+
+        $branchId = $staffBranchId ?? ($validated['branch_id'] ?? null);
+
+        // Identify products by name pattern (not hard-coded IDs) so the report
+        // keeps working if a new variant/size is added later.
+        $lechonIds = Product::where('name', 'LIKE', '%Lechon Manok%')->pluck('id')->toArray();
+        $liempoIds = Product::where('name', 'LIKE', '%Liempo%')->pluck('id')->toArray();
+
+        $lechonSet = $lechonIds ? implode(',', $lechonIds) : '-1';
+        $liempoSet = $liempoIds ? implode(',', $liempoIds) : '-1';
+
+        $start = $validated['start_date'] ?? null;
+        $end = $validated['end_date'] ?? null;
+
+        // ---------- Received inventory deliveries grouped by PH date + branch ----------
+        $deliveries = DB::table('product_stock_deliveries as d')
+            ->join('branches as b', 'd.branch_id', '=', 'b.id')
+            // received_at is stored/round-tripped as PH local time (Asia/Manila),
+            // so the calendar date is DATE(received_at) — do NOT CONVERT_TZ it.
+            ->select(
+                DB::raw('DATE(d.received_at) as date'),
+                'd.branch_id',
+                'b.name as branch_name',
+                DB::raw("SUM(CASE WHEN d.product_id IN ({$lechonSet}) THEN d.quantity ELSE 0 END) as lechon_manok"),
+                DB::raw("SUM(CASE WHEN d.product_id IN ({$liempoSet}) THEN d.quantity ELSE 0 END) as liempo")
+            )
+            ->whereNotNull('d.received_at')
+            ->when($start, fn ($q) => $q->where(DB::raw('DATE(d.received_at)'), '>=', $start))
+            ->when($end, fn ($q) => $q->where(DB::raw('DATE(d.received_at)'), '<=', $end))
+            ->when($branchId, fn ($q) => $q->where('d.branch_id', $branchId))
+            ->groupBy(DB::raw('DATE(d.received_at)'), 'd.branch_id', 'b.name')
+            ->get();
+
+        // ---------- Staff-recorded operating expenses grouped by date + branch ----------
+        $expenses = DB::table('expenses as e')
+            ->join('branches as b', 'e.branch_id', '=', 'b.id')
+            ->select(
+                'e.expense_date as date',
+                'e.branch_id',
+                'b.name as branch_name',
+                DB::raw('SUM(e.amount) as expenses')
+            )
+            ->when($start, fn ($q) => $q->where('e.expense_date', '>=', $start))
+            ->when($end, fn ($q) => $q->where('e.expense_date', '<=', $end))
+            ->when($branchId, fn ($q) => $q->where('e.branch_id', $branchId))
+            ->groupBy('e.expense_date', 'e.branch_id', 'b.name')
+            ->get();
+
+        // ---------- Merge by (date, branch_id) ----------
+        $rows = [];
+        foreach ($deliveries as $row) {
+            $key = $row->date . '|' . $row->branch_id;
+            $rows[$key] = [
+                'date' => $row->date,
+                'branch_id' => (int) $row->branch_id,
+                'branch_name' => $row->branch_name,
+                'lechon_manok' => (float) $row->lechon_manok,
+                'liempo' => (float) $row->liempo,
+                // Expenses = actual expense records entered via POS (never derived from quantity)
+                'expenses' => 0.0,
+            ];
+        }
+        foreach ($expenses as $row) {
+            $key = $row->date . '|' . $row->branch_id;
+            if (isset($rows[$key])) {
+                $rows[$key]['expenses'] += (float) $row->expenses;
+            } else {
+                $rows[$key] = [
+                    'date' => $row->date,
+                    'branch_id' => (int) $row->branch_id,
+                    'branch_name' => $row->branch_name,
+                    'lechon_manok' => 0.0,
+                    'liempo' => 0.0,
+                    'expenses' => (float) $row->expenses,
+                ];
+            }
+        }
+
+        // Stable two-pass sort: newest date first, then branch name ascending.
+        $rows = collect($rows)->sortBy('branch_name')->sortByDesc('date')->values();
+
+        $totals = [
+            'total_lechon_manok' => round($rows->sum('lechon_manok'), 2),
+            'total_liempo' => round($rows->sum('liempo'), 2),
+            'total_expenses' => round($rows->sum('expenses'), 2),
+        ];
+
+        return response()->json([
+            'data' => $rows->toArray(),
+            'totals' => $totals,
+        ]);
+    }
 }

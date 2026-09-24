@@ -22,6 +22,7 @@ import {
 import dayjs from "dayjs";
 import { api, API_BASE_URL } from "@/config/api";
 import { getCache, setCache, invalidateCache } from "@/utils/cache";
+import { clientPagination, serverPagination } from "@/components/Pagination";
 
 function formatRestockedAtUtcClock(value) {
   if (value == null || value === "") return null;
@@ -1145,7 +1146,7 @@ function ProductList() {
           dataSource={filteredTableData}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} entries` }}
+          pagination={clientPagination({ label: "products" })}
           locale={{ emptyText: <div className="py-10 text-center"><div className="w-16 h-16 mx-auto bg-linear-to-br from-[#FFF1E6] to-[#FFE3C9] rounded-2xl flex items-center justify-center mb-3"><BoxPlotOutlined className="text-3xl text-[#F97316]" /></div><p className="text-[#451A03] font-semibold">No products found</p><p className="text-gray-400 text-sm">Try adjusting your search or filter</p></div> }}
         />
       </Card>
@@ -1431,7 +1432,7 @@ function ProductList() {
           size="small"
           loading={adjustRecordsLoading}
           dataSource={adjustRecords}
-          pagination={{ pageSize: 8, showSizeChanger: false }}
+          pagination={clientPagination({ label: "adjustments" })}
           scroll={{ x: 760 }}
           locale={{ emptyText: "No adjustment records yet." }}
           columns={[
@@ -1528,7 +1529,7 @@ function ProductList() {
           size="small"
           loading={stockOutRecordsLoading}
           dataSource={stockOutRecords}
-          pagination={{ pageSize: 8, showSizeChanger: false }}
+          pagination={clientPagination({ label: "stock-outs" })}
           scroll={{ x: 720 }}
           locale={{ emptyText: "No stock-out records yet." }}
           columns={[

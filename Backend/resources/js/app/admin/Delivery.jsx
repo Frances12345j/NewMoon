@@ -29,6 +29,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { api } from "@/config/api";
+import { useServerPagination } from "@/components/Pagination";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -80,61 +81,61 @@ const STATUS_COLORS = {
 };
 
 const DeliveryReport = () => {
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [data, setData] = useState([]);
-  const [summary, setSummary] = useState(null);
   const [dateRange, setDateRange] = useState([dayjs().startOf("month"), dayjs().endOf("month")]);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
   const [branches, setBranches] = useState([]);
   const [riders, setRiders] = useState([]);
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5, total: 0 });
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  const fetchDeliveries = async (page = 1) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [delRes, branchesRes] = await Promise.all([
-        api.get("/reports/deliveries", {
-          params: {
-            start_date: dateRange[0].format("YYYY-MM-DD"),
-            end_date: dateRange[1].format("YYYY-MM-DD"),
-            status: selectedStatus,
-            branch_id: selectedBranch,
-            rider_id: selectedRider,
-            page,
-            per_page: pagination.pageSize,
-          },
-        }),
-        api.get("/branches"),
-      ]);
+  const {
+    data,
+    isLoading: loading,
+    error: queryError,
+    pagination,
+    setCurrentPage,
+    raw: deliveryResult,
+  } = useServerPagination({
+    queryKey: [
+      "deliveries",
+      dateRange[0]?.format("YYYY-MM-DD"),
+      dateRange[1]?.format("YYYY-MM-DD"),
+      selectedStatus,
+      selectedBranch,
+      selectedRider,
+    ],
+    url: "/reports/deliveries",
+    params: {
+      start_date: dateRange[0]?.format("YYYY-MM-DD"),
+      end_date: dateRange[1]?.format("YYYY-MM-DD"),
+      status: selectedStatus,
+      branch_id: selectedBranch,
+      rider_id: selectedRider,
+    },
+    label: "deliveries",
+  });
 
-      setBranches(Array.isArray(branchesRes.data) ? branchesRes.data : []);
-      const result = delRes.data || {};
-      setData(result.data || []);
-      setSummary(result.summary || null);
-      if (result.pagination) {
-        setPagination({
-          current: result.pagination.current_page,
-          pageSize: result.pagination.per_page,
-          total: result.pagination.total,
-        });
-      }
-    } catch (err) {
-      console.error("Failed to load deliveries:", err);
-      setError(err.response?.data?.message || err.message || "Failed to load delivery records");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const summary = deliveryResult?.summary || null;
 
+  // Reset to first page when filters change
   useEffect(() => {
-    fetchDeliveries(1);
+    setCurrentPage(1);
   }, [dateRange, selectedStatus, selectedBranch, selectedRider]);
+
+  // Keep the dismissible error message synced with the query error
+  useEffect(() => {
+    setError(queryError?.response?.data?.message || queryError?.message || null);
+  }, [queryError]);
+
+  // Load branches for the filter
+  useEffect(() => {
+    api.get("/branches")
+      .then((res) => setBranches(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setBranches([]));
+  }, []);
 
   // Load riders for filter
   useEffect(() => {
@@ -447,17 +448,7 @@ const DeliveryReport = () => {
               rowKey="id"
               loading={loading}
               scroll={{ x: 1400 }}
-              pagination={{
-                current: pagination.current,
-                pageSize: pagination.pageSize,
-                total: pagination.total,
-                showSizeChanger: true,
-                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} deliveries`,
-                onChange: (page, pageSize) => {
-                  setPagination((prev) => ({ ...prev, current: page, pageSize }));
-                  fetchDeliveries(page);
-                },
-              }}
+              pagination={pagination}
               size="middle"
             />
           </Card>

@@ -10,6 +10,7 @@ import {
 } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/config/api";
+import { clientPagination, serverPagination } from "@/components/Pagination";
 
 const { RangePicker } = DatePicker;
 
@@ -433,7 +434,7 @@ function SalesRecord() {
           dataSource={sales}
           rowKey="id"
           loading={isLoading}
-          pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} sales` }}
+          pagination={clientPagination({ label: "sales" })}
           locale={{
             emptyText: (
               <div className="py-10 text-center">

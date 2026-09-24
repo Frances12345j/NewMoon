@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { api } from "../config/api";
+import { clientPagination, serverPagination } from "../components/Pagination";
 
 const { Text, Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -51,7 +52,7 @@ const AttendanceReport = () => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [summary, setSummary] = useState(null);
   const [staffList, setStaffList] = useState([]);
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 15, total: 0 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 7, total: 0 });
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [dateRange, setDateRange] = useState([dayjs().startOf("month"), dayjs().endOf("month")]);
 
@@ -419,7 +420,7 @@ const AttendanceReport = () => {
               dataSource={summary.staff_summary}
               rowKey="staff_id"
               loading={loading}
-              pagination={false}
+              pagination={clientPagination({ label: "staff" })}
               scroll={{ x: true }}
             />
           </div>
@@ -448,7 +449,7 @@ const AttendanceReport = () => {
             dataSource={attendanceData}
             rowKey="id"
             loading={loading}
-            pagination={pagination}
+            pagination={serverPagination(pagination, { label: "records" })}
             onChange={handleTableChange}
             scroll={{ x: true }}
           />

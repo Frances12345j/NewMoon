@@ -15,6 +15,7 @@ import MarkerClusterGroup from "react-leaflet-cluster";
 import { api } from "@/config/api";
 import { getCache, setCache, invalidateCache } from "@/utils/cache";
 import Loading from "@/components/Loading";
+import { clientPagination, serverPagination } from "@/components/Pagination";
 import "leaflet/dist/leaflet.css";
 
 // ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
@@ -606,7 +607,7 @@ function BranchMap() {
               onClick: () => handleRowClick(record),
               style: { cursor: record.latitude && record.longitude ? "pointer" : "default" },
             })}
-            pagination={{ pageSize: 5, showSizeChanger: true, showTotal: (t) => `Total ${t} branches` }}
+            pagination={clientPagination({ label: "branches" })}
             locale={{ emptyText: <div className="py-10 text-center"><div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}><EnvironmentOutlined className="text-3xl" /></div><p className="font-semibold" style={{ color: TEXT }}>No branches found</p><p className="text-sm" style={{ color: MUTED }}>Try adjusting your search</p></div> }}
           />
         </div>

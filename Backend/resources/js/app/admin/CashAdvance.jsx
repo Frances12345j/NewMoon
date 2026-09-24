@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPesoSign } from '@fortawesome/free-solid-svg-icons';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/config/api";
+import { clientPagination, serverPagination } from "@/components/Pagination";
 
 // ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
 const PANEL_BG = "#2A2438";
@@ -333,7 +334,7 @@ function CashAdvance() {
           dataSource={filtered}
           rowKey="id"
           loading={isLoading}
-          pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} requests` }}
+          pagination={clientPagination({ label: "requests" })}
           locale={{
             emptyText: (
               <div className="py-10 text-center">

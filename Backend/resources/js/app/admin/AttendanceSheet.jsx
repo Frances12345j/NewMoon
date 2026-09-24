@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { api } from "@/config/api";
+import { clientPagination, serverPagination } from "@/components/Pagination";
 
 // ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
 const PANEL_BG = "#2A2438";
@@ -325,7 +326,7 @@ function AttendanceView() {
           dataSource={filteredData}
           rowKey={(record) => record.id ?? `${record.user_id}-${selectedDate}`}
           loading={isLoading}
-          pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} records` }}
+          pagination={clientPagination({ label: "records" })}
           locale={{
             emptyText: (
               <div className="py-10 text-center">

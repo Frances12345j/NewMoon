@@ -26,6 +26,7 @@ import {
 import dayjs from "dayjs";
 import { api } from "../config/api";
 import Loading from "../components/Loading";
+import { clientPagination, serverPagination } from "../components/Pagination";
 import {
   LineChart,
   Line,
@@ -71,7 +72,7 @@ const SalesReport = () => {
   const [branches, setBranches] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 15,
+    pageSize: 7,
     total: 0,
   });
   const [trendData, setTrendData] = useState([]);
@@ -164,7 +165,7 @@ const SalesReport = () => {
       } else {
         setPagination({
           current: 1,
-          pageSize: 15,
+          pageSize: 7,
           total: data.data?.length || 0,
         });
       }
@@ -814,7 +815,7 @@ const SalesReport = () => {
                 dataSource={salesData}
                 rowKey="id"
                 loading={loading}
-                pagination={pagination}
+                pagination={serverPagination(pagination, { label: "sales" })}
                 onChange={handleTableChange}
                 scroll={{ x: true }}
                 className="[&_.ant-table-container]:!rounded-xl [&_.ant-table-thead_>_tr_>_th]:!bg-[#FFF1E6] [&_.ant-table-thead_>_tr_>_th]:!text-stone-700 [&_.ant-table-thead_>_tr_>_th]:!font-semibold [&_.ant-table-tbody_>_tr:hover_>_td]:!bg-[#FFF8ED]"
@@ -825,7 +826,7 @@ const SalesReport = () => {
                 dataSource={salesData}
                 rowKey="branch_id"
                 loading={loading}
-                pagination={false}
+                pagination={clientPagination({ label: "branches" })}
                 scroll={{ x: true }}
                 className="[&_.ant-table-container]:!rounded-xl [&_.ant-table-thead_>_tr_>_th]:!bg-[#FFF1E6] [&_.ant-table-thead_>_tr_>_th]:!text-stone-700 [&_.ant-table-thead_>_tr_>_th]:!font-semibold [&_.ant-table-tbody_>_tr:hover_>_td]:!bg-[#FFF8ED]"
               />
@@ -835,7 +836,7 @@ const SalesReport = () => {
                 dataSource={salesData}
                 rowKey="period"
                 loading={loading}
-                pagination={false}
+                pagination={clientPagination({ label: "days" })}
                 scroll={{ x: true }}
                 className="[&_.ant-table-container]:!rounded-xl [&_.ant-table-thead_>_tr_>_th]:!bg-[#FFF1E6] [&_.ant-table-thead_>_tr_>_th]:!text-stone-700 [&_.ant-table-thead_>_tr_>_th]:!font-semibold [&_.ant-table-tbody_>_tr:hover_>_td]:!bg-[#FFF8ED]"
               />

@@ -76,6 +76,7 @@ const NAV_GROUPS = [
     label: "Reports",
     items: [
       { key: "/reports", icon: <FileTextOutlined />, label: "Reports" },
+      { key: "/reports/inventory", icon: <InboxOutlined />, label: "Inventory Report" },
     ],
   },
 ];

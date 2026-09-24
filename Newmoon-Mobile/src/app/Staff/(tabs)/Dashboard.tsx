@@ -1,16 +1,16 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-    Modal,
-    Pressable,
-    Image,
-    StatusBar,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Modal,
+  Pressable,
+  Image,
+  StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -43,6 +43,8 @@ type StockItem = {
   received?: boolean;
   branchStock?: { id: string; branch_id: string | number; quantity: number; minimum_stock: number; received: boolean };
 };
+
+// ===== Helpers =====
 
 const formatLocalDate = (date = new Date()) => {
   const year = date.getFullYear();
@@ -130,19 +132,39 @@ const loadCachedStockForBranch = async (branchId: string | number | null): Promi
     });
 };
 
+// ===== Product Category Helper =====
+
+type ProductCategory = 'LECHON_MANOK' | 'LIEMPO' | 'OTHER';
+
+const getProductCategory = (item: StockItem): ProductCategory => {
+  const nameLower = (item.name || '').toLowerCase();
+  const categoryLower = (item.category || '').toLowerCase();
+  const typeLower = (item.type || '').toLowerCase();
+  const combined = `${nameLower} ${categoryLower} ${typeLower}`;
+
+  // Check Liempo first (more specific)
+  if (combined.includes('liempo') || combined.includes('pork')) {
+    return 'LIEMPO';
+  }
+  // Check Lechon Manok
+  if (combined.includes('lechon manok') || combined.includes('chicken') || combined.includes('manok')) {
+    return 'LECHON_MANOK';
+  }
+  return 'OTHER';
+};
+
 // ===== Reusable Components =====
 
-const QuickStatCard = React.memo(({ title, subtitle, value, icon, color, bgColor }: { title: string; subtitle: string; value: string | number; icon: IoniconName; color: string; bgColor: string }) => (
+const QuickStatCard = React.memo(({ title, value, icon, color, bgColor }: { title: string; value: string | number; icon: IoniconName; color: string; bgColor: string }) => (
   <View
     className="flex-1 bg-white rounded-3xl p-4 border border-[#FED7AA]"
     style={{ shadowColor: '#451A03', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 2 }}
   >
-    <View style={{ backgroundColor: bgColor }} className="w-11 h-11 rounded-2xl items-center justify-center mb-3">
-      <Ionicons name={icon} size={20} color={color} />
+    <View style={{ backgroundColor: bgColor }} className="w-10 h-10 rounded-2xl items-center justify-center mb-3">
+      <Ionicons name={icon} size={18} color={color} />
     </View>
-    <Text className="text-[#171717] text-2xl font-extrabold" numberOfLines={1}>{value}</Text>
-    <Text className="text-[#171717] text-sm font-bold mt-0.5">{title}</Text>
-    <Text className="text-stone-400 text-[10px] font-bold tracking-wide uppercase">{subtitle}</Text>
+    <Text className="text-[#171717] text-xl font-extrabold" numberOfLines={1}>{value}</Text>
+    <Text className="text-stone-400 text-[10px] font-bold tracking-wide uppercase mt-1">{title}</Text>
   </View>
 ));
 
@@ -208,6 +230,7 @@ const StockRow = React.memo(({ item }: { item: StockItem }) => {
     bg: isOut ? '#FEE2E2' : isLow ? '#FEF3C7' : '#DCFCE7',
     text: isOut ? '#DC2626' : isLow ? '#F59E0B' : '#16A34A',
   };
+  const statusLabel = isOut ? 'OUT OF STOCK' : isLow ? 'LOW STOCK' : 'IN STOCK';
 
   return (
     <View
@@ -216,11 +239,11 @@ const StockRow = React.memo(({ item }: { item: StockItem }) => {
     >
       <View className="flex-row justify-between items-center mb-3">
         <View className="flex-row items-center flex-1 mr-2">
-          <View style={{ backgroundColor: statusColors.bg }} className="w-10 h-10 rounded-xl items-center justify-center mr-3">
-            <Ionicons name={isOut ? 'alert-circle' : isLow ? 'warning-outline' : 'checkmark-circle'} size={18} color={statusColors.text} />
+          <View style={{ backgroundColor: statusColors.bg }} className="w-9 h-9 rounded-xl items-center justify-center mr-3">
+            <Ionicons name={isOut ? 'alert-circle' : isLow ? 'warning-outline' : 'checkmark-circle'} size={17} color={statusColors.text} />
           </View>
           <View className="flex-1">
-            <Text className="text-[#171717] text-sm font-extrabold" numberOfLines={2}>
+            <Text className="text-[#171717] text-sm font-extrabold" numberOfLines={1}>
               {item.name}
             </Text>
             <Text className="text-stone-500 text-[11px] mt-0.5" numberOfLines={1}>
@@ -228,32 +251,35 @@ const StockRow = React.memo(({ item }: { item: StockItem }) => {
             </Text>
           </View>
         </View>
-        <View style={{ backgroundColor: statusColors.bg }} className="px-3 py-1 rounded-full">
-          <Text style={{ color: statusColors.text }} className="text-[10px] font-extrabold uppercase tracking-wide">
-            {item.status}
+        <View style={{ backgroundColor: statusColors.bg }} className="px-2.5 py-1 rounded-full">
+          <Text style={{ color: statusColors.text }} className="text-[9px] font-extrabold uppercase tracking-wide">
+            {statusLabel}
           </Text>
         </View>
       </View>
 
       <View className="flex-row justify-between pt-3 border-t border-[#F5EDE0]">
         <View className="items-center flex-1">
-          <Text className="text-stone-400 text-[10px] font-bold uppercase mb-1">Quantity</Text>
+          <Text className="text-stone-400 text-[9px] font-bold uppercase mb-1">Stock</Text>
           <Text className="text-[#171717] text-lg font-extrabold">{hasHalf ? `${whole}.5` : whole}</Text>
-          {hasHalf && (
-            <View className="bg-[#FEF3C7] px-2 py-0.5 rounded-full mt-1">
-              <Text className="text-[#F59E0B] text-[10px] font-bold">{whole} ½ stock</Text>
-            </View>
-          )}
         </View>
         <View className="items-center flex-1">
-          <Text className="text-stone-400 text-[10px] font-bold uppercase mb-1">Price</Text>
+          <Text className="text-stone-400 text-[9px] font-bold uppercase mb-1">Price</Text>
           <Text className="text-[#EA580C] text-base font-extrabold">₱{item.price}</Text>
         </View>
         <View className="items-center flex-1">
-          <Text className="text-stone-400 text-[10px] font-bold uppercase mb-1">Min. Stock</Text>
+          <Text className="text-stone-400 text-[9px] font-bold uppercase mb-1">Min</Text>
           <Text className="text-[#171717] text-base font-extrabold">{item.minStock}</Text>
         </View>
       </View>
+
+      {hasHalf && (
+        <View className="flex-row justify-center mt-2">
+          <View className="bg-[#FEF3C7] px-2.5 py-0.5 rounded-full">
+            <Text className="text-[#F59E0B] text-[10px] font-bold">Half stock: {whole}.5</Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 });
@@ -274,7 +300,7 @@ const DashboardScreen = () => {
   const [todaySalesList, setTodaySalesList] = useState<any[]>([]);
   const [salesTodayModalVisible, setSalesTodayModalVisible] = useState(false);
   const [salesTodayPage, setSalesTodayPage] = useState(1);
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'LOW' | 'OUT'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'LECHON_MANOK' | 'LIEMPO'>('ALL');
   const [user, setUser] = useState<any>(null);
   const [quotaProductsSold, setQuotaProductsSold] = useState(0);
   const [monthlyProductsSold, setMonthlyProductsSold] = useState(0);
@@ -321,8 +347,6 @@ const DashboardScreen = () => {
       const productsData = Array.isArray(productsRes?.data) ? productsRes.data : (productsRes?.data?.data || []);
 
       if (!branchId) {
-        // Cannot compute per-branch stock without a branch — never zero-out the dashboards.
-        // Fall back to the last-known cached stock (best-effort) instead.
         try {
           const cachedBranchId = await getResolvedBranchId();
           const cachedStock = await loadCachedStockForBranch(branchId ?? cachedBranchId);
@@ -452,6 +476,7 @@ const DashboardScreen = () => {
   const totalStock = useMemo(() => stockData.reduce((sum, item) => sum + Number(item.quantity), 0), [stockData]);
   const lowStockCount = useMemo(() => stockData.filter(item => item.status === 'Low Stock').length, [stockData]);
   const totalValue = useMemo(() => stockData.reduce((sum, item) => sum + (item.quantity * item.price), 0), [stockData]);
+  const outOfStockCount = useMemo(() => stockData.filter((i) => i.status === 'Out of Stock').length, [stockData]);
 
   const alertsList = useMemo(
     () => stockData.filter(item => item.status === 'Low Stock' || item.status === 'Out of Stock'),
@@ -459,10 +484,24 @@ const DashboardScreen = () => {
   );
 
   const filteredStock = useMemo(() => {
-    if (filterCategory === 'LOW') return stockData.filter(i => i.status === 'Low Stock');
-    if (filterCategory === 'OUT') return stockData.filter(i => i.status === 'Out of Stock');
+    if (filterCategory === 'ALL') return stockData;
+    if (filterCategory === 'LECHON_MANOK') {
+      return stockData.filter(i => getProductCategory(i) === 'LECHON_MANOK');
+    }
+    if (filterCategory === 'LIEMPO') {
+      return stockData.filter(i => getProductCategory(i) === 'LIEMPO');
+    }
     return stockData;
   }, [stockData, filterCategory]);
+
+  const lechonManokCount = useMemo(
+    () => stockData.filter(i => getProductCategory(i) === 'LECHON_MANOK').length,
+    [stockData]
+  );
+  const liempoCount = useMemo(
+    () => stockData.filter(i => getProductCategory(i) === 'LIEMPO').length,
+    [stockData]
+  );
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(todaySalesList.length / SALES_TODAY_PAGE_SIZE)),
@@ -480,7 +519,6 @@ const DashboardScreen = () => {
     authUser?.username ||
     user?.username ||
     'Staff';
-  const outOfStockCount = stockData.filter((i) => i.status === 'Out of Stock').length;
 
   if (loading) {
     return (
@@ -497,7 +535,7 @@ const DashboardScreen = () => {
         </View>
         <Text className="text-[#171717] text-xl font-extrabold tracking-widest">NEWMOON</Text>
         <Text className="text-[#451A03] text-[11px] font-bold uppercase tracking-[2px] mt-1">Lechon Manok &amp; Liempo House</Text>
-        <ActivityIndicator size="large" color="#EA580C" />
+        <ActivityIndicator size="large" color="#EA580C" style={{ marginTop: 20 }} />
         <Text className="text-stone-500 text-[13px] mt-4">Loading your staff dashboard...</Text>
       </View>
     );
@@ -514,7 +552,7 @@ const DashboardScreen = () => {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -526,11 +564,11 @@ const DashboardScreen = () => {
           />
         }
       >
-        {/* ===== LIGHT HEADER ===== */}
-        <View className="px-5 pt-2 pb-2">
+        {/* ===== COMPACT HEADER ===== */}
+        <View className="px-5 pt-2 pb-1">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
-              <View className="w-12 h-12 rounded-xl bg-[#FFF1E6] items-center justify-center mr-3 overflow-hidden">
+              <View className="w-11 h-11 rounded-xl bg-[#FFF1E6] items-center justify-center mr-3 overflow-hidden border border-[#FED7AA]">
                 <Image
                   source={require('../../../../assets/images/logooos.jpg')}
                   className="w-full h-full"
@@ -545,60 +583,51 @@ const DashboardScreen = () => {
 
             <View className="flex-row items-center gap-2 ml-2">
               <TouchableOpacity
-                className="w-10 h-10 rounded-full bg-white items-center justify-center border border-[#FED7AA]"
-                style={{ shadowColor: '#451A03', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 2 }}
+                className="w-9 h-9 rounded-full bg-white items-center justify-center border border-[#FED7AA]"
+                style={{ shadowColor: '#451A03', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 }}
                 onPress={onRefresh}
                 disabled={refreshing}
                 activeOpacity={0.7}
               >
-                <Ionicons name="refresh" size={19} color="#451A03" />
+                <Ionicons name="refresh" size={17} color="#451A03" />
               </TouchableOpacity>
               <TouchableOpacity
-                className="w-10 h-10 rounded-full bg-white items-center justify-center border border-[#FED7AA]"
-                style={{ shadowColor: '#451A03', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 2 }}
+                className="w-9 h-9 rounded-full bg-white items-center justify-center border border-[#FED7AA]"
+                style={{ shadowColor: '#451A03', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 }}
                 onPress={handleLogout}
                 activeOpacity={0.7}
               >
-                <Ionicons name="log-out-outline" size={19} color="#451A03" />
+                <Ionicons name="log-out-outline" size={17} color="#451A03" />
               </TouchableOpacity>
             </View>
           </View>
 
-          <View className="mt-5">
-            <Text className="text-2xl font-extrabold text-[#171717]">Hey, {displayName}! 👋</Text>
-            <Text className="text-sm text-stone-500 mt-1">Ready to run today's sales?</Text>
-          </View>
-
-          {/* Status pills */}
-          <View className="flex-row flex-wrap gap-3 mt-4">
-            <View className="flex-row items-center px-4 py-2.5 rounded-full bg-white border border-[#FED7AA]">
-              <View className={`w-2.5 h-2.5 rounded-full mr-2 ${lowStockCount > 0 ? 'bg-[#F59E0B]' : 'bg-green-500'}`} />
-              <Text className={`text-xs font-extrabold tracking-wider uppercase ${lowStockCount > 0 ? 'text-[#D97706]' : 'text-green-600'}`}>
-                {lowStockCount > 0 ? `${lowStockCount} Low` : 'Stock OK'}
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              className="flex-row items-center px-4 py-2.5 rounded-full bg-[#EA580C]"
-              style={{ shadowColor: '#EA580C', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 3 }}
-              onPress={() => { setSalesTodayPage(1); setSalesTodayModalVisible(true); }}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="receipt-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-              <Text className="text-white text-xs font-extrabold tracking-wider uppercase">{todaySalesList.length} Sales</Text>
-            </TouchableOpacity>
+          {/* Greeting */}
+          <View className="mt-4">
+            <Text className="text-xl font-extrabold text-[#171717]">Hey, {displayName}! 👋</Text>
+            <Text className="text-sm text-stone-500 mt-0.5">Ready for today&apos;s sales?</Text>
           </View>
         </View>
+
+        {/* ===== BRANCH WARNING (compact) ===== */}
+        {branchResolved === false && (
+          <View className="mx-5 mt-4 px-3.5 py-3 rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] flex-row items-center">
+            <Ionicons name="alert-circle-outline" size={18} color="#D97706" />
+            <View className="ml-2.5 flex-1">
+              <Text className="text-[#92400E] text-[12px] font-bold">Branch not resolved</Text>
+              <Text className="text-[#B45309] text-[10px] mt-0.5 leading-tight">
+                Stock may show 0. Check your connection and pull to refresh.
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* ===== TODAY'S SALES HERO ===== */}
         <View className="px-5 mt-6">
           <View className="flex-row items-center justify-between mb-3">
             <View className="flex-1">
               <Text className="text-xl font-extrabold text-[#171717]">Today&apos;s Sales</Text>
-              <Text className="text-sm text-stone-500 mt-0.5">Keep the register moving.</Text>
-            </View>
-            <View className="bg-[#FFF1E6] px-2.5 py-1 rounded-full ml-2">
-              <Text className="text-[#EA580C] text-[11px] font-bold">🔥 {todaySalesList.length}</Text>
+              <Text className="text-sm text-stone-500 mt-0.5">Your branch performance today</Text>
             </View>
           </View>
 
@@ -610,10 +639,12 @@ const DashboardScreen = () => {
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center">
-                <Ionicons name="flame" size={16} color="#EA580C" />
+                <Text className="text-[#EA580C] text-lg">🔥</Text>
                 <Text className="text-[#EA580C] text-[10px] font-extrabold uppercase tracking-wider ml-1.5">Gross Today</Text>
               </View>
-              <Text className="text-stone-500 text-[11px] font-semibold">{todaySalesList.length} sale(s)</Text>
+              <View className="bg-[#FFF1E6] px-2.5 py-1 rounded-full">
+                <Text className="text-[#EA580C] text-[11px] font-bold">{todaySalesList.length} sale(s)</Text>
+              </View>
             </View>
 
             <Text className="text-[#EA580C] text-4xl font-extrabold mt-2">₱{todaySales.toLocaleString()}</Text>
@@ -638,36 +669,21 @@ const DashboardScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* ===== BRANCH UNRESOLVED WARNING ===== */}
-        {branchResolved === false && (
-          <View className="mx-5 mt-5 px-4 py-3 rounded-xl bg-[#FEF3C7] border border-[#FDE68A] flex-row items-center">
-            <Ionicons name="alert-circle-outline" size={20} color="#D97706" />
-            <View className="ml-3 flex-1">
-              <Text className="text-[#92400E] text-[13px] font-bold">Branch not resolved</Text>
-              <Text className="text-[#B45309] text-[11px] mt-0.5 leading-tight">
-                Stock may show 0. Make sure you are on the shop Wi-Fi and connected to the server, then pull to refresh.
-              </Text>
-            </View>
-          </View>
-        )}
-
         {/* ===== QUICK STATS - 2x2 Grid ===== */}
         <View className="px-5 mt-6">
           <Text className="text-xl font-extrabold text-[#171717]">Quick Stats</Text>
-          <Text className="text-sm text-stone-500 mt-0.5">Your branch at a glance</Text>
+          <Text className="text-sm text-stone-500 mt-0.5">Branch overview</Text>
 
           <View className="flex-row gap-3 mt-4">
             <QuickStatCard
               title="Total Stock"
-              subtitle="Units"
               value={totalHasHalf ? `${totalWhole}.5` : totalWhole}
               icon="cube-outline"
               color="#EA580C"
               bgColor="#FFF1E6"
             />
             <QuickStatCard
-              title="Total Items"
-              subtitle="Products"
+              title="Total Products"
               value={stockData.length}
               icon="restaurant-outline"
               color="#F59E0B"
@@ -678,7 +694,6 @@ const DashboardScreen = () => {
           <View className="flex-row gap-3 mt-3">
             <QuickStatCard
               title="Low Stock"
-              subtitle="Alerts"
               value={lowStockCount}
               icon="warning-outline"
               color="#F59E0B"
@@ -686,7 +701,6 @@ const DashboardScreen = () => {
             />
             <QuickStatCard
               title="Inventory Value"
-              subtitle="Total ₱"
               value={`₱${totalValue.toLocaleString()}`}
               icon="wallet-outline"
               color="#EA580C"
@@ -695,26 +709,19 @@ const DashboardScreen = () => {
           </View>
         </View>
 
-        {/* ===== PRODUCT QUOTA / INCENTIVE ===== */}
+        {/* ===== PRODUCT QUOTA ===== */}
         <View className="px-5 mt-6">
-          <View className="flex-row items-center justify-between mb-3">
-            <View className="flex-1">
-              <Text className="text-xl font-extrabold text-[#171717]">Product Quota</Text>
-              <Text className="text-sm text-stone-500 mt-0.5">₱100 per {productTarget} products</Text>
-            </View>
-            <View className="bg-[#FFF1E6] px-2.5 py-1 rounded-full ml-2">
-              <Text className="text-[#EA580C] text-[11px] font-bold">🔥 {quotaProgress}%</Text>
-            </View>
-          </View>
+          <Text className="text-xl font-extrabold text-[#171717]">Product Quota</Text>
+          <Text className="text-sm text-stone-500 mt-0.5">Daily goal &amp; incentive</Text>
 
           <View
-            className="bg-white rounded-3xl p-5 border border-[#FED7AA]"
+            className="bg-white rounded-3xl p-5 border border-[#FED7AA] mt-3"
             style={{ shadowColor: '#451A03', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.07, shadowRadius: 12, elevation: 3 }}
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center">
-                <View className="w-9 h-9 rounded-xl bg-[#FFF1E6] items-center justify-center mr-2.5">
-                  <Ionicons name="trophy-outline" size={18} color="#EA580C" />
+                <View className="w-8 h-8 rounded-xl bg-[#FFF1E6] items-center justify-center mr-2.5">
+                  <Ionicons name="trophy-outline" size={16} color="#EA580C" />
                 </View>
                 <Text className="text-[#EA580C] text-[10px] font-extrabold uppercase tracking-wider">Daily Goal</Text>
               </View>
@@ -723,7 +730,13 @@ const DashboardScreen = () => {
 
             <View className="mt-4">
               <View className="h-2.5 rounded-full bg-[#FFF1E6] overflow-hidden">
-                <View className="h-full rounded-full" style={{ backgroundColor: quotaProductsSold >= productTarget ? '#16A34A' : '#F97316', width: `${quotaProgress}%` }} />
+                <View
+                  className="h-full rounded-full"
+                  style={{
+                    backgroundColor: quotaProductsSold >= productTarget ? '#16A34A' : '#F97316',
+                    width: `${quotaProgress}%`
+                  }}
+                />
               </View>
               <View className="flex-row justify-between items-center mt-2">
                 <Text className="text-stone-500 text-[11px] font-semibold">{quotaProgress}% of daily quota</Text>
@@ -736,8 +749,8 @@ const DashboardScreen = () => {
             </View>
 
             <View className="mt-4 pt-4 border-t border-[#F5EDE0] flex-row items-center">
-              <View className="w-11 h-11 rounded-2xl bg-[#FFF1E6] items-center justify-center mr-3">
-                <Ionicons name="cash-outline" size={20} color={quotaIncentive > 0 ? '#EA580C' : '#A8A29E'} />
+              <View className="w-10 h-10 rounded-2xl bg-[#FFF1E6] items-center justify-center mr-3">
+                <Ionicons name="cash-outline" size={18} color={quotaIncentive > 0 ? '#EA580C' : '#A8A29E'} />
               </View>
               <View className="flex-1">
                 <Text className="text-stone-500 text-[11px] font-semibold">Monthly Incentive Bonus</Text>
@@ -749,27 +762,20 @@ const DashboardScreen = () => {
           </View>
         </View>
 
-        {/* ===== MONTHLY SALES TARGET ===== */}
+        {/* ===== MONTHLY TARGET (only if set) ===== */}
         {monthlyTarget > 0 && (
           <View className="px-5 mt-6">
-            <View className="flex-row items-center justify-between mb-3">
-              <View className="flex-1">
-                <Text className="text-xl font-extrabold text-[#171717]">Monthly Target</Text>
-                <Text className="text-sm text-stone-500 mt-0.5">Track your monthly progress</Text>
-              </View>
-              <View className="bg-[#FFF1E6] px-2.5 py-1 rounded-full ml-2">
-                <Text className="text-[#EA580C] text-[11px] font-bold">🔥 {Math.round(monthlyProgress)}%</Text>
-              </View>
-            </View>
+            <Text className="text-xl font-extrabold text-[#171717]">Monthly Target</Text>
+            <Text className="text-sm text-stone-500 mt-0.5">Monthly progress</Text>
 
             <View
-              className="bg-white rounded-3xl p-5 border border-[#FED7AA]"
+              className="bg-white rounded-3xl p-5 border border-[#FED7AA] mt-3"
               style={{ shadowColor: '#451A03', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.07, shadowRadius: 12, elevation: 3 }}
             >
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
-                  <View className="w-9 h-9 rounded-xl bg-[#FEF3C7] items-center justify-center mr-2.5">
-                    <Ionicons name="trending-up-outline" size={18} color="#F59E0B" />
+                  <View className="w-8 h-8 rounded-xl bg-[#FEF3C7] items-center justify-center mr-2.5">
+                    <Ionicons name="trending-up-outline" size={16} color="#F59E0B" />
                   </View>
                   <Text className="text-[#F59E0B] text-[10px] font-extrabold uppercase tracking-wider">Products Sold</Text>
                 </View>
@@ -778,7 +784,13 @@ const DashboardScreen = () => {
 
               <View className="mt-4">
                 <View className="h-2.5 rounded-full bg-[#FFF1E6] overflow-hidden">
-                  <View className="h-full rounded-full" style={{ backgroundColor: monthlyProgress >= 100 ? '#16A34A' : '#F97316', width: `${monthlyProgress}%` }} />
+                  <View
+                    className="h-full rounded-full"
+                    style={{
+                      backgroundColor: monthlyProgress >= 100 ? '#16A34A' : '#F97316',
+                      width: `${monthlyProgress}%`
+                    }}
+                  />
                 </View>
                 <Text className="text-stone-500 text-[11px] font-semibold mt-2">{Math.round(monthlyProgress)}% completed</Text>
               </View>
@@ -786,90 +798,54 @@ const DashboardScreen = () => {
           </View>
         )}
 
-        {/* ===== INVENTORY OVERVIEW ===== */}
-        <View className="px-5 mt-6">
-          <Text className="text-xl font-extrabold text-[#171717]">Inventory Overview</Text>
-          <Text className="text-sm text-stone-500 mt-0.5">Manage and monitor today&apos;s stock</Text>
-
-          <View className="flex-row gap-3 mt-4">
-            <View className="flex-1 bg-white rounded-3xl p-4 border border-[#FED7AA]">
-              <Text className="text-stone-400 text-[10px] font-bold uppercase">Total Stock</Text>
-              <Text className="text-[#171717] text-2xl font-extrabold mt-1">{totalWhole}</Text>
-              <Text className="text-stone-500 text-[11px] font-semibold mt-0.5">{totalHasHalf ? '½ units extra' : 'units'}</Text>
-            </View>
-            <View className="flex-1 bg-white rounded-3xl p-4 border border-[#FED7AA]">
-              <Text className="text-stone-400 text-[10px] font-bold uppercase">Low Stock</Text>
-              <Text className={lowStockCount > 0 ? 'text-[#F59E0B] text-2xl font-extrabold mt-1' : 'text-[#171717] text-2xl font-extrabold mt-1'}>{lowStockCount}</Text>
-              <Text className="text-stone-500 text-[11px] font-semibold mt-0.5">{lowStockCount > 0 ? 'needs restock' : 'all good'}</Text>
-            </View>
-            <View className="flex-1 bg-white rounded-3xl p-4 border border-[#FED7AA]">
-              <Text className="text-stone-400 text-[10px] font-bold uppercase">Products</Text>
-              <Text className="text-[#171717] text-2xl font-extrabold mt-1">{stockData.length}</Text>
-              <Text className="text-stone-500 text-[11px] font-semibold mt-0.5">menu items</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* ===== TOTAL INVENTORY VALUE ===== */}
-        <View className="px-5 mt-4">
-          <View
-            className="bg-white rounded-3xl p-5 border border-[#FED7AA] flex-row items-center"
-            style={{ shadowColor: '#EA580C', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.07, shadowRadius: 12, elevation: 3 }}
-          >
-            <View
-              className="w-14 h-14 rounded-2xl bg-[#EA580C] items-center justify-center mr-4"
-              style={{ shadowColor: '#EA580C', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 3 }}
-            >
-              <Ionicons name="wallet-outline" size={26} color="#FFFFFF" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-stone-400 text-[10px] font-bold uppercase tracking-wider">Total Inventory Value</Text>
-              <Text className="text-[#EA580C] text-3xl font-extrabold mt-0.5">₱{totalValue.toLocaleString()}</Text>
-              <Text className="text-stone-500 text-xs mt-0.5">Across all branch products</Text>
-            </View>
-          </View>
-        </View>
-
         {/* ===== STOCK LEVELS ===== */}
         <View className="px-5 mt-6">
-          <View className="flex-row items-center justify-between mb-4">
-            <View className="flex-1 mr-2">
+          <View className="flex-row items-center justify-between mb-1">
+            <View className="flex-1">
               <Text className="text-xl font-extrabold text-[#171717]">Stock Levels</Text>
-              <Text className="text-sm text-stone-500 mt-0.5">{filteredStock.length} items</Text>
+              <Text className="text-sm text-stone-500 mt-0.5">Monitor today&apos;s available products</Text>
+            </View>
+            <View className="bg-[#FFF1E6] px-2.5 py-1 rounded-full">
+              <Text className="text-[#EA580C] text-[11px] font-bold">{filteredStock.length}</Text>
             </View>
           </View>
 
-          {/* Category Filter - Horizontally Scrollable */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 16 }}>
+          {/* Product Category Filter */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8, marginTop: 12, marginBottom: 14 }}
+          >
             <TouchableOpacity
               onPress={() => setFilterCategory('ALL')}
               className={`px-4 py-2 rounded-full border ${filterCategory === 'ALL' ? 'bg-[#EA580C] border-[#EA580C]' : 'bg-white border-[#FED7AA]'}`}
               activeOpacity={0.8}
             >
               <Text className={filterCategory === 'ALL' ? 'text-white text-xs font-extrabold' : 'text-stone-500 text-xs font-bold'}>
-                All ({stockData.length})
+                ALL
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setFilterCategory('LOW')}
-              className={`px-4 py-2 rounded-full border ${filterCategory === 'LOW' ? 'bg-[#F59E0B] border-[#F59E0B]' : 'bg-white border-[#FED7AA]'}`}
+              onPress={() => setFilterCategory('LECHON_MANOK')}
+              className={`px-4 py-2 rounded-full border ${filterCategory === 'LECHON_MANOK' ? 'bg-[#EA580C] border-[#EA580C]' : 'bg-white border-[#FED7AA]'}`}
               activeOpacity={0.8}
             >
-              <Text className={filterCategory === 'LOW' ? 'text-white text-xs font-extrabold' : 'text-stone-500 text-xs font-bold'}>
-                Low Stock ({lowStockCount})
+              <Text className={filterCategory === 'LECHON_MANOK' ? 'text-white text-xs font-extrabold' : 'text-stone-500 text-xs font-bold'}>
+                LECHON MANOK {lechonManokCount > 0 ? `(${lechonManokCount})` : ''}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setFilterCategory('OUT')}
-              className={`px-4 py-2 rounded-full border ${filterCategory === 'OUT' ? 'bg-[#DC2626] border-[#DC2626]' : 'bg-white border-[#FED7AA]'}`}
+              onPress={() => setFilterCategory('LIEMPO')}
+              className={`px-4 py-2 rounded-full border ${filterCategory === 'LIEMPO' ? 'bg-[#EA580C] border-[#EA580C]' : 'bg-white border-[#FED7AA]'}`}
               activeOpacity={0.8}
             >
-              <Text className={filterCategory === 'OUT' ? 'text-white text-xs font-extrabold' : 'text-stone-500 text-xs font-bold'}>
-                Out of Stock ({outOfStockCount})
+              <Text className={filterCategory === 'LIEMPO' ? 'text-white text-xs font-extrabold' : 'text-stone-500 text-xs font-bold'}>
+                LIEMPO {liempoCount > 0 ? `(${liempoCount})` : ''}
               </Text>
             </TouchableOpacity>
           </ScrollView>
 
+          {/* Product Cards */}
           {filteredStock.map((item) => (
             <StockRow key={item.id} item={item} />
           ))}
@@ -879,8 +855,14 @@ const DashboardScreen = () => {
               <View className="w-16 h-16 rounded-full bg-[#FFF1E6] items-center justify-center mb-3 border border-[#FED7AA]">
                 <Ionicons name="cube-outline" size={30} color="#EA580C" />
               </View>
-              <Text className="text-[#171717] font-extrabold text-base">No Stock Items</Text>
-              <Text className="text-stone-500 text-xs mt-1 text-center">No products match the current filter</Text>
+              <Text className="text-[#171717] font-extrabold text-base">No Products</Text>
+              <Text className="text-stone-500 text-xs mt-1 text-center">
+                {filterCategory === 'LECHON_MANOK'
+                  ? 'No Lechon Manok products found'
+                  : filterCategory === 'LIEMPO'
+                  ? 'No Liempo products found'
+                  : 'No products available'}
+              </Text>
             </View>
           )}
         </View>
@@ -891,7 +873,7 @@ const DashboardScreen = () => {
             <View className="flex-row items-center justify-between mb-4">
               <View className="flex-1 mr-2">
                 <Text className="text-xl font-extrabold text-[#171717]">Stock Alerts</Text>
-                <Text className="text-sm text-stone-500 mt-0.5">Needs restocking now</Text>
+                <Text className="text-sm text-stone-500 mt-0.5">Products that need attention</Text>
               </View>
               <View className="bg-[#FEE2E2] px-2.5 py-1 rounded-full ml-2">
                 <Text className="text-[#DC2626] text-[11px] font-bold">{alertsList.length}</Text>
@@ -905,19 +887,19 @@ const DashboardScreen = () => {
                   key={`alert-${item.id}`}
                   className={`rounded-3xl p-4 mb-3 border ${isOut ? 'bg-[#FEF2F2] border-[#FECACA]' : 'bg-[#FFFBEB] border-[#FDE68A]'}`}
                 >
-                  <View className="flex-row items-center mb-2">
-                    <View style={{ backgroundColor: isOut ? '#FEE2E2' : '#FEF3C7' }} className="w-9 h-9 rounded-xl items-center justify-center mr-2.5">
-                      <Ionicons name={isOut ? 'alert-circle' : 'warning-outline'} size={17} color={isOut ? '#DC2626' : '#F59E0B'} />
+                  <View className="flex-row items-center mb-1.5">
+                    <View style={{ backgroundColor: isOut ? '#FEE2E2' : '#FEF3C7' }} className="w-8 h-8 rounded-xl items-center justify-center mr-2.5">
+                      <Ionicons name={isOut ? 'alert-circle' : 'warning-outline'} size={16} color={isOut ? '#DC2626' : '#F59E0B'} />
                     </View>
                     <Text className={isOut ? 'text-[#DC2626] text-sm font-extrabold' : 'text-[#D97706] text-sm font-extrabold'}>
-                      {isOut ? 'Out of Stock' : 'Low Stock'}
+                      {isOut ? 'OUT OF STOCK' : 'LOW STOCK'}
                     </Text>
                   </View>
-                  <Text className="text-[#171717] text-sm font-bold">{item.name}</Text>
-                  <Text className="text-stone-500 text-xs mt-1">
+                  <Text className="text-[#171717] text-sm font-bold ml-10">{item.name}</Text>
+                  <Text className="text-stone-500 text-xs mt-0.5 ml-10">
                     {isOut
-                      ? 'No stock remaining. Restock immediately.'
-                      : `Only ${item.quantity} remaining (Min: ${item.minStock})`}
+                      ? 'No stock remaining'
+                      : `Only ${item.quantity} remaining`}
                   </Text>
                 </View>
               );
@@ -925,7 +907,7 @@ const DashboardScreen = () => {
           </View>
         )}
 
-        {/* ===== FOOTER BRANDING ===== */}
+        {/* ===== FOOTER ===== */}
         <View className="items-center px-5 mt-8 mb-2">
           <View className="w-10 h-[3px] rounded-full bg-[#FED7AA] mb-4" />
           <Ionicons name="flame" size={16} color="#EA580C" />

@@ -30,6 +30,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { api } from "../config/api";
+import { clientPagination, serverPagination } from "../components/Pagination";
 
 const { Text, Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -43,7 +44,7 @@ const PullOutReport = () => {
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [dateRange, setDateRange] = useState([dayjs().startOf("month"), dayjs().endOf("month")]);
   const [branches, setBranches] = useState([]);
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 15, total: 0 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 7, total: 0 });
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedPullOut, setSelectedPullOut] = useState(null);
   const [searchText, setSearchText] = useState("");
@@ -438,7 +439,7 @@ const PullOutReport = () => {
             )}
             rowKey="id"
             loading={loading}
-            pagination={pagination}
+            pagination={serverPagination(pagination, { label: "stock-outs" })}
             onChange={handleTableChange}
             scroll={{ x: true }}
           />
@@ -494,7 +495,7 @@ const PullOutReport = () => {
               columns={itemColumns}
               dataSource={selectedPullOut.items || []}
               rowKey="id"
-              pagination={false}
+              pagination={clientPagination({ label: "items" })}
               size="small"
             />
           </div>

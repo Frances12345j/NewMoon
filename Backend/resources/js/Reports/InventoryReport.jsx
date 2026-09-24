@@ -14,6 +14,7 @@ import {
   Progress,
   Input,
   Alert,
+  DatePicker,
 } from "antd";
 import {
   InboxOutlined,
@@ -25,10 +26,19 @@ import {
   StockOutlined,
   FireOutlined,
   CloseOutlined,
+  ReloadOutlined,
+  AccountBookOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import { api } from "../config/api";
+import { clientPagination, serverPagination } from "../components/Pagination";
 
 const { Text, Title } = Typography;
+const { RangePicker } = DatePicker;
+
+const fmtPeso = (value) =>
+  `${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
 const InventoryReport = () => {
   const [loading, setLoading] = useState(false);
@@ -40,9 +50,61 @@ const InventoryReport = () => {
   const [searchText, setSearchText] = useState("");
   const [categories, setCategories] = useState([]);
   const [branches, setBranches] = useState([]);
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 15, total: 0 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 7, total: 0 });
   const [summary, setSummary] = useState({ total_items: 0, total_value: 0, low_stock_items: 0, out_of_stock_items: 0, total_products: 0 });
   const [showLowStockAlert, setShowLowStockAlert] = useState(true);
+
+  // Delivery & Expense summary report
+  const [dateRange, setDateRange] = useState(null);
+  const [reportRows, setReportRows] = useState([]);
+  const [reportTotals, setReportTotals] = useState({ total_lechon_manok: 0, total_liempo: 0, total_expenses: 0 });
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState(null);
+  const [expenseRows, setExpenseRows] = useState([]);
+  const [productFilter, setProductFilter] = useState("all"); // all | lechon | liempo
+
+  const filteredReportRows = reportRows.filter((row) => {
+    if (productFilter === "lechon") return Number(row.lechon_manok) > 0;
+    if (productFilter === "liempo") return Number(row.liempo) > 0;
+    return true;
+  });
+
+  const showLechon = productFilter !== "liempo";
+  const showLiempo = productFilter !== "lechon";
+
+  const fetchDeliveryExpenseReport = async () => {
+    setReportLoading(true);
+    setReportError(null);
+    try {
+      const params = {};
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        params.start_date = dateRange[0].format("YYYY-MM-DD");
+        params.end_date = dateRange[1].format("YYYY-MM-DD");
+      }
+      if (selectedBranch) params.branch_id = selectedBranch;
+
+      const [reportRes, expensesRes] = await Promise.all([
+        api.get("/reports/inventory-report", { params }),
+        api.get("/expenses", { params }),
+      ]);
+
+      setReportRows(reportRes.data?.data || []);
+      setReportTotals(
+        reportRes.data?.totals || { total_lechon_manok: 0, total_liempo: 0, total_expenses: 0 }
+      );
+      setExpenseRows(expensesRes.data?.data || []);
+    } catch (err) {
+      console.error("[InventoryReport] Delivery/Expense report error:", err);
+      setReportError(err?.response?.data?.message || "Failed to load the inventory report. Please try again.");
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  const resetFilters = () => {
+    setSelectedBranch(null);
+    setDateRange(null);
+  };
 
   const fetchInventoryReport = async (page = 1) => {
     setLoading(true);
@@ -82,6 +144,11 @@ const InventoryReport = () => {
   useEffect(() => {
     fetchInventoryReport(1);
   }, [selectedCategory, selectedBranch]);
+
+  useEffect(() => {
+    fetchDeliveryExpenseReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBranch, dateRange]);
 
   const handleTableChange = (pagination) => {
     fetchInventoryReport(pagination.current);
@@ -251,6 +318,106 @@ const InventoryReport = () => {
     },
   ];
 
+  const dateColumn = {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      sorter: (a, b) => dayjs(a.date).unix() - dayjs(b.date).unix(),
+      render: (date) => <Text strong>{dayjs(date).format("MMM DD, YYYY")}</Text>,
+    };
+
+  const branchColumn = {
+      title: "Location / Branch",
+      dataIndex: "branch_name",
+      key: "branch_name",
+      render: (name) => <Text>{name}</Text>,
+    };
+
+  const lechonColumn = {
+      title: "Lechon Manok",
+      dataIndex: "lechon_manok",
+      key: "lechon_manok",
+      align: "right",
+      render: (value) => (
+        <Text strong>{Number(value || 0).toLocaleString()} pcs</Text>
+      ),
+    };
+
+  const liempoColumn = {
+      title: "Liempo",
+      dataIndex: "liempo",
+      key: "liempo",
+      align: "right",
+      render: (value) => (
+        <Text strong>{Number(value || 0).toLocaleString()} pcs</Text>
+      ),
+    };
+
+  const expensesColumn = {
+      title: "Expenses",
+      dataIndex: "expenses",
+      key: "expenses",
+      align: "right",
+      render: (value) => (
+        <Text strong style={{ color: "#EA580C" }}>
+          ₱{fmtPeso(value)}
+        </Text>
+      ),
+    };
+
+  const reportColumns = [
+    dateColumn,
+    branchColumn,
+    ...(showLechon ? [lechonColumn] : []),
+    ...(showLiempo ? [liempoColumn] : []),
+    expensesColumn,
+  ];
+
+  const expenseRecordColumns = [
+    {
+      title: "Date",
+      dataIndex: "expense_date",
+      key: "expense_date",
+      render: (date) => dayjs(date).format("MMM DD, YYYY"),
+    },
+    {
+      title: "Branch",
+      dataIndex: ["branch", "name"],
+      key: "branch_name",
+      render: (name) => <Text>{name || "-"}</Text>,
+    },
+    {
+      title: "Category",
+      dataIndex: "category",
+      key: "category",
+      render: (category) => <Tag color="orange">{category}</Tag>,
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      align: "right",
+      render: (value) => (
+        <Text strong style={{ color: "#EA580C" }}>
+          ₱{fmtPeso(value)}
+        </Text>
+      ),
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      ellipsis: true,
+      render: (description) => description || "-",
+    },
+    {
+      title: "Recorded By",
+      dataIndex: ["user", "full_name"],
+      key: "recorded_by",
+      render: (name) => <Text>{name || "-"}</Text>,
+    },
+  ];
+
   // Stats — from backend summary (all items, not just current page)
   const totalItems = summary.total_products || 0;
   const totalValue = summary.total_value || 0;
@@ -262,14 +429,14 @@ const InventoryReport = () => {
       {/* =========================================================
           HERO HEADER
       ========================================================= */}
-      <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+      <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
         {/* Decorative glow circles */}
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/[0.08] blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/[0.06] blur-2xl" />
-        <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/[0.05] blur-2xl" />
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+        <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+        <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
 
         {/* Watermark icon */}
-        <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/[0.03]">
+        <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
           <FireOutlined />
         </div>
 
@@ -296,7 +463,7 @@ const InventoryReport = () => {
               <Button
                 icon={<DownloadOutlined />}
                 onClick={handleExport}
-                className="!h-11 !rounded-xl !border-white/20 !bg-white/5 !px-5 !font-medium !text-white hover:!border-orange-300 hover:!text-orange-300"
+                className="h-11! rounded-xl! border-white/20! bg-white/5! px-5! font-medium! text-white! hover:border-orange-300! hover:text-orange-300!"
               >
                 Export CSV
               </Button>
@@ -305,7 +472,7 @@ const InventoryReport = () => {
                 icon={<StockOutlined />}
                 onClick={fetchInventoryReport}
                 loading={loading}
-                className="!h-11 !rounded-xl !border-none !bg-gradient-to-r !from-orange-600 !to-amber-500 !px-5 !font-semibold !shadow-lg !shadow-orange-500/20 hover:!brightness-110"
+                className="h-11! rounded-xl! border-none! bg-linear-to-r! from-orange-600! to-amber-500! px-5! font-semibold! shadow-lg! shadow-orange-500/20! hover:brightness-110!"
               >
                 Refresh
               </Button>
@@ -314,7 +481,7 @@ const InventoryReport = () => {
 
           {/* KPI chips in hero */}
           <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/15">
                 <InboxOutlined className="text-orange-400" />
               </div>
@@ -323,7 +490,7 @@ const InventoryReport = () => {
                 <p className="text-white font-bold text-lg leading-tight">{totalItems}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/15">
                 <StockOutlined className="text-green-400" />
               </div>
@@ -334,7 +501,7 @@ const InventoryReport = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/15">
                 <WarningOutlined className="text-amber-400" />
               </div>
@@ -343,7 +510,7 @@ const InventoryReport = () => {
                 <p className="text-amber-300 font-bold text-lg leading-tight">{lowStockCount}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/15">
                 <WarningOutlined className="text-red-400" />
               </div>
@@ -397,7 +564,7 @@ const InventoryReport = () => {
                 style={{ width: 200 }}
                 placeholder="All Branches"
                 allowClear
-                className="!h-11 !rounded-xl !border-stone-200 hover:!border-orange-300 focus:!border-orange-500"
+                className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
                 value={selectedBranch}
                 onChange={setSelectedBranch}
               >
@@ -407,13 +574,163 @@ const InventoryReport = () => {
                   </Select.Option>
                 ))}
               </Select>
+              <span className="text-sm font-semibold text-stone-700">Dates:</span>
+              <RangePicker
+                value={dateRange}
+                onChange={(dates) => setDateRange(dates || null)}
+                className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
+              />
               <Input
                 placeholder="Search items..."
                 prefix={<SearchOutlined />}
                 style={{ width: 250 }}
-                className="!h-11 !rounded-xl !border-stone-200 hover:!border-orange-300 focus:!border-orange-500"
+                className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
+              />
+              <Button
+                icon={<CloseOutlined />}
+                onClick={resetFilters}
+                disabled={!selectedBranch && !dateRange}
+                className="h-11! rounded-xl! border-stone-200! px-4! text-stone-600! hover:border-orange-300! hover:text-orange-600!"
+              >
+                Reset Filters
+              </Button>
+            </div>
+          </div>
+        </Col>
+
+        {/* Inventory Delivery & Expense Summary */}
+        <Col span={24}>
+          <div className="rounded-2xl border border-orange-100 bg-white shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                  <AccountBookOutlined />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-stone-900">Inventory Deliveries &amp; Expenses</h2>
+                  <p className="text-xs text-stone-500">
+                    Lechon Manok / Liempo received, plus staff-recorded operating expenses
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-semibold text-stone-700">Product:</span>
+                <Select
+                  value={productFilter}
+                  onChange={setProductFilter}
+                  style={{ width: 180 }}
+                  className="h-10! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
+                >
+                  <Select.Option value="all">All</Select.Option>
+                  <Select.Option value="lechon">Lechon Manok</Select.Option>
+                  <Select.Option value="liempo">Liempo</Select.Option>
+                </Select>
+                <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+                  {filteredReportRows.length} day(s)
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4">
+              {reportError ? (
+                <Alert
+                  type="error"
+                  showIcon
+                  message="Unable to load inventory records"
+                  description={reportError}
+                  action={
+                    <Button
+                      type="primary"
+                      size="small"
+                      danger
+                      icon={<ReloadOutlined />}
+                      onClick={fetchDeliveryExpenseReport}
+                      loading={reportLoading}
+                    >
+                      Retry
+                    </Button>
+                  }
+                  className="rounded-xl"
+                />
+              ) : (
+                <Table
+                  columns={reportColumns}
+                  dataSource={filteredReportRows}
+                  rowKey={(record) => `${record.date}-${record.branch_id}`}
+                  loading={reportLoading}
+                  pagination={clientPagination({ label: "days" })}
+                  scroll={{ x: true }}
+                  summary={() => (
+                    <Table.Summary fixed>
+                      <Table.Summary.Row className="bg-orange-50!">
+                        <Table.Summary.Cell index={0}>
+                          <Text strong>TOTAL</Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell index={1} />
+                        {showLechon && (
+                          <Table.Summary.Cell index={2} align="right">
+                            <Text strong>{Number(reportTotals.total_lechon_manok || 0).toLocaleString()} pcs</Text>
+                          </Table.Summary.Cell>
+                        )}
+                        {showLiempo && (
+                          <Table.Summary.Cell index={showLechon ? 3 : 2} align="right">
+                            <Text strong>{Number(reportTotals.total_liempo || 0).toLocaleString()} pcs</Text>
+                          </Table.Summary.Cell>
+                        )}
+                        <Table.Summary.Cell index={showLechon && showLiempo ? 4 : 3} align="right">
+                          <Text strong style={{ color: "#EA580C" }}>
+                            ₱{fmtPeso(reportTotals.total_expenses)}
+                          </Text>
+                        </Table.Summary.Cell>
+                      </Table.Summary.Row>
+                    </Table.Summary>
+                  )}
+                  locale={{
+                    emptyText: (
+                      <div className="py-10 text-center">
+                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+                          <InboxOutlined style={{ fontSize: 20 }} />
+                        </div>
+                        <p className="text-base font-semibold text-stone-700">No inventory records found</p>
+                        <p className="mt-1 text-sm text-stone-400">
+                          Adjust the date, branch, or product filters and try again.
+                        </p>
+                      </div>
+                    ),
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </Col>
+
+        {/* Expense Records */}
+        <Col span={24}>
+          <div className="rounded-2xl border border-orange-100 bg-white shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                  <CalendarOutlined />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-stone-900">Expense Records</h2>
+                  <p className="text-xs text-stone-500">Expenses recorded by staff from the POS</p>
+                </div>
+              </div>
+              <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+                {expenseRows.length} expense(s)
+              </span>
+            </div>
+            <div className="p-4">
+              <Table
+                columns={expenseRecordColumns}
+                dataSource={expenseRows}
+                rowKey="id"
+                loading={reportLoading}
+                pagination={clientPagination({ label: "expenses" })}
+                scroll={{ x: true }}
               />
             </div>
           </div>
@@ -442,7 +759,7 @@ const InventoryReport = () => {
                 dataSource={inventoryData}
                 rowKey="id"
                 loading={loading}
-                pagination={pagination}
+                pagination={serverPagination(pagination, { label: "items" })}
                 onChange={handleTableChange}
                 scroll={{ x: true }}
               />
@@ -473,10 +790,7 @@ const InventoryReport = () => {
                 dataSource={movements}
                 rowKey="id"
                 loading={loading}
-                pagination={{
-                  pageSize: 10,
-                  showTotal: (total) => `Total ${total} movements`,
-                }}
+                pagination={clientPagination({ label: "movements" })}
                 scroll={{ x: true }}
               />
             </div>

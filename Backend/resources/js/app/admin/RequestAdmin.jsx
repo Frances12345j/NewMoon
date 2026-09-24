@@ -12,6 +12,7 @@ import {
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from "@/config/api";
+import { clientPagination, serverPagination } from "@/components/Pagination";
 
 const { TextArea } = Input;
 
@@ -466,11 +467,7 @@ function RequestAdmin() {
           dataSource={filteredRequests}
           rowKey="id"
           loading={isLoading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} requests`,
-          }}
+          pagination={clientPagination({ label: "requests" })}
           locale={{
             emptyText: (
               <div className="py-10 text-center">

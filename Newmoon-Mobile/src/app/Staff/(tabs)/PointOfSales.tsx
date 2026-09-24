@@ -146,6 +146,42 @@ function formatRestockDate(dateStr?: string | null): string {
   catch { return ''; }
 }
 
+/** Business calendar is the Philippines — never rely on device UTC day. */
+function phToday(): string {
+  const now = new Date();
+  const ph = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 8 * 3600000);
+  const y = ph.getUTCFullYear();
+  const m = String(ph.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(ph.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function addDaysPh(dateStr: string, days: number): string {
+  const d = new Date(dateStr + 'T12:00:00+08:00');
+  d.setDate(d.getDate() + days);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
+function formatPhDateShort(dateStr: string): string {
+  const today = phToday();
+  if (dateStr === today) return 'Today';
+  if (dateStr === addDaysPh(today, -1)) return 'Yesterday';
+  try {
+    return new Date(dateStr + 'T12:00:00+08:00').toLocaleDateString('en-PH', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+const EXPENSE_CATEGORIES = ['Transportation', 'Charcoal', 'Packaging', 'Supplies', 'Cleaning', 'Other'];
+
 const LOGO = require('../../../../assets/images/logooos.jpg');
 
 export default function POSScreen() {
@@ -168,6 +204,23 @@ export default function POSScreen() {
   const [collapsedNotReceived, setCollapsedNotReceived] = useState(false);
   const [orderModalVisible, setOrderModalVisible] = useState(false);
   const [halfPortions, setHalfPortions] = useState<Record<string, boolean>>({});
+
+  // --- Add Expense (separate from the POS cart / sale flow) ---
+  const [addExpenseModalVisible, setAddExpenseModalVisible] = useState(false);
+  const [expenseCategory, setExpenseCategory] = useState(EXPENSE_CATEGORIES[0]);
+  const [expenseAmount, setExpenseAmount] = useState('');
+  const [expenseDescription, setExpenseDescription] = useState('');
+  const [expenseDate, setExpenseDate] = useState(phToday());
+  const [expenseDateOptions, setExpenseDateOptions] = useState<string[]>([]);
+  const [expenseSaving, setExpenseSaving] = useState(false);
+
+  useEffect(() => {
+    const today = phToday();
+    const options: string[] = [];
+    for (let i = 0; i < 7; i++) options.push(addDaysPh(today, -i));
+    setExpenseDateOptions(options);
+    setExpenseDate(today);
+  }, []);
 
   const categories = ['All'];
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -418,7 +471,7 @@ export default function POSScreen() {
 
   // --- Branch resolution on mount ---
   useEffect(() => {
-    resolveBranchId().then(() => {});
+    resolveBranchId().then(() => { });
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 500,
@@ -741,6 +794,59 @@ export default function POSScreen() {
     }
   };
 
+  const handleSaveExpense = async () => {
+    const amountNum = Number(expenseAmount);
+
+    if (!expenseCategory) {
+      Alert.alert('Missing Category', 'Please choose an expense category.');
+      return;
+    }
+    if (!expenseAmount || Number.isNaN(amountNum) || amountNum <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter an amount greater than 0.');
+      return;
+    }
+
+    try {
+      setExpenseSaving(true);
+
+      const { branchId } = await resolveStaffBranch();
+      if (!branchId) {
+        Alert.alert(
+          'Branch Not Found',
+          'Unable to determine your branch. Log in online once so your branch is saved on this device.'
+        );
+        return;
+      }
+
+      // branch_id is intentionally NOT sent: the backend locks the expense to
+      // the authenticated staff member's assigned branch.
+      await api.post('/expenses', {
+        category: expenseCategory,
+        amount: amountNum,
+        description: expenseDescription.trim() || null,
+        expense_date: expenseDate,
+      });
+
+      const summary = `₱${amountNum.toLocaleString(undefined, { minimumFractionDigits: 2 })} — ${expenseCategory}${expenseDescription.trim() ? ` — ${expenseDescription.trim()}` : ''}`;
+
+      Alert.alert('Expense recorded successfully', summary, [{ text: 'OK' }]);
+
+      // Reset the form only — the POS cart / sale flow is not touched.
+      setAddExpenseModalVisible(false);
+      setExpenseAmount('');
+      setExpenseDescription('');
+      setExpenseCategory(EXPENSE_CATEGORIES[0]);
+      setExpenseDate(phToday());
+    } catch (error: any) {
+      Alert.alert(
+        'Failed to record expense',
+        error?.response?.data?.message || 'Unable to save the expense. Try again.'
+      );
+    } finally {
+      setExpenseSaving(false);
+    }
+  };
+
   const handleCancelOrder = () => {
     if (cart.length === 0) return;
     Alert.alert(
@@ -777,9 +883,9 @@ export default function POSScreen() {
     const lineTotal = roundMoney(item.price * item.quantity);
 
     return (
-      <View className="border-b border-[#F5EDE0] py-2">
+      <View className="border-b border-[#F5EDE0] py-3">
         <View className="flex-row items-center">
-          <View className="bg-[#FFF1E6] p-2 rounded-full mr-2">
+          <View className="bg-[#FFF1E6] p-2 rounded-xl mr-2.5">
             <Icon name={item.icon} size={14} color="#EA580C" />
           </View>
 
@@ -829,7 +935,7 @@ export default function POSScreen() {
         <TouchableOpacity
           onPress={() => toggleHalfPortion(item.id)}
           activeOpacity={0.75}
-          className={`self-start mt-1.5 ml-9 flex-row items-center px-2 py-1 rounded-lg border ${isHalf ? 'bg-[#FEF3C7] border-amber-300' : 'bg-stone-100 border-stone-300'
+          className={`self-start mt-2 ml-9 flex-row items-center px-2.5 py-1.5 rounded-lg border ${isHalf ? 'bg-[#FEF3C7] border-amber-300' : 'bg-stone-100 border-stone-300'
             }`}
         >
           <View
@@ -877,7 +983,7 @@ export default function POSScreen() {
           </View>
           <Text className="text-[#171717] text-xl font-extrabold tracking-widest">NEWMOON</Text>
           <Text className="text-[#451A03] text-[11px] font-bold uppercase tracking-[2px] mt-1">Lechon Manok &amp; Liempo House</Text>
-          <ActivityIndicator size="large" color="#EA580C" />
+          <ActivityIndicator size="large" color="#EA580C" style={{ marginTop: 20 }} />
           <Text className="text-stone-500 text-[13px] mt-4">Loading your Point Of Sales...</Text>
         </View>
       </SafeAreaView>
@@ -931,135 +1037,118 @@ export default function POSScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <Animated.View style={{ opacity: fadeAnim }}>
-              {/* ===== LIGHT HEADER ===== */}
-              <View className="px-5 pt-2 pb-4">
+              {/* ===== COMPACT CASHIER HEADER (Logo/title/pills removed) ===== */}
+              <View className="px-5 pt-2 pb-3">
                 <View className="flex-row items-center justify-between">
-                  <View className="flex-row items-center flex-1">
-                    <View className="w-12 h-12 rounded-xl bg-[#FFF1E6] items-center justify-center mr-3 overflow-hidden">
-                      <Image source={LOGO} className="w-full h-full" resizeMode="cover" />
-                    </View>
-                    <View>
-                      <Text className="text-[#171717] text-base font-extrabold tracking-wide">NEWMOON</Text>
-                      <Text className="text-[#451A03] text-[9px] font-bold uppercase tracking-[1.5px] mt-0.5">Lechon Manok &amp; Liempo House</Text>
-                    </View>
+                  <View className="flex-1">
+                    <Text className="text-xl font-extrabold text-[#171717]">Point of Sales</Text>
+                    <Text className="text-sm text-stone-500 mt-0.5">Tap a product to start an order</Text>
                   </View>
 
                   <TouchableOpacity
-                    className="w-10 h-10 rounded-full bg-white items-center justify-center border border-[#FED7AA] ml-2"
-                    style={{ shadowColor: '#451A03', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 2 }}
+                    className="w-9 h-9 rounded-full bg-white items-center justify-center border border-[#FED7AA] ml-2"
+                    style={{ shadowColor: '#451A03', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 }}
                     onPress={handleRefresh}
                     disabled={refreshing}
                     activeOpacity={0.7}
                   >
-                    <Icon name="refresh" size={19} color="#451A03" />
+                    <Icon name="refresh" size={17} color="#451A03" />
                   </TouchableOpacity>
-                </View>
-
-                <View className="mt-5">
-                  <Text className="text-2xl font-extrabold text-[#171717]">Point of Sales</Text>
-                  <Text className="text-sm text-stone-500 mt-1">Run today&apos;s register, tap to sell</Text>
-                </View>
-
-                {/* Status pills */}
-                <View className="flex-row flex-wrap gap-3 mt-4">
-                  <View className="flex-row items-center px-4 py-2.5 rounded-full bg-white border border-[#FED7AA]">
-                    <View className="w-2.5 h-2.5 rounded-full mr-2 bg-[#EA580C]" />
-                    <Text className="text-[#EA580C] text-xs font-extrabold tracking-wider uppercase">{filtered.length} Items</Text>
-                  </View>
-                  {cart.length > 0 ? (
-                    <TouchableOpacity
-                      className="flex-row items-center px-4 py-2.5 rounded-full bg-[#EA580C]"
-                      style={ORANGE_SHADOW}
-                      onPress={() => setOrderModalVisible(true)}
-                      activeOpacity={0.85}
-                    >
-                      <Icon name="shopping-cart" size={15} color="#FFFFFF" style={{ marginRight: 6 }} />
-                      <Text className="text-white text-xs font-extrabold tracking-wider uppercase">{cart.length} In Cart</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <View className="flex-row items-center px-4 py-2.5 rounded-full bg-white border border-[#FED7AA]">
-                      <View className="w-2.5 h-2.5 rounded-full mr-2 bg-green-500" />
-                      <Text className="text-green-600 text-xs font-extrabold tracking-wider uppercase">Ready to Sell</Text>
-                    </View>
-                  )}
                 </View>
               </View>
 
-              {/* ===== ONGOING STOCKS ===== */}
-              <View className="px-5 mt-6">
+              {/* ===== POS UTILITY ACTIONS ===== */}
+              <View className="px-5 mt-2">
                 {branchResolved === false && (
-                  <View className="bg-[#FFFBEB] border border-[#FDE68A] rounded-2xl p-3.5 mb-4">
-                    <Text className="text-[#92400E] text-[13px] font-semibold text-center">
+                  <View className="bg-[#FFFBEB] border border-[#FDE68A] rounded-2xl p-3 mb-3">
+                    <Text className="text-[#92400E] text-[12px] font-semibold text-center">
                       Branch not resolved — stock may show 0. Check your staff branch assignment.
                     </Text>
                   </View>
                 )}
 
-                <TouchableOpacity
-                  className="bg-white rounded-3xl p-5 border border-[#FED7AA] flex-row items-center"
-                  style={CARD_SHADOW}
-                  onPress={loadOngoingStocks}
-                  activeOpacity={0.85}
-                >
-                  <View
-                    className="w-14 h-14 rounded-2xl bg-[#EA580C] items-center justify-center mr-4"
-                    style={ORANGE_SHADOW}
+                <View className="flex-row gap-3">
+                  <TouchableOpacity
+                    className="flex-1 bg-white rounded-2xl p-3.5 border border-[#FED7AA] items-center"
+                    style={CARD_SHADOW}
+                    onPress={loadOngoingStocks}
+                    activeOpacity={0.85}
                   >
-                    <Icon name="inventory" size={26} color="#FFFFFF" />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-stone-400 text-[10px] font-bold uppercase tracking-wider">Inventory</Text>
-                    <Text className="text-[#171717] text-base font-extrabold mt-0.5">Ongoing Stocks</Text>
-                    <Text className="text-stone-500 text-xs mt-0.5">Pending deliveries for this branch</Text>
-                  </View>
-                  {hasPending && (
-                    <View className="w-2.5 h-2.5 rounded-full bg-[#DC2626] mr-2" />
-                  )}
-                  <Icon name="chevron-right" size={22} color="#EA580C" />
-                </TouchableOpacity>
-              </View>
+                    <View className="relative mb-2">
+                      <View
+                        className="w-11 h-11 rounded-xl bg-[#EA580C] items-center justify-center"
+                        style={ORANGE_SHADOW}
+                      >
+                        <Icon name="inventory" size={20} color="#FFFFFF" />
+                      </View>
+                      {hasPending && (
+                        <View className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#DC2626] border-2 border-white" />
+                      )}
+                    </View>
+                    <Text className="text-[#171717] text-xs font-extrabold">Ongoing Stocks</Text>
+                    <Text className="text-stone-400 text-[10px] font-semibold mt-0.5">Check deliveries</Text>
+                  </TouchableOpacity>
 
-              {/* ===== CATEGORY FILTER ===== */}
-              <View className="px-5 mt-6">
-                <View className="flex-row gap-2">
-                  <ScrollView
-                    ref={categoryScrollRef}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ gap: 8 }}
+                  <TouchableOpacity
+                    className="flex-1 bg-white rounded-2xl p-3.5 border border-[#FED7AA] items-center"
+                    style={CARD_SHADOW}
+                    onPress={() => setAddExpenseModalVisible(true)}
+                    activeOpacity={0.85}
                   >
-                    {categories.map((category) => {
-                      const active = selectedCategory === category;
-                      return (
-                        <TouchableOpacity
-                          key={category}
-                          onPress={() => setSelectedCategory(category)}
-                          className={`px-4 py-2.5 rounded-full border ${active ? 'bg-[#EA580C] border-[#EA580C]' : 'bg-white border-[#FED7AA]'}`}
-                          style={active ? ORANGE_SHADOW : undefined}
-                          activeOpacity={0.8}
-                        >
-                          <Text className={active ? 'text-white text-xs font-extrabold' : 'text-stone-500 text-xs font-bold'}>
-                            {category === 'All' ? `All Items (${filtered.length})` : category}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
+                    <View
+                      className="w-11 h-11 rounded-xl bg-[#F59E0B] items-center justify-center mb-2"
+                      style={{ shadowColor: '#D97706', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 3 }}
+                    >
+                      <Icon name="account-balance-wallet" size={20} color="#FFFFFF" />
+                    </View>
+                    <Text className="text-[#171717] text-xs font-extrabold">Add Expense</Text>
+                    <Text className="text-stone-400 text-[10px] font-semibold mt-0.5">Record branch expense</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
 
-              {/* ===== MENU GRID ===== */}
+              {/* ===== MENU SECTION HEADER ===== */}
               <View className="px-5 mt-6">
-                <View className="flex-row items-center justify-between mb-3">
+                <View className="flex-row items-center justify-between mb-2">
                   <View className="flex-1">
                     <Text className="text-xl font-extrabold text-[#171717]">Menu</Text>
-                    <Text className="text-sm text-stone-500 mt-0.5">Tap a product to add to cart</Text>
+                    <Text className="text-sm text-stone-500 mt-0.5">Select an item to add to the order</Text>
                   </View>
                   <View className="bg-[#FFF1E6] px-2.5 py-1 rounded-full ml-2">
                     <Text className="text-[#EA580C] text-[11px] font-bold">🔥 {filtered.length}</Text>
                   </View>
                 </View>
+              </View>
 
+              {/* ===== CATEGORY FILTER ===== */}
+              <View className="px-5 mt-3">
+                <ScrollView
+                  ref={categoryScrollRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 8 }}
+                >
+                  {categories.map((category) => {
+                    const active = selectedCategory === category;
+                    return (
+                      <TouchableOpacity
+                        key={category}
+                        onPress={() => setSelectedCategory(category)}
+                        className={`px-4 py-2.5 rounded-full border ${active ? 'bg-[#EA580C] border-[#EA580C]' : 'bg-white border-[#FED7AA]'}`}
+                        style={active ? ORANGE_SHADOW : undefined}
+                        activeOpacity={0.8}
+                      >
+                        <Text className={active ? 'text-white text-xs font-extrabold' : 'text-stone-500 text-xs font-bold'}>
+                          {category === 'All' ? `All Items (${filtered.length})` : category}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              {/* ===== MENU GRID ===== */}
+              <View className="px-5 mt-4">
                 <FlatList
                   data={filtered}
                   keyExtractor={(item) => item.id}
@@ -1621,6 +1710,234 @@ export default function POSScreen() {
                     </ScrollView>
                   </View>
                 </TouchableWithoutFeedback>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
+
+          {/* Add Expense Modal (separate financial/operational transaction) */}
+          <Modal
+            visible={addExpenseModalVisible}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => {
+              if (expenseSaving) return;
+              setAddExpenseModalVisible(false);
+            }}
+          >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View className="flex-1 bg-black/50 justify-end">
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                  keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+                  style={{ width: '100%' }}
+                >
+                  <View
+                    className="bg-white rounded-t-3xl border-t border-[#FED7AA]"
+                    style={{ maxHeight: screenHeight * 0.92 }}
+                  >
+                    {/* Header */}
+                    <View className="px-4 py-4 flex-row justify-between items-center border-b border-[#F5EDE0]">
+                      <View className="flex-row items-center flex-1">
+                        <View className="w-11 h-11 rounded-2xl bg-[#FFF1E6] items-center justify-center mr-3">
+                          <Icon name="account-balance-wallet" size={20} color="#F59E0B" />
+                        </View>
+                        <View className="flex-1">
+                          <Text className="text-[#171717] font-extrabold text-lg">Add Expense</Text>
+                          <Text className="text-stone-500 text-xs" numberOfLines={1}>
+                            Record a branch operating expense
+                          </Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (expenseSaving) return;
+                          setAddExpenseModalVisible(false);
+                        }}
+                        className="w-9 h-9 rounded-full bg-[#FFF7ED] items-center justify-center border border-[#FED7AA]"
+                        activeOpacity={0.7}
+                        disabled={expenseSaving}
+                      >
+                        <Icon name="close" size={18} color="#78716C" />
+                      </TouchableOpacity>
+                    </View>
+
+                    <ScrollView
+                      className="px-4 pt-4"
+                      showsVerticalScrollIndicator={false}
+                      keyboardShouldPersistTaps="handled"
+                      contentContainerStyle={{
+                        paddingBottom: Math.max(insets.bottom, 16) + 16,
+                      }}
+                    >
+                      {/* Category */}
+                      <Text className="text-stone-400 text-[10px] font-bold uppercase tracking-wider mb-2">
+                        Expense Category
+                      </Text>
+                      <View className="flex-row flex-wrap gap-2 mb-5">
+                        {EXPENSE_CATEGORIES.map((category) => {
+                          const active = expenseCategory === category;
+                          return (
+                            <TouchableOpacity
+                              key={category}
+                              onPress={() => setExpenseCategory(category)}
+                              className={`px-4 py-2.5 rounded-full border ${active
+                                  ? 'bg-[#F59E0B] border-[#F59E0B]'
+                                  : 'bg-[#FFFBF5] border-[#F5EDE0]'
+                                }`}
+                              style={
+                                active
+                                  ? {
+                                    shadowColor: '#D97706',
+                                    shadowOffset: { width: 0, height: 3 },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 6,
+                                    elevation: 3,
+                                  }
+                                  : undefined
+                              }
+                              activeOpacity={0.8}
+                            >
+                              <Text
+                                className={
+                                  active
+                                    ? 'text-white text-xs font-extrabold'
+                                    : 'text-stone-600 text-xs font-bold'
+                                }
+                              >
+                                {category}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+
+                      {/* Amount */}
+                      <Text className="text-stone-400 text-[10px] font-bold uppercase tracking-wider mb-2">
+                        Amount
+                      </Text>
+                      <View
+                        className="flex-row items-center bg-[#FFFBF5] border-2 rounded-xl mb-5"
+                        style={{ borderColor: '#E7E5E4' }}
+                      >
+                        <View className="bg-[#F59E0B] px-3 py-2.5 rounded-l-xl">
+                          <Text className="text-white font-extrabold text-base">₱</Text>
+                        </View>
+                        <TextInput
+                          className="flex-1 px-3 py-2.5 text-base font-bold text-[#1C1917]"
+                          placeholder="0.00"
+                          placeholderTextColor="#D6D3D1"
+                          keyboardType="decimal-pad"
+                          value={expenseAmount}
+                          onChangeText={(v) => {
+                            // Allow only digits and a single dot
+                            let clean = v.replace(/[^\d.]/g, '');
+                            const firstDot = clean.indexOf('.');
+                            if (firstDot !== -1) {
+                              clean =
+                                clean.slice(0, firstDot + 1) +
+                                clean.slice(firstDot + 1).replace(/\./g, '');
+                            }
+                            setExpenseAmount(clean);
+                          }}
+                          returnKeyType="done"
+                          editable={!expenseSaving}
+                        />
+                      </View>
+
+                      {/* Expense Date */}
+                      <Text className="text-stone-400 text-[10px] font-bold uppercase tracking-wider mb-2">
+                        Expense Date
+                      </Text>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ gap: 8 }}
+                        className="mb-5"
+                        keyboardShouldPersistTaps="handled"
+                      >
+                        {expenseDateOptions.map((date) => {
+                          const active = expenseDate === date;
+                          return (
+                            <TouchableOpacity
+                              key={date}
+                              onPress={() => setExpenseDate(date)}
+                              className={`px-3.5 py-2 rounded-xl border ${active
+                                  ? 'bg-[#EA580C] border-[#EA580C]'
+                                  : 'bg-[#FFFBF5] border-[#F5EDE0]'
+                                }`}
+                              activeOpacity={0.8}
+                            >
+                              <Text
+                                className={
+                                  active
+                                    ? 'text-white text-[11px] font-bold'
+                                    : 'text-stone-600 text-[11px] font-bold'
+                                }
+                              >
+                                {formatPhDateShort(date)}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+
+                      {/* Description */}
+                      <Text className="text-stone-400 text-[10px] font-bold uppercase tracking-wider mb-2">
+                        Description (optional)
+                      </Text>
+                      <View
+                        className="bg-[#FFFBF5] border-2 rounded-xl mb-4"
+                        style={{ borderColor: '#E7E5E4' }}
+                      >
+                        <TextInput
+                          className="px-3 py-2.5 text-sm text-[#1C1917]"
+                          style={{ minHeight: 80, textAlignVertical: 'top' }}
+                          placeholder="e.g. Delivery transportation for today's stock"
+                          placeholderTextColor="#A8A29E"
+                          multiline
+                          value={expenseDescription}
+                          onChangeText={setExpenseDescription}
+                          editable={!expenseSaving}
+                        />
+                      </View>
+
+                      <View className="bg-[#FFF7ED] border border-[#FED7AA] rounded-xl px-3 py-2.5 mb-4 flex-row items-center">
+                        <Icon name="info-outline" size={15} color="#EA580C" />
+                        <Text className="text-[#B45309] text-[11px] font-semibold ml-2 flex-1">
+                          Recorded for your assigned branch. This does not affect your cart,
+                          sales, or stock.
+                        </Text>
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={handleSaveExpense}
+                        disabled={expenseSaving}
+                        activeOpacity={0.85}
+                      >
+                        <View
+                          className="bg-[#F59E0B] py-3.5 rounded-2xl items-center flex-row justify-center"
+                          style={{
+                            opacity: expenseSaving ? 0.6 : 1,
+                            shadowColor: '#D97706',
+                            shadowOffset: { width: 0, height: 5 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 10,
+                            elevation: 4,
+                          }}
+                        >
+                          {expenseSaving ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                          ) : (
+                            <Icon name="check-circle" size={18} color="white" />
+                          )}
+                          <Text className="text-white font-bold text-sm ml-2">
+                            {expenseSaving ? 'Saving…' : 'Record Expense'}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    </ScrollView>
+                  </View>
+                </KeyboardAvoidingView>
               </View>
             </TouchableWithoutFeedback>
           </Modal>

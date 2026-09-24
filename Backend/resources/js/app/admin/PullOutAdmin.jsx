@@ -10,8 +10,9 @@ import {
   InboxOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from "@/config/api";
+import { useServerPagination } from "@/components/Pagination";
 
 const { TextArea } = Input;
 
@@ -56,8 +57,6 @@ const GHOST_BTN = {
 
 function PullOutAdmin() {
   const [statusFilter, setStatusFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedPullOut, setSelectedPullOut] = useState(null);
@@ -65,19 +64,23 @@ function PullOutAdmin() {
   const [rejectForm] = Form.useForm();
   const queryClient = useQueryClient();
 
-  // Fetch all stock-outs with server-side pagination + status filter
-  const { data: pullOutsData, isLoading: pullOutsLoading, refetch: refetchPullOuts } = useQuery({
-    queryKey: ['pullOutsAll', currentPage, pageSize, statusFilter],
-    queryFn: () => {
-      const params = { page: currentPage, per_page: pageSize };
-      if (statusFilter !== "all") params.status = statusFilter;
-      return api.get("/pull-outs/getall", { params });
-    },
+  // All stock-outs with server-side pagination + status filter (via shared hook)
+  const {
+    data: pullOuts,
+    total,
+    isLoading: pullOutsLoading,
+    pagination,
+    setCurrentPage,
+    refetch: refetchPullOuts,
+    raw: pullOutsData,
+  } = useServerPagination({
+    queryKey: ["pullOutsAll", statusFilter],
+    url: "/pull-outs/getall",
+    params: { status: statusFilter === "all" ? undefined : statusFilter },
+    label: "stock-outs",
   });
 
-  const pullOuts = pullOutsData?.data?.data || [];
-  const stats = pullOutsData?.data?.stats || {};
-  const paginationMeta = pullOutsData?.data?.pagination || {};
+  const stats = pullOutsData?.stats || {};
 
   // Approve mutation
   const approveMutation = useMutation({
@@ -413,7 +416,7 @@ function PullOutAdmin() {
             className="rounded-full px-3 py-1 text-sm font-semibold"
             style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
           >
-            {paginationMeta.total || pullOuts.length} stock-out(s)
+            {total || pullOuts.length} stock-out(s)
           </Tag>
         </div>
       </div>
@@ -427,14 +430,7 @@ function PullOutAdmin() {
           dataSource={pullOuts}
           rowKey="id"
           loading={pullOutsLoading}
-          pagination={{
-            current: paginationMeta.current_page || 1,
-            pageSize: pageSize,
-            total: paginationMeta.total || 0,
-            onChange: (page, size) => { setCurrentPage(page); setPageSize(size); },
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} stock-outs`,
-          }}
+          pagination={pagination}
           locale={{
             emptyText: (
               <div className="py-10 text-center">

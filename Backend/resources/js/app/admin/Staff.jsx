@@ -19,9 +19,10 @@ import {
   CloseCircleOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/config/api";
 import Loading from "@/components/Loading";
+import { useServerPagination } from "@/components/Pagination";
 
 // ─── Palette — matches ProductList (dark plum + mint) ────────────────────
 const PANEL_BG = "#2A2438";
@@ -71,33 +72,27 @@ function Staff() {
   const [editingStaff, setEditingStaff] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [positionFilter, setPositionFilter] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 10;
   const [addForm] = Form.useForm();
   const [editForm] = Form.useForm();
 
-  const fetchStaff = async ({ queryKey }) => {
-    const [_, page, search, position] = queryKey;
-    const params = new URLSearchParams();
-    params.append("paginate", "true");
-    params.append("per_page", PAGE_SIZE);
-    params.append("page", page);
-    if (search) params.append("search", search);
-    if (position) {
-      params.append("role", position === "Rider" ? "delivery_rider" : "staff");
-    }
-    const res = await api.get(`/staff?${params.toString()}`);
-    return res.data;
-  };
-
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["staff", currentPage, searchTerm, positionFilter],
-    queryFn: fetchStaff,
+  const {
+    data: staffList,
+    total,
+    isLoading,
+    pagination,
+    setCurrentPage,
+    refetch,
+  } = useServerPagination({
+    queryKey: ["staff", searchTerm, positionFilter],
+    url: "/staff",
+    params: {
+      paginate: "true",
+      search: searchTerm || undefined,
+      role: positionFilter ? (positionFilter === "Rider" ? "delivery_rider" : "staff") : undefined,
+    },
+    label: "staff",
     placeholderData: (prev) => prev,
   });
-
-  const staffList = data?.data || [];
-  const total = data?.total || 0;
 
   const getPosition = (s) => (s.role === "delivery_rider" ? "Rider" : "Staff");
 
@@ -390,14 +385,7 @@ function Staff() {
           dataSource={staffList}
           rowKey="id"
           loading={false}
-          pagination={{
-            current: currentPage,
-            pageSize: PAGE_SIZE,
-            total,
-            onChange: setCurrentPage,
-            showSizeChanger: false,
-            showTotal: (t) => `Total ${t} staff members`,
-          }}
+          pagination={pagination}
           locale={{
             emptyText: (
               <div className="py-10 text-center">

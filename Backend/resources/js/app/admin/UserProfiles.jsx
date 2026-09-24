@@ -11,6 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/config/api";
 import Loading from "@/components/Loading";
+import { clientPagination, serverPagination } from "@/components/Pagination";
 
 // ─── Palette — matches ProductList (dark plum + mint) ────────────────────
 const PANEL_BG = "#2A2438";
@@ -311,7 +312,7 @@ function UserProfiles() {
             columns={columns}
             dataSource={users}
             rowKey="id"
-            pagination={{ pageSize: 10, showSizeChanger: false }}
+            pagination={clientPagination({ label: "users" })}
             scroll={{ x: 900 }}
             locale={{
               emptyText: (

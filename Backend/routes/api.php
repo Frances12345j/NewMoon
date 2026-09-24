@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\SalesTargetController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ExpenseController;
 
 // PUBLIC ROUTES
 Route::post('/login', [AuthController::class, 'login']);
@@ -184,10 +185,18 @@ Route::get('/staff/{userId}/assignment', [StaffAssignmentController::class, 'get
     // Reports
     Route::get('/reports/sales', [ReportController::class, 'sales']);
     Route::get('/reports/inventory', [ReportController::class, 'inventory']);
+    Route::get('/reports/inventory-report', [ReportController::class, 'inventoryReport']);
     Route::get('/reports/attendance', [ReportController::class, 'attendance']);
     Route::get('/reports/branches', [ReportController::class, 'branches']);
     Route::get('/reports/stock-out', [ReportController::class, 'stockOut']);
     Route::get('/reports/deliveries', [ReportController::class, 'deliveries']);
+
+    // Expenses (recorded by staff from the POS, surfaced for admin reporting)
+    Route::get('/expenses/categories', [ExpenseController::class, 'categories']);
+    Route::get('/expenses', [ExpenseController::class, 'index']);
+    Route::post('/expenses', [ExpenseController::class, 'store']);
+    Route::get('/expenses/{expense}', [ExpenseController::class, 'show']);
+    Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy']);
 
     // Customers
     Route::get('/customers', [CustomerController::class, 'index']);

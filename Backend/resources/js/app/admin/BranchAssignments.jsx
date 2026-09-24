@@ -13,6 +13,7 @@ import {
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from "@/config/api";
+import { clientPagination, serverPagination } from "@/components/Pagination";
 
 // ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
 const PANEL_BG = "#2A2438";
@@ -580,7 +581,7 @@ function BranchAssignments() {
           dataSource={usersWithAssignment}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 10, showSizeChanger: true, showTotal: (t) => `Total ${t} members` }}
+          pagination={clientPagination({ label: "members" })}
           locale={{ emptyText: <div className="py-10 text-center"><div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}><TeamOutlined className="text-3xl" /></div><p className="font-semibold" style={{ color: TEXT }}>No staff or riders found</p><p className="text-sm" style={{ color: MUTED }}>Add assignments to get started</p></div> }}
         />
       </Card>
