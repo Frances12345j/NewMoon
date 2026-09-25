@@ -24,7 +24,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as SecureStore from 'expo-secure-store';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import api from '../../../../lib/api';
+import api, { STORAGE_URL } from '../../../../lib/api';
 import { cacheProducts, getCachedProducts } from '../../../../lib/dataCache';
 import { resolveStaffBranch, loadStaffUser } from '../../../../lib/staffContext';
 
@@ -1170,7 +1170,7 @@ export default function POSScreen() {
                         >
                           {item.image ? (
                             <Image
-                              source={{ uri: api.defaults?.baseURL ? `${api.defaults.baseURL.replace('/api', '')}/storage/${item.image}` : '' }}
+                              source={{ uri: item.image ? `${STORAGE_URL}/${item.image}` : '' }}
                               className="w-full aspect-square rounded-2xl mb-3"
                               resizeMode="cover"
                             />

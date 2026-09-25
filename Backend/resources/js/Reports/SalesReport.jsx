@@ -431,7 +431,7 @@ const SalesReport = () => {
       {/* =========================================================
           HERO HEADER
       ========================================================= */}
-      <section className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+      <section className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
         {/* Decorative background */}
         <div className="pointer-events-none absolute -right-20 -top-28 h-80 w-80 rounded-full bg-orange-500/10 blur-2xl" />
 
@@ -442,7 +442,7 @@ const SalesReport = () => {
         </div>
 
         {/* Flame accent line */}
-        <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
+        <div className="absolute left-0 right-0 top-0 h-1 bg-linear-to-r from-[#EA580C] via-[#F97316] to-amber" />
 
         <div className="relative z-10 p-6 sm:p-8 lg:p-10">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
@@ -455,7 +455,7 @@ const SalesReport = () => {
 
               <Title
                 level={1}
-                className="mb-0 mt-0 max-w-3xl !text-3xl !font-extrabold !tracking-tight !text-white sm:!text-4xl lg:!text-5xl"
+                className="mb-0 mt-0 max-w-3xl text-3xl! font-extrabold! tracking-tight! text-white! sm:text-4xl! lg:text-5xl!"
               >
                 Sales <span className="text-orange-400">Report</span>
               </Title>
@@ -469,7 +469,7 @@ const SalesReport = () => {
                 <Button
                   icon={<DownloadOutlined />}
                   onClick={handleExport}
-                  className="!h-11 !rounded-xl !border-white/15 !bg-white/5 !px-5 !font-medium !text-white backdrop-blur transition-all duration-300 hover:!border-orange-300 hover:!bg-white/10 hover:!text-orange-300"
+                  className="h-11! rounded-xl! border-white/15! bg-white/5! px-5! font-medium! text-white! backdrop-blur transition-all duration-300 hover:border-orange-300! hover:bg-white/10! hover:text-orange-300!"
                 >
                   Export CSV
                 </Button>
@@ -478,7 +478,7 @@ const SalesReport = () => {
                   icon={<FileTextOutlined />}
                   onClick={fetchSalesReport}
                   loading={loading}
-                  className="!h-11 !rounded-xl !border-none !bg-gradient-to-r !from-orange-600 !to-amber-500 !px-5 !font-semibold !shadow-lg !shadow-orange-500/20 transition-all duration-300 hover:!from-orange-700 hover:!to-amber-600"
+                  className="h-11! rounded-xl! border-none! bg-linear-to-r! from-orange-600! to-amber-500! px-5! font-semibold! shadow-lg! shadow-orange-500/20! transition-all duration-300 hover:from-orange-700! hover:to-amber-600!"
                 >
                   Generate Report
                 </Button>
@@ -490,7 +490,7 @@ const SalesReport = () => {
           {summary && (
             <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {/* Total Revenue */}
-              <div className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09]">
+              <div className="group rounded-2xl border border-white/10 bg-white/6 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/9">
                 <div className="flex items-center justify-between">
                   <div>
                     <Statistic
@@ -514,7 +514,7 @@ const SalesReport = () => {
               </div>
 
               {/* Total Transactions */}
-              <div className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09]">
+              <div className="group rounded-2xl border border-white/10 bg-white/6 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/9">
                 <div className="flex items-center justify-between">
                   <div>
                     <Statistic
@@ -537,7 +537,7 @@ const SalesReport = () => {
               </div>
 
               {/* Avg Transaction */}
-              <div className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09]">
+              <div className="group rounded-2xl border border-white/10 bg-white/6 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/9">
                 <div className="flex items-center justify-between">
                   <div>
                     <Statistic
@@ -561,7 +561,7 @@ const SalesReport = () => {
               </div>
 
               {/* Growth / Active Branches */}
-              <div className="group rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.09]">
+              <div className="group rounded-2xl border border-white/10 bg-white/6 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/9">
                 <div className="flex items-center justify-between">
                   <div>
                     <Statistic
@@ -634,23 +634,23 @@ const SalesReport = () => {
                 onChange={setDateRange}
                 format="YYYY-MM-DD"
                 allowClear={false}
-                className="!h-11 !rounded-xl !border-stone-200 hover:!border-orange-300 focus-within:!border-orange-500"
+                className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus-within:border-orange-500!"
               />
-              <Divider orientation="vertical" className="!border-orange-100" />
+              <Divider orientation="vertical" className="border-orange-100!" />
               <Text strong className="text-sm font-semibold text-stone-700">
                 Group By:
               </Text>
               <Radio.Group
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value)}
-                className="[&_.ant-radio-button-wrapper]:!border-orange-200 [&_.ant-radio-button-wrapper:hover]:!border-orange-300 [&_.ant-radio-button-wrapper:hover]:!text-orange-600 [&_.ant-radio-button-wrapper-checked]:!border-orange-500 [&_.ant-radio-button-wrapper-checked]:!bg-orange-500 [&_.ant-radio-button-wrapper-checked]:!text-white [&_.ant-radio-button-wrapper-checked]:!shadow-sm [&_.ant-radio-button-wrapper-checked::before]:!bg-orange-500"
+                className="[&_.ant-radio-button-wrapper]:border-orange-200! [&_.ant-radio-button-wrapper:hover]:border-orange-300! [&_.ant-radio-button-wrapper:hover]:text-orange-600! [&_.ant-radio-button-wrapper-checked]:border-orange-500! [&_.ant-radio-button-wrapper-checked]:bg-orange-500! [&_.ant-radio-button-wrapper-checked]:text-white! [&_.ant-radio-button-wrapper-checked]:shadow-sm! [&_.ant-radio-button-wrapper-checked::before]:bg-orange-500!"
               >
                 <Radio.Button value="daily">Daily</Radio.Button>
                 <Radio.Button value="weekly">Weekly</Radio.Button>
                 <Radio.Button value="monthly">Monthly</Radio.Button>
                 <Radio.Button value="detail">Detail</Radio.Button>
               </Radio.Group>
-              <Divider orientation="vertical" className="!border-orange-100" />
+              <Divider orientation="vertical" className="border-orange-100!" />
               <Text strong className="text-sm font-semibold text-stone-700">
                 Branch:
               </Text>
@@ -661,7 +661,7 @@ const SalesReport = () => {
                   allowClear
                   value={selectedBranch}
                   onChange={setSelectedBranch}
-                  className="!h-11 !rounded-xl !border-stone-200 hover:!border-orange-300 focus:!border-orange-500"
+                  className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
                 >
                   {branches.map((branch) => (
                     <Select.Option key={branch.id} value={branch.id}>
@@ -704,7 +704,7 @@ const SalesReport = () => {
                 onChange={setTrendShape}
                 style={{ width: 120 }}
                 size="small"
-                className="!rounded-xl !border-stone-200 hover:!border-orange-300 focus:!border-orange-500"
+                className="rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
               >
                 {trendShapes.map((s) => (
                   <Select.Option key={s} value={s}>
@@ -818,7 +818,7 @@ const SalesReport = () => {
                 pagination={serverPagination(pagination, { label: "sales" })}
                 onChange={handleTableChange}
                 scroll={{ x: true }}
-                className="[&_.ant-table-container]:!rounded-xl [&_.ant-table-thead_>_tr_>_th]:!bg-[#FFF1E6] [&_.ant-table-thead_>_tr_>_th]:!text-stone-700 [&_.ant-table-thead_>_tr_>_th]:!font-semibold [&_.ant-table-tbody_>_tr:hover_>_td]:!bg-[#FFF8ED]"
+                className="[&_.ant-table-container]:rounded-xl! [&_.ant-table-thead_>_tr_>_th]:bg-[#FFF1E6]! [&_.ant-table-thead_>_tr_>_th]:text-stone-700! [&_.ant-table-thead_>_tr_>_th]:font-semibold! [&_.ant-table-tbody_>_tr:hover_>_td]:bg-[#FFF8ED]!"
               />
             ) : groupBy === "branch" ? (
               <Table
@@ -828,7 +828,7 @@ const SalesReport = () => {
                 loading={loading}
                 pagination={clientPagination({ label: "branches" })}
                 scroll={{ x: true }}
-                className="[&_.ant-table-container]:!rounded-xl [&_.ant-table-thead_>_tr_>_th]:!bg-[#FFF1E6] [&_.ant-table-thead_>_tr_>_th]:!text-stone-700 [&_.ant-table-thead_>_tr_>_th]:!font-semibold [&_.ant-table-tbody_>_tr:hover_>_td]:!bg-[#FFF8ED]"
+                className="[&_.ant-table-container]:rounded-xl! [&_.ant-table-thead_>_tr_>_th]:bg-[#FFF1E6]! [&_.ant-table-thead_>_tr_>_th]:text-stone-700! [&_.ant-table-thead_>_tr_>_th]:font-semibold! [&_.ant-table-tbody_>_tr:hover_>_td]:bg-[#FFF8ED]!"
               />
             ) : (
               <Table
@@ -838,7 +838,7 @@ const SalesReport = () => {
                 loading={loading}
                 pagination={clientPagination({ label: "days" })}
                 scroll={{ x: true }}
-                className="[&_.ant-table-container]:!rounded-xl [&_.ant-table-thead_>_tr_>_th]:!bg-[#FFF1E6] [&_.ant-table-thead_>_tr_>_th]:!text-stone-700 [&_.ant-table-thead_>_tr_>_th]:!font-semibold [&_.ant-table-tbody_>_tr:hover_>_td]:!bg-[#FFF8ED]"
+                className="[&_.ant-table-container]:rounded-xl! [&_.ant-table-thead_>_tr_>_th]:bg-[#FFF1E6]! [&_.ant-table-thead_>_tr_>_th]:text-stone-700! [&_.ant-table-thead_>_tr_>_th]:font-semibold! [&_.ant-table-tbody_>_tr:hover_>_td]:bg-[#FFF8ED]!"
               />
             )}
           </Card>

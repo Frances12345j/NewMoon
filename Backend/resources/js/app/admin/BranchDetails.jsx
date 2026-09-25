@@ -22,37 +22,149 @@ import dayjs from "dayjs";
 import { Avatar } from 'antd';
 import { api } from "@/config/api";
 import Loading from "@/components/Loading";
+const PageShell = ({ children }) => (
+  <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">{children}</div>
+);
+
+const HeroButton = ({ children, ...props }) => (
+  <Button
+    {...props}
+    className="h-11! rounded-xl! border-white/20! bg-white/5! px-5! font-medium! text-white! hover:border-orange-300! hover:text-orange-300!"
+  >
+    {children}
+  </Button>
+);
+
+const CountPill = ({ children }) => (
+  <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+    {children}
+  </span>
+);
+
+const SectionCard = ({ icon, title, subtitle, extra, children, className = "" }) => (
+  <div className={`rounded-2xl border border-orange-100 bg-white shadow-sm ${className}`}>
+    {(title || extra) && (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+        <div className="flex items-center gap-3">
+          {icon && (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              {icon}
+            </div>
+          )}
+          <div>
+            <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+            {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}
+          </div>
+        </div>
+        {extra}
+      </div>
+    )}
+    <div className="p-4">{children}</div>
+  </div>
+);
+
+const FilterBar = ({ title = "Filters", subtitle = "Narrow down the view", children }) => (
+  <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
+    <div className="mb-4 flex items-center gap-3">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+        <SearchOutlined />
+      </div>
+      <div>
+        <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+        <p className="text-xs text-stone-500">{subtitle}</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap items-center gap-3">{children}</div>
+  </div>
+);
+
+const TableEmpty = ({ icon, title, description }) => (
+  <div className="py-10 text-center">
+    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+      {icon}
+    </div>
+    <p className="text-base font-semibold text-stone-700">{title}</p>
+    {description && <p className="mt-1 text-sm text-stone-400">{description}</p>}
+  </div>
+);
+
+const HeroHeader = ({ badgeIcon, badge, title, accent, subtitle, actions, stats = [] }) => (
+  <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+    <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+    <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+    <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
+    {badgeIcon && (
+      <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
+        {badgeIcon}
+      </div>
+    )}
+    <div className="relative z-10 px-6 py-7 sm:px-8">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          {badge && (
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-orange-300">
+              {badgeIcon}
+              {badge}
+            </div>
+          )}
+          <h1 className="text-2xl font-bold text-white">
+            {title} {accent && <span className="text-orange-400">{accent}</span>}
+          </h1>
+          {subtitle && <p className="mt-1 text-sm text-white/60">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap gap-2 xl:min-w-max">{actions}</div>}
+      </div>
+      {stats.length > 0 && (
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {stats.map((stat, i) => (
+            <div key={i} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${stat.iconBg || "bg-orange-500/15"}`}>
+                <span className={stat.iconColor || "text-orange-400"}>{stat.icon}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">{stat.label}</p>
+                <p className={`text-white font-bold text-lg leading-tight ${stat.valueColor || ""}`}>
+                  {stat.value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
 
 const { Title, Text } = Typography;
 
-// ─── Palette — matches MenuSidebar / Dashboard / ProductList (dark plum + mint) ─────
-const PANEL_BG = "#2A2438";
-const PANEL_BG_2 = "#332C45";
-const BORDER = "rgba(255,255,255,0.06)";
-const TEXT = "#FFFFFF";
-const MUTED = "#A5A0B5";
-const FAINT = "#6E6A7E";
-const ACCENT = "#22D3A8";
-const ACCENT_DEEP = "#16B48C";
-const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+// ─── Palette — matches Inventory Report (warm cream + orange) ─────
+const PANEL_BG = "#FFFFFF";
+const PANEL_BG_2 = "#FFF7ED";
+const BORDER = "#FFEDD5";
+const TEXT = "#292524";
+const MUTED = "#78716C";
+const FAINT = "#A8A29E";
+const ACCENT = "#EA580C";
+const ACCENT_DEEP = "#F97316";
+const ACCENT_SOFT = "rgba(234,88,12,0.10)";
 const AMBER = "#F59E0B";
 const AMBER_SOFT = "rgba(245,158,11,0.15)";
-const GREEN = "#22D3A8";
-const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const GREEN = "#16A34A";
+const GREEN_SOFT = "rgba(22,163,74,0.12)";
 const RED = "#EF4444";
 const RED_SOFT = "rgba(239,68,68,0.15)";
 
 // Inline style tokens
-const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const FIELD_LABEL = { color: "#451A03", fontWeight: 500 };
 const GRADIENT_BTN = {
-  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  background: "linear-gradient(135deg, #EA580C, #F97316)",
   border: "none",
-  color: "#1F1A2E",
+  color: "#FFFFFF",
   fontWeight: 700,
   boxShadow: "none",
 };
 const SECONDARY_BTN = {
-  background: PANEL_BG_2,
+  background: PANEL_BG,
   border: `1px solid ${BORDER}`,
   color: TEXT,
   fontWeight: 500,
@@ -252,15 +364,15 @@ function BranchDetails() {
   const getStatusTag = (status) => {
     switch(status) {
       case "Present":
-        return <Tag className="rounded-full px-3 py-1" style={{ background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }} icon={<CheckCircleOutlined />}>Present</Tag>;
+        return <Tag className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-green-700" icon={<CheckCircleOutlined />}>Present</Tag>;
       case "Completed":
-        return <Tag className="rounded-full px-3 py-1" style={{ background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }} icon={<CheckCircleOutlined />}>Completed</Tag>;
+        return <Tag className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-green-700" icon={<CheckCircleOutlined />}>Completed</Tag>;
       case "Absent":
-        return <Tag className="rounded-full px-3 py-1" style={{ background: RED_SOFT, color: "#F87171", border: `1px solid ${RED}30` }} icon={<CloseCircleOutlined />}>Absent</Tag>;
+        return <Tag className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-red-700" icon={<CloseCircleOutlined />}>Absent</Tag>;
       case "Late":
-        return <Tag className="rounded-full px-3 py-1" style={{ background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` }} icon={<ClockCircleOutlined />}>Late</Tag>;
+        return <Tag className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700" icon={<ClockCircleOutlined />}>Late</Tag>;
       default:
-        return <Tag className="rounded-full px-3 py-1" style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>{status}</Tag>;
+        return <Tag className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-orange-700">{status}</Tag>;
     }
   };
 
@@ -465,12 +577,12 @@ function BranchDetails() {
 
   if (loading) {
     return (
-      <div className="nm-dark flex min-h-screen items-center justify-center" style={{ background: "#1F1A2E" }}>
+      <div className="flex min-h-screen items-center justify-center bg-[#FFF7ED]">
         <div className="flex flex-col items-center justify-center py-20">
           <div className="relative h-12 w-12">
             <div
               className="h-12 w-12 rounded-full animate-spin"
-              style={{ border: "4px solid rgba(34,211,168,0.2)", borderTopColor: ACCENT }}
+              style={{ border: "4px solid rgba(234,88,12,0.2)", borderTopColor: ACCENT }}
             />
           </div>
           <p className="mt-4 text-sm" style={{ color: MUTED }}>Loading branch details...</p>
@@ -481,18 +593,17 @@ function BranchDetails() {
 
   if (error || !branch) {
     return (
-      <div className="nm-dark flex min-h-screen items-center justify-center p-6" style={{ background: "#1F1A2E" }}>
+      <div className="flex min-h-screen items-center justify-center bg-[#FFF7ED] p-6">
         <Card
           className="max-w-md w-full rounded-2xl"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-          styles={{ body: { background: PANEL_BG } }}
+          style={{ border: `1px solid ${BORDER}` }}
         >
           <div className="text-center">
             <div className="mb-4 text-5xl" style={{ color: RED }}>!</div>
             <Title level={4} style={{ color: RED }}>Error</Title>
             <Text style={{ color: MUTED }}>{error || "Branch not found"}</Text>
             <div className="mt-4">
-              <Button onClick={() => navigate('/Dashboard')} style={GHOST_BTN}>Back to Branches</Button>
+              <Button onClick={() => navigate('/Dashboard')} style={GHOST_BTN} className="rounded-xl">Back to Branches</Button>
             </div>
           </div>
         </Card>
@@ -501,389 +612,257 @@ function BranchDetails() {
   }
 
   return (
-    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
-      
-
-      {/* Header — dark plum with mint accents */}
-      <div
-        className="mb-6 overflow-hidden rounded-2xl"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-      >
-        <div className="relative px-8 py-6">
-          {/* Decorative circles */}
-          <div className="absolute right-0 top-0 opacity-10">
-            <div
-              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
-              style={{ background: ACCENT }}
-            />
-          </div>
-          <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
-          </div>
-
-          {/* Accent line */}
-          <div
-            className="absolute left-0 right-0 top-0 h-1"
-            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
-          />
-
-          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Button
-                icon={<ArrowLeftOutlined />}
-                onClick={() => navigate('/Dashboard')}
-                type="text"
-                className="text-white/80! hover:text-white!"
-              >
-                Back
-              </Button>
-              <div>
-                <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
-                  <FireOutlined className="mr-2" style={{ color: ACCENT }} />
-                  {branch.name}
-                </h1>
-                <p className="text-sm" style={{ color: MUTED }}>
-                  Sales Report &amp; Staff Attendance
-                </p>
-              </div>
-            </div>
+    <PageShell>
+      {/* Hero Header */}
+      <HeroHeader
+        badgeIcon={<FireOutlined />}
+        badge="Branch Report"
+        title={branch.name}
+        accent=""
+        subtitle="Sales Report &amp; Staff Attendance"
+        actions={
+          <>
+            <HeroButton
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate('/Dashboard')}
+            >
+              Back
+            </HeroButton>
             <div className="text-right">
-              <p className="text-sm" style={{ color: MUTED }}>Current Philippines Time</p>
-              <p className="text-lg font-semibold" style={{ color: TEXT }}>
+              <p className="text-sm text-white/60">Current Philippines Time</p>
+              <p className="text-lg font-semibold text-white">
                 {currentTime.toLocaleTimeString('en-PH', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </p>
-              <p className="text-xs" style={{ color: FAINT }}>
+              <p className="text-xs text-white/40">
                 {currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
+          </>
+        }
+        stats={[
+          { icon: <DollarOutlined />, iconBg: "bg-orange-500/15", iconColor: "text-orange-400", label: "Total Sales Revenue", value: formatCurrency(totalSales), valueColor: "text-orange-300" },
+          { icon: <RiseOutlined />, iconBg: "bg-amber-500/15", iconColor: "text-amber-400", label: "Average Sale Value", value: formatCurrency(averageSale) },
+          { icon: <ShoppingOutlined />, iconBg: "bg-green-500/15", iconColor: "text-green-400", label: "Total Items Sold", value: totalItems },
+        ]}
+      />
+
+      {/* Filters */}
+      <div className="mb-6">
+        <FilterBar title="Filters" subtitle="Narrow down the sales and attendance view">
+          <div className="w-full sm:w-auto">
+            <label className="mb-1 block text-xs font-semibold" style={FIELD_LABEL}>Select Date</label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setDatePickerOpen(true)}
+                className="inline-flex w-full items-center justify-between gap-3 rounded-xl border border-orange-200 bg-white px-3 py-2 text-sm text-stone-700 transition-all duration-200 hover:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 sm:w-auto"
+                aria-label="Select date"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <CalendarOutlined style={{ color: ACCENT }} />
+                  <span className="font-medium" style={{ color: TEXT }}>{selectedDate}</span>
+                </span>
+                <span className="text-xs" style={{ color: MUTED }}>Tap to change</span>
+              </button>
+
+              {/* Hidden DatePicker used only for the calendar popup */}
+              <AntDatePicker
+                value={dayjs(selectedDate)}
+                open={datePickerOpen}
+                onOpenChange={(open) => setDatePickerOpen(open)}
+                onChange={(date) => {
+                  if (date) {
+                    setSelectedDate(date.format("YYYY-MM-DD"));
+                  }
+                  setDatePickerOpen(false);
+                }}
+                format="YYYY-MM-DD"
+                inputReadOnly
+                size="middle"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  opacity: 0,
+                  pointerEvents: "none",
+                }}
+              />
+            </div>
           </div>
-        </div>
+          <div className="w-full sm:w-auto">
+            <label className="mb-1 block text-xs font-semibold" style={FIELD_LABEL}>Search Staff</label>
+            <div className="flex items-center rounded-xl border border-orange-200 bg-white px-3 py-1.5 transition-all duration-200 focus-within:border-orange-400">
+              <SearchOutlined className="mr-2 text-sm" style={{ color: ACCENT }} />
+              <input
+                type="text"
+                placeholder="Enter name or position..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full text-sm outline-none sm:w-48"
+                style={{ background: "transparent", color: TEXT }}
+              />
+            </div>
+          </div>
+          <Button
+            type="primary"
+            icon={<PrinterOutlined />}
+            onClick={() => setIsPrintModalVisible(true)}
+            className="h-11! rounded-xl! border-none! bg-linear-to-br! from-[#EA580C]! via-[#F97316]! to-[#F59E0B]! text-white! shadow-[0_4px_15px_rgba(234,88,12,0.35)]!"
+          >
+            Print Report
+          </Button>
+        </FilterBar>
       </div>
 
-      {/* Content */}
-      <div>
-        <div className="mx-auto max-w-7xl">
-          {/* Summary Cards */}
-          <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div
-              className="rounded-2xl px-4 py-3"
-              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-            >
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <DollarOutlined style={{ color: ACCENT }} /> Total Sales Revenue
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: ACCENT }}>{formatCurrency(totalSales)}</p>
-            </div>
-            <div
-              className="rounded-2xl px-4 py-3"
-              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-            >
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <RiseOutlined style={{ color: ACCENT }} /> Average Sale Value
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: ACCENT }}>{formatCurrency(averageSale)}</p>
-            </div>
-            <div
-              className="rounded-2xl px-4 py-3"
-              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-            >
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <ShoppingOutlined style={{ color: ACCENT }} /> Total Items Sold
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{totalItems}</p>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <Card
-            className="mb-6"
-            style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-            styles={{ body: { background: PANEL_BG } }}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex w-full flex-col items-start gap-4 sm:w-auto sm:flex-row sm:items-center">
-                <div className="w-full sm:w-auto">
-                  <label className="mb-1 block text-xs font-semibold" style={FIELD_LABEL}>Select Date</label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setDatePickerOpen(true)}
-                      className="inline-flex w-full items-center justify-between gap-3 rounded-xl border border-border-subtle bg-panel-2 px-3 py-2 text-sm text-text-primary transition-all duration-200 hover:border-[#22D3A8] focus:outline-none focus:ring-2 focus:ring-[#22D3A8]/30 sm:w-auto"
-                      aria-label="Select date"
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        <CalendarOutlined style={{ color: ACCENT }} />
-                        <span className="font-medium" style={{ color: TEXT }}>{selectedDate}</span>
-                      </span>
-                      <span className="text-xs" style={{ color: MUTED }}>Tap to change</span>
-                    </button>
-
-                    {/* Hidden DatePicker used only for the calendar popup */}
-                    <AntDatePicker
-                      value={dayjs(selectedDate)}
-                      open={datePickerOpen}
-                      onOpenChange={(open) => setDatePickerOpen(open)}
-                      onChange={(date) => {
-                        if (date) {
-                          setSelectedDate(date.format("YYYY-MM-DD"));
-                        }
-                        setDatePickerOpen(false);
-                      }}
-                      format="YYYY-MM-DD"
-                      inputReadOnly
-                      size="middle"
-                      popupClassName="nm-dark-select-dropdown"
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        opacity: 0,
-                        pointerEvents: "none",
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="w-full sm:w-auto">
-                  <label className="mb-1 block text-xs font-semibold" style={FIELD_LABEL}>Search Staff</label>
-                  <div className="flex items-center rounded-xl border border-border-subtle bg-panel-2 px-3 py-1.5 transition-all duration-200 focus-within:border-[#22D3A8]">
-                    <SearchOutlined className="mr-2 text-sm" style={{ color: ACCENT }} />
-                    <input
-                      type="text"
-                      placeholder="Enter name or position..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full text-sm outline-none sm:w-48"
-                      style={{ background: "transparent", color: TEXT }}
-                    />
-                  </div>
-                </div>
-              </div>
-              <Button
-                type="primary"
-                icon={<PrinterOutlined />}
-                onClick={() => setIsPrintModalVisible(true)}
-                style={GRADIENT_BTN}
+      {/* Present Staff Section */}
+      <SectionCard
+        className="mb-6"
+        icon={<TeamOutlined />}
+        title="Present Staff"
+        subtitle="Staff currently on duty for the selected date"
+        extra={<CountPill>{presentStaff.length} / {filteredAttendance.length}</CountPill>}
+      >
+        {presentStaff.length > 0 ? (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {presentStaff.map((staff) => (
+              <div
+                key={staff.id}
+                className="rounded-xl border border-orange-100 bg-white p-3 transition-colors hover:bg-orange-50"
               >
-                Print Report
-              </Button>
-            </div>
-          </Card>
-
-          {/* Present Staff Section */}
-          <div
-            className="mb-6 overflow-hidden rounded-2xl"
-            style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-          >
-            <div
-              className="border-b px-6 py-4"
-              style={{ background: PANEL_BG_2, borderColor: BORDER }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex h-9 w-9 items-center justify-center rounded-xl"
-                  style={{ background: ACCENT_SOFT, color: ACCENT }}
-                >
-                  <TeamOutlined />
-                </div>
-                <span className="font-bold" style={{ color: TEXT }}>Present Staff</span>
-                <Tag
-                  className="ml-auto rounded-full px-3 py-1 text-sm"
-                  style={{ background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-                >
-                  {presentStaff.length} / {filteredAttendance.length}
-                </Tag>
-              </div>
-            </div>
-            <div className="p-4">
-              {presentStaff.length > 0 ? (
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {presentStaff.map((staff, idx) => (
-                    <div
-                      key={staff.id}
-                      className="rounded-xl p-3 transition-colors hover:bg-panel-3"
-                      style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          icon={<UserOutlined />}
-                          style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_DEEP})` }}
-                        />
-                        <div className="flex-1">
-                          <div className="font-semibold" style={{ color: TEXT }}>{staff.name}</div>
-                          <div className="text-xs" style={{ color: MUTED }}>{staff.position}</div>
-                        </div>
-                        {getStatusTag(staff.status)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-10 text-center">
-                  <div
-                    className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
-                    style={{ background: ACCENT_SOFT, color: ACCENT }}
-                  >
-                    <UserOutlined className="text-3xl" />
+                <div className="flex items-center gap-3">
+                  <Avatar
+                    icon={<UserOutlined />}
+                    style={{ background: "linear-gradient(135deg, #EA580C, #F97316)" }}
+                  />
+                  <div className="flex-1">
+                    <div className="font-semibold" style={{ color: TEXT }}>{staff.name}</div>
+                    <div className="text-xs" style={{ color: MUTED }}>{staff.position}</div>
                   </div>
-                  <p className="font-semibold" style={{ color: TEXT }}>No staff present</p>
-                  <p className="text-sm" style={{ color: MUTED }}>No staff present for the selected date.</p>
+                  {getStatusTag(staff.status)}
                 </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <TableEmpty icon={<UserOutlined className="text-3xl" />} title="No staff present" description="No staff present for the selected date." />
+        )}
+      </SectionCard>
+
+      {/* Attendance Table */}
+      <SectionCard
+        className="mb-6"
+        icon={<UserOutlined />}
+        title="Staff Attendance"
+        subtitle="Daily attendance records for the selected date"
+        extra={<CountPill>{filteredAttendance.length} Staff</CountPill>}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ background: PANEL_BG_2 }}>
+                {attendanceColumns.map((col, idx) => (
+                  <th key={idx} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: MUTED }}>
+                    {col.title}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-orange-100">
+              {filteredAttendance.length === 0 ? (
+                <tr>
+                  <td colSpan={attendanceColumns.length} className="py-12 text-center" style={{ color: MUTED }}>
+                    No staff records found.
+                  </td>
+                </tr>
+              ) : (
+                filteredAttendance.map((staff, idx) => (
+                  <tr key={staff.id} className="hover:bg-orange-50">
+                    <td className="px-4 py-3" style={{ color: MUTED }}>{idx + 1}</td>
+                    <td className="px-4 py-3 font-medium" style={{ color: TEXT }}>{staff.name}</td>
+                    <td className="px-4 py-3" style={{ color: MUTED }}>{staff.position}</td>
+                    <td className="px-4 py-3 font-mono text-sm" style={{ color: TEXT }}>{staff.time_in || '-'}</td>
+                    <td className="px-4 py-3 font-mono text-sm" style={{ color: TEXT }}>{staff.time_out || '-'}</td>
+                    <td className="px-4 py-3">{getStatusTag(staff.status)}</td>
+                  </tr>
+                ))
               )}
-            </div>
-          </div>
-
-          {/* Attendance Table */}
-          <div
-            className="mb-6 overflow-hidden rounded-2xl"
-            style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-          >
-            <div
-              className="border-b px-6 py-4"
-              style={{ background: PANEL_BG_2, borderColor: BORDER }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex h-9 w-9 items-center justify-center rounded-xl"
-                  style={{ background: ACCENT_SOFT, color: ACCENT }}
-                >
-                  <UserOutlined />
-                </div>
-                <span className="font-bold" style={{ color: TEXT }}>Staff Attendance</span>
-                <Tag
-                  className="ml-auto rounded-full px-3 py-1 text-sm"
-                  style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-                >
-                  {filteredAttendance.length} Staff
-                </Tag>
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ background: PANEL_BG_2, borderBottom: `1px solid ${BORDER}` }}>
-                    {attendanceColumns.map((col, idx) => (
-                      <th key={idx} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: MUTED }}>
-                        {col.title}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-subtle">
-                  {filteredAttendance.length === 0 ? (
-                    <tr>
-                      <td colSpan={attendanceColumns.length} className="py-12 text-center" style={{ color: MUTED }}>
-                        No staff records found.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredAttendance.map((staff, idx) => (
-                      <tr key={staff.id} className="hover:bg-panel-3">
-                        <td className="px-4 py-3" style={{ color: MUTED }}>{idx + 1}</td>
-                        <td className="px-4 py-3 font-medium" style={{ color: TEXT }}>{staff.name}</td>
-                        <td className="px-4 py-3" style={{ color: MUTED }}>{staff.position}</td>
-                        <td className="px-4 py-3 font-mono text-sm" style={{ color: TEXT }}>{staff.time_in || '-'}</td>
-                        <td className="px-4 py-3 font-mono text-sm" style={{ color: TEXT }}>{staff.time_out || '-'}</td>
-                        <td className="px-4 py-3">{getStatusTag(staff.status)}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Transaction History Table */}
-          <div
-            className="mb-6 overflow-hidden rounded-2xl"
-            style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-          >
-            <div
-              className="border-b px-6 py-4"
-              style={{ background: PANEL_BG_2, borderColor: BORDER }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex h-9 w-9 items-center justify-center rounded-xl"
-                  style={{ background: ACCENT_SOFT, color: ACCENT }}
-                >
-                  <ShoppingCartOutlined />
-                </div>
-                <span className="font-bold" style={{ color: TEXT }}>Transaction History</span>
-                <Tag
-                  className="ml-auto rounded-full px-3 py-1 text-sm"
-                  style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-                >
-                  {filteredSales.length} Transactions
-                </Tag>
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ background: PANEL_BG_2, borderBottom: `1px solid ${BORDER}` }}>
-                    {salesColumns.map((col, idx) => (
-                      <th key={idx} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: MUTED }}>
-                        {col.title}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-subtle">
-                  {filteredSales.length === 0 ? (
-                    <tr>
-                      <td colSpan={salesColumns.length} className="py-12 text-center" style={{ color: MUTED }}>
-                        No sales records found for this date.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredSales.map((sale, idx) => (
-                      <tr key={sale.id} className="hover:bg-panel-3">
-                        <td className="px-4 py-3" style={{ color: MUTED }}>{idx + 1}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <CalendarOutlined style={{ color: ACCENT }} />
-                            <span className="font-medium" style={{ color: TEXT }}>{sale.date}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Tag
-                            className="rounded-full px-3 py-1"
-                            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-                          >
-                            {sale.product?.name || 'N/A'}
-                          </Tag>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <ShoppingCartOutlined style={{ color: FAINT }} />
-                            <span className="font-semibold" style={{ color: TEXT }}>{sale.quantity}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="font-semibold" style={{ color: ACCENT }}>
-                            {formatCurrency(sale.total)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-                {filteredSales.length > 0 && (
-                  <tfoot>
-                    <tr style={{ background: PANEL_BG_2, borderTop: `1px solid ${BORDER}` }}>
-                      <td colSpan={4} className="px-4 py-3 text-right font-semibold" style={{ color: TEXT }}>TOTAL:</td>
-                      <td className="px-4 py-3 font-semibold" style={{ color: ACCENT }}>{formatCurrency(totalSales)}</td>
-                    </tr>
-                  </tfoot>
-                )}
-              </table>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-6 border-t pt-4 text-center text-xs" style={{ color: MUTED, borderColor: BORDER }}>
-            <p>Generated on {currentTime.toLocaleString()} | New Moon POS System</p>
-          </div>
+            </tbody>
+          </table>
         </div>
+      </SectionCard>
+
+      {/* Transaction History Table */}
+      <SectionCard
+        icon={<ShoppingCartOutlined />}
+        title="Transaction History"
+        subtitle="Sales transactions for the selected date"
+        extra={<CountPill>{filteredSales.length} Transactions</CountPill>}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ background: PANEL_BG_2 }}>
+                {salesColumns.map((col, idx) => (
+                  <th key={idx} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: MUTED }}>
+                    {col.title}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-orange-100">
+              {filteredSales.length === 0 ? (
+                <tr>
+                  <td colSpan={salesColumns.length} className="py-12 text-center" style={{ color: MUTED }}>
+                    No sales records found for this date.
+                  </td>
+                </tr>
+              ) : (
+                filteredSales.map((sale, idx) => (
+                  <tr key={sale.id} className="hover:bg-orange-50">
+                    <td className="px-4 py-3" style={{ color: MUTED }}>{idx + 1}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <CalendarOutlined style={{ color: ACCENT }} />
+                        <span className="font-medium" style={{ color: TEXT }}>{sale.date}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Tag
+                        className="rounded-full px-3 py-1"
+                        style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
+                      >
+                        {sale.product?.name || 'N/A'}
+                      </Tag>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <ShoppingCartOutlined style={{ color: FAINT }} />
+                        <span className="font-semibold" style={{ color: TEXT }}>{sale.quantity}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="font-semibold" style={{ color: ACCENT }}>
+                        {formatCurrency(sale.total)}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+            {filteredSales.length > 0 && (
+              <tfoot>
+                <tr style={{ background: PANEL_BG_2 }}>
+                  <td colSpan={4} className="px-4 py-3 text-right font-semibold" style={{ color: TEXT }}>TOTAL:</td>
+                  <td className="px-4 py-3 font-semibold" style={{ color: ACCENT }}>{formatCurrency(totalSales)}</td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </SectionCard>
+
+      {/* Footer */}
+      <div className="mt-6 border-t border-orange-100 pt-4 text-center text-xs" style={{ color: MUTED }}>
+        <p>Generated on {currentTime.toLocaleString()} | New Moon POS System</p>
       </div>
 
       {/* Print Modal */}
@@ -897,7 +876,7 @@ function BranchDetails() {
               <PrinterOutlined />
             </div>
             <div>
-              <p className="font-bold" style={{ color: TEXT }}>Print Sales Report</p>
+              <p className="font-bold text-[#451A03]">Print Sales Report</p>
               <p className="text-xs font-normal" style={{ color: MUTED }}>Generate a printable report</p>
             </div>
           </div>
@@ -906,13 +885,13 @@ function BranchDetails() {
         onOk={handlePrintReport}
         onCancel={() => setIsPrintModalVisible(false)}
         okText="Print"
-        okButtonProps={{ className: "rounded-xl", style: GRADIENT_BTN }}
-        cancelButtonProps={{ className: "rounded-xl", style: SECONDARY_BTN }}
+        okButtonProps={{ className: "rounded-xl border-none bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] text-white" }}
+        cancelButtonProps={{ className: "rounded-xl" }}
         width={400}
         className="rounded-2xl"
       >
-        <div className="mb-4 rounded-xl p-4" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
-          <p className="mb-0 text-sm" style={{ color: ACCENT }}>
+        <div className="mb-4 rounded-xl border border-orange-100 bg-[#FFF1E6] p-4">
+          <p className="mb-0 text-sm" style={{ color: "#9A3412" }}>
             <PrinterOutlined className="mr-2" />
             Print sales report for <strong>{branch?.name}</strong>?
           </p>
@@ -924,7 +903,7 @@ function BranchDetails() {
           Transactions: {filteredSales.length} | Total Sales: {formatCurrency(totalSales)}
         </p>
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 

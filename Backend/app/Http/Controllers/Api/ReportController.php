@@ -577,110 +577,119 @@ class ReportController extends Controller
     }
 
     /**
-     * Stock-Out Report
-     * GET /api/reports/stock-out
-     * Params: start_date, end_date, branch_id (optional), status (optional)
+     * Pull-Out Report
+     * GET /api/reports/PullOut
+     * Params: start_date, end_date, branch_id, status, search, page, per_page
      */
-    public function stockOut(Request $request)
-{
-    try {
-        // ✅ BASE QUERY WITH RELATIONSHIPS
-        $query = Pullouts::with(['user', 'product', 'branch']);
+    public function PullOut(Request $request)
+    {
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'branch_id' => 'nullable|integer|exists:branches,id',
+            'status' => 'nullable|in:all,pending,approved,rejected',
+            'search' => 'nullable|string|max:255',
+            'export' => 'nullable|boolean',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
 
-        // ✅ FILTERS
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('created_at', [
-                $request->start_date . ' 00:00:00',
-                $request->end_date . ' 23:59:59'
+        try {
+            $query = Pullouts::with([
+                'user',
+                'product',
+                'branch',
+                'approver',
+                'rejecter',
             ]);
-        }
 
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
+            if (!empty($validated['start_date'])) {
+                $query->where('pulled_out_at', '>=', $validated['start_date'] . ' 00:00:00');
+            }
 
-        if ($request->filled('source_branch_id') && $request->source_branch_id !== 'all') {
-            $query->where('branch_id', $request->source_branch_id);
-        }
+            if (!empty($validated['end_date'])) {
+                $query->where('pulled_out_at', '<=', $validated['end_date'] . ' 23:59:59');
+            }
 
-        // ✅ PAGINATION
-        $perPage = $request->per_page ?? 10;
-        $pullOuts = $query->latest()->paginate($perPage);
+            if (!empty($validated['branch_id'])) {
+                $query->where('branch_id', $validated['branch_id']);
+            }
 
-        // ✅ TRANSFORM DATA
-        $transformedData = collect($pullOuts->items())->map(function ($pullOut) {
-            $productPrice = optional($pullOut->product)->price ?? 0;
-            $userName = trim(
-                (optional($pullOut->user)->firstname ?? '') . ' ' .
-                (optional($pullOut->user)->lastname ?? '')
-            ) ?: 'Unknown User';
+            if (!empty($validated['status']) && $validated['status'] !== 'all') {
+                $query->where('status', $validated['status']);
+            }
 
-            $branchName = optional($pullOut->branch)->name ?? 'Unknown Branch';
+            $search = trim($validated['search'] ?? '');
 
-            // Get destination branch if it exists
-            $destinationBranch = optional($pullOut->destinationBranch)->name ?? $branchName;
+            if ($search !== '') {
+                $query->where(function ($query) use ($search) {
+                    $query->whereHas('user', function ($query) use ($search) {
+                        $query->where('firstname', 'like', "%{$search}%")
+                            ->orWhere('lastname', 'like', "%{$search}%")
+                            ->orWhere('middlename', 'like', "%{$search}%")
+                            ->orWhere('username', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('product', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('branch', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhere('reason', 'like', "%{$search}%")
+                    ->orWhere('notes', 'like', "%{$search}%")
+                    ->orWhere('admin_notes', 'like', "%{$search}%");
+                });
+            }
 
-            return [
-                'id' => $pullOut->id,
-                'reference_number' => 'SO-' . str_pad($pullOut->id, 5, '0', STR_PAD_LEFT),
-                'created_at' => $pullOut->created_at,
-                'requested_by' => $userName,
-                'source_branch' => $branchName,
-                'destination_branch' => $destinationBranch, // Use actual destination if exists
-                'items_count' => $pullOut->quantity,
-                'total_value' => $pullOut->quantity * $productPrice,
-                'status' => $pullOut->status,
-                'notes' => $pullOut->notes,
-                'items' => [
-                    [
-                        'id' => $pullOut->product_id,
-                        'item_name' => optional($pullOut->product)->name ?? 'N/A',
-                        'sku' => optional($pullOut->product)->sku ?? 'N/A',
-                        'quantity' => $pullOut->quantity,
-                        'unit_cost' => $productPrice,
-                        'total' => $pullOut->quantity * $productPrice,
-                    ]
-                ]
+            $summary = [
+                'total_requests' => (clone $query)->count(),
+                'pending' => (clone $query)->where('status', 'pending')->count(),
+                'approved' => (clone $query)->where('status', 'approved')->count(),
+                'rejected' => (clone $query)->where('status', 'rejected')->count(),
+                'total_quantity' => (float) (clone $query)->sum('quantity'),
             ];
-        });
 
-        // ✅ SUMMARY - FIXED to use the original query with proper counting
-        $summary = [
-            'total_transfers' => $pullOuts->total(),
-            'completed' => Pullouts::where('status', 'approved')->count(),
-            'pending' => Pullouts::where('status', 'pending')->count(),
-            'total_value' => $pullOuts->getCollection()->sum(function ($item) {
-                return ($item->quantity ?? 0) * (optional($item->product)->price ?? 0);
-            }),
-        ];
+            if ($request->boolean('export')) {
+                $records = (clone $query)->latest('pulled_out_at')->get();
+                $recordCount = $records->count();
 
-        // ✅ FINAL RESPONSE
-        return response()->json([
-            'success' => true,
-            'data' => $transformedData,
-            'summary' => $summary,
-            'pagination' => [
-                'current_page' => $pullOuts->currentPage(),
-                'per_page' => $pullOuts->perPage(),
-                'total' => $pullOuts->total(),
-                'last_page' => $pullOuts->lastPage(),
-            ]
-        ]);
+                return response()->json([
+                    'data' => $records,
+                    'summary' => $summary,
+                    'pagination' => [
+                        'current_page' => 1,
+                        'per_page' => max(1, $recordCount),
+                        'total' => $recordCount,
+                        'last_page' => 1,
+                    ],
+                ]);
+            }
 
-    } catch (\Exception $e) {
-        \Log::error('StockOut error: ' . $e->getMessage(), [
-            'trace' => $e->getTraceAsString(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile()
-        ]);
+            $perPage = (int) ($validated['per_page'] ?? 7);
+            $page = (int) ($validated['page'] ?? 1);
+            $pullOuts = $query->latest('pulled_out_at')->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to fetch stock-out records',
-            'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
-        ], 500);
+            return response()->json([
+                'data' => $pullOuts->items(),
+                'summary' => $summary,
+                'pagination' => [
+                    'current_page' => $pullOuts->currentPage(),
+                    'per_page' => $pullOuts->perPage(),
+                    'total' => $pullOuts->total(),
+                    'last_page' => $pullOuts->lastPage(),
+                ],
+            ]);
+        } catch (\Throwable $exception) {
+            \Log::error('Pull Out report error', [
+                'exception' => $exception,
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to load Pull Out Report',
+            ], 500);
+        }
     }
-}
     /**
      * Delivery Report
      * GET /api/reports/deliveries

@@ -4,8 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import api from '../../../lib/api';
-import { listenToOrder } from '../../../lib/websocket';
+import api, { listenToOrder } from '../../../lib/api';
 
 interface OrderItem {
   id: number;
@@ -13,6 +12,13 @@ interface OrderItem {
   price: number;
   total: number;
   product: { id: number; name: string };
+}
+
+interface AssignedRider {
+  id: number;
+  firstname: string;
+  lastname: string;
+  full_name: string;
 }
 
 interface Order {
@@ -30,6 +36,8 @@ interface Order {
   total: number;
   gcash_reference: string | null;
   created_at: string;
+  rider_id: number | null;
+  rider: AssignedRider | null;
   branch: {
     id: number;
     name: string;
@@ -286,6 +294,7 @@ export default function OrderDetailScreen() {
   const statusInfo = STATUS_FLOW[order.status] || STATUS_FLOW.pending;
   const canCancel = ['pending', 'confirmed'].includes(order.status);
   const isOutForDelivery = order.status === 'out_for_delivery';
+  const riderName = order.rider?.full_name?.trim() || [order.rider?.firstname, order.rider?.lastname].filter(Boolean).join(' ');
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFF7ED]">
@@ -411,57 +420,65 @@ export default function OrderDetailScreen() {
               <FontAwesome5 name="motorcycle" size={26} color="#F97316" />
             </View>
             <View className="flex-1">
-              <Text className="text-[#7C2D12] text-[17px] font-extrabold">Juan</Text>
-              <Text className="text-[#7C2D12]/60 text-[12px] mt-0.5">NewMoon Rider</Text>
-              <View className="flex-row items-center mt-1">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Ionicons key={i} name="star" size={12} color="#F59E0B" />
-                ))}
-                <Text className="text-[#7C2D12]/70 text-[11px] font-bold ml-1.5">4.9</Text>
-              </View>
+              <Text className="text-[#7C2D12] text-[17px] font-extrabold" numberOfLines={1}>
+                {riderName || 'Assigning rider…'}
+              </Text>
+              <Text className="text-[#7C2D12]/60 text-[12px] mt-0.5">
+                {order.rider ? 'Assigned pickup rider' : 'Waiting for rider assignment'}
+              </Text>
+              {order.rider && (
+                <View className="flex-row items-center mt-1">
+                  <Ionicons name="checkmark-circle" size={12} color="#16A34A" />
+                  <Text className="text-[#7C2D12]/70 text-[11px] font-bold ml-1">Assigned to this order</Text>
+                </View>
+              )}
             </View>
 
-            <View className="flex-row items-start">
-              <View className="items-center mr-3">
-                <TouchableOpacity
-                  className="w-11 h-11 rounded-full bg-[#DCFCE7] items-center justify-center"
-                  activeOpacity={0.8}
-                  onPress={() => order && router.push(`/Customer/orderChat?orderId=${order.id}`)}
-                >
-                  <Ionicons name="call" size={18} color="#16A34A" />
-                </TouchableOpacity>
-                <Text className="text-[#7C2D12]/70 text-[10px] font-bold mt-1.5">Call</Text>
-              </View>
+            {order.rider && (
+              <View className="flex-row items-start">
+                <View className="items-center mr-3">
+                  <TouchableOpacity
+                    className="w-11 h-11 rounded-full bg-[#DCFCE7] items-center justify-center"
+                    activeOpacity={0.8}
+                    onPress={() => router.push(`/Customer/orderChat?orderId=${order.id}`)}
+                  >
+                    <Ionicons name="call" size={18} color="#16A34A" />
+                  </TouchableOpacity>
+                  <Text className="text-[#7C2D12]/70 text-[10px] font-bold mt-1.5">Call</Text>
+                </View>
 
-              <View className="items-center">
-                <TouchableOpacity
-                  className="w-11 h-11 rounded-full bg-[#F5F5F5] items-center justify-center"
-                  activeOpacity={0.8}
-                  onPress={() => order && router.push(`/Customer/orderChat?orderId=${order.id}`)}
-                >
-                  <Ionicons name="chatbubble-ellipses" size={18} color="#7C2D12" />
-                </TouchableOpacity>
-                <Text className="text-[#7C2D12]/70 text-[10px] font-bold mt-1.5">Message</Text>
+                <View className="items-center">
+                  <TouchableOpacity
+                    className="w-11 h-11 rounded-full bg-[#F5F5F5] items-center justify-center"
+                    activeOpacity={0.8}
+                    onPress={() => router.push(`/Customer/orderChat?orderId=${order.id}`)}
+                  >
+                    <Ionicons name="chatbubble-ellipses" size={18} color="#7C2D12" />
+                  </TouchableOpacity>
+                  <Text className="text-[#7C2D12]/70 text-[10px] font-bold mt-1.5">Message</Text>
+                </View>
               </View>
-            </View>
+            )}
           </View>
 
-          <TouchableOpacity
-            className="bg-[#F97316] rounded-2xl py-4 mt-4 flex-row items-center justify-center"
-            style={{
-              shadowColor: '#F97316',
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.3,
-              shadowRadius: 12,
-              elevation: 4,
-            }}
-            activeOpacity={0.85}
-            onPress={() => router.push(`/Customer/RiderTracking?id=${order.id}`)}
-          >
-            <Ionicons name="location" size={18} color="#FFFFFF" />
-            <Text className="text-white font-extrabold text-[15px] ml-2">Track Order</Text>
-            <Ionicons name="chevron-forward" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
-          </TouchableOpacity>
+          {order.rider && (
+            <TouchableOpacity
+              className="bg-[#F97316] rounded-2xl py-4 mt-4 flex-row items-center justify-center"
+              style={{
+                shadowColor: '#F97316',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+                elevation: 4,
+              }}
+              activeOpacity={0.85}
+              onPress={() => router.push(`/Customer/RiderTracking?id=${order.id}`)}
+            >
+              <Ionicons name="location" size={18} color="#FFFFFF" />
+              <Text className="text-white font-extrabold text-[15px] ml-2">Track Order</Text>
+              <Ionicons name="chevron-forward" size={18} color="#FFFFFF" style={{ marginLeft: 6 }} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Order Items */}

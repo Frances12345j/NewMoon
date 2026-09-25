@@ -434,10 +434,10 @@ function Sidebar() {
                             {n.data?.branch_name && <div style={{ fontSize: 10, color: ACCENT, marginTop: 2, fontWeight: 600 }}>{n.data.branch_name}</div>}
                             <div style={{ fontSize: 10, color: FAINT, marginTop: 2 }}>{new Date(n.created_at).toLocaleString()}</div>
                           </div>
-                          {n.type === "stock_received" && <span style={tagStyle("green")}>Received</span>}
-                          {n.type === "cash_advance_request" && <span style={tagStyle("orange")}>Cash Adv</span>}
-                          {n.type === "stock_request" && <span style={tagStyle("amber")}>Request</span>}
-                          {n.type === "low_stock" && <span style={tagStyle("red")}>Low Stock</span>}
+                          {n.type === "Stock_Received" && <span style={tagStyle("green")}>Received</span>}
+                          {n.type === "Cash_Advance_Request" && <span style={tagStyle("orange")}>Cash Adv</span>}
+                          {n.type === "Stock_Request" && <span style={tagStyle("amber")}>Request</span>}
+                          {n.type === "Low_Stock" && <span style={tagStyle("red")}>Low Stock</span>}
                         </div>
                       ))
                     )}

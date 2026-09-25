@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import api from '../../../lib/api';
+import api, { STORAGE_URL } from '../../../lib/api';
 import { useCart } from '../../../context/cartContext';
 
 type ProductStock = {
@@ -265,7 +265,7 @@ export default function BranchMenuScreen() {
                       {item.image ? (
                         <Image
                           source={{
-                            uri: `${(api.defaults?.baseURL ?? '').replace('/api', '')}/storage/${item.image}`,
+                            uri: `${STORAGE_URL}/${item.image}`,
                           }}
                           className="w-full h-24 rounded-2xl"
                           resizeMode="cover"
@@ -399,7 +399,7 @@ export default function BranchMenuScreen() {
                       {item.image ? (
                         <Image
                           source={{
-                            uri: `${(api.defaults?.baseURL ?? '').replace('/api', '')}/storage/${item.image}`,
+                            uri: `${STORAGE_URL}/${item.image}`,
                           }}
                           style={{ width: 48, height: 48, borderRadius: 12 }}
                           resizeMode="cover"

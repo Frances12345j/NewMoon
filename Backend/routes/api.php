@@ -61,11 +61,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/products/restock/pending-count', [ProductController::class, 'pendingCount']);
     Route::apiResource('products', ProductController::class);
     Route::post('/products/{id}/restock', [ProductController::class, 'restock']);
-    Route::post('/products/{id}/stock-out', [ProductController::class, 'stockOut']);
+    Route::post('/products/{id}/pull-out', [ProductController::class, 'pullOut']);
     Route::get('/manual-stock-outs', [ProductController::class, 'stockOutHistory']);
     Route::delete('/manual-stock-outs/{id}', [ProductController::class, 'reverseStockOut']);
-    Route::post('/products/{id}/adjust-stock', [ProductController::class, 'adjustStock']);
-    Route::get('/stock-adjustments', [ProductController::class, 'adjustmentHistory']);
     Route::post('/products/{id}/toggle-received', [ProductController::class, 'toggleReceived']);
     Route::get('/stock-batches', [ProductController::class, 'stockBatches']);
     
@@ -188,7 +186,7 @@ Route::get('/staff/{userId}/assignment', [StaffAssignmentController::class, 'get
     Route::get('/reports/inventory-report', [ReportController::class, 'inventoryReport']);
     Route::get('/reports/attendance', [ReportController::class, 'attendance']);
     Route::get('/reports/branches', [ReportController::class, 'branches']);
-    Route::get('/reports/stock-out', [ReportController::class, 'stockOut']);
+    Route::get('/reports/PullOut', [ReportController::class, 'PullOut']);
     Route::get('/reports/deliveries', [ReportController::class, 'deliveries']);
 
     // Expenses (recorded by staff from the POS, surfaced for admin reporting)

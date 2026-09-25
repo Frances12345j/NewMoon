@@ -24,42 +24,147 @@ import { api } from "@/config/api";
 import Loading from "@/components/Loading";
 import { useServerPagination } from "@/components/Pagination";
 
-// ─── Palette — matches ProductList (dark plum + mint) ────────────────────
-const PANEL_BG = "#2A2438";
-const PANEL_BG_2 = "#332C45";
-const BORDER = "rgba(255,255,255,0.06)";
-const TEXT = "#FFFFFF";
-const MUTED = "#A5A0B5";
-const FAINT = "#6E6A7E";
-const ACCENT = "#22D3A8";
-const ACCENT_DEEP = "#16B48C";
-const ACCENT_SOFT = "rgba(34,211,168,0.12)";
-const AMBER = "#F59E0B";
-const AMBER_SOFT = "rgba(245,158,11,0.15)";
-const GREEN = "#22D3A8";
-const GREEN_SOFT = "rgba(34,211,168,0.12)";
-const RED = "#EF4444";
-const RED_SOFT = "rgba(239,68,68,0.15)";
+
+const PageShell = ({ children }) => (
+  <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">{children}</div>
+);
+
+const CountPill = ({ children }) => (
+  <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+    {children}
+  </span>
+);
+
+const SectionCard = ({ icon, title, subtitle, extra, children, className = "" }) => (
+  <div className={`rounded-2xl border border-orange-100 bg-white shadow-sm ${className}`}>
+    {(title || extra) && (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+        <div className="flex items-center gap-3">
+          {icon && (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              {icon}
+            </div>
+          )}
+          <div>
+            <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+            {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}
+          </div>
+        </div>
+        {extra}
+      </div>
+    )}
+    <div className="p-4">{children}</div>
+  </div>
+);
+
+const FilterBar = ({ title = "Filters", subtitle = "Narrow down the view", children }) => (
+  <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
+    <div className="mb-4 flex items-center gap-3">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+        <SearchOutlined />
+      </div>
+      <div>
+        <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+        <p className="text-xs text-stone-500">{subtitle}</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap items-center gap-3">{children}</div>
+  </div>
+);
+
+const TableEmpty = ({ icon, title, description }) => (
+  <div className="py-10 text-center">
+    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+      {icon}
+    </div>
+    <p className="text-base font-semibold text-stone-700">{title}</p>
+    {description && <p className="mt-1 text-sm text-stone-400">{description}</p>}
+  </div>
+);
+
+const HeroHeader = ({ badgeIcon, badge, title, accent, subtitle, actions, stats = [] }) => (
+  <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+    <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+    <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+    <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
+    {badgeIcon && (
+      <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
+        {badgeIcon}
+      </div>
+    )}
+    <div className="relative z-10 px-6 py-7 sm:px-8">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          {badge && (
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-orange-300">
+              {badgeIcon}
+              {badge}
+            </div>
+          )}
+          <h1 className="text-2xl font-bold text-white">
+            {title} {accent && <span className="text-orange-400">{accent}</span>}
+          </h1>
+          {subtitle && <p className="mt-1 text-sm text-white/60">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap gap-2 xl:min-w-max">{actions}</div>}
+      </div>
+      {stats.length > 0 && (
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {stats.map((stat, i) => (
+            <div key={i} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${stat.iconBg || "bg-orange-500/15"}`}>
+                <span className={stat.iconColor || "text-orange-400"}>{stat.icon}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">{stat.label}</p>
+                <p className={`text-white font-bold text-lg leading-tight ${stat.valueColor || ""}`}>
+                  {stat.value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// ─── Palette — light warm-cream + orange (Inventory Report skin) ──────
+const PANEL_BG = "#FFFFFF";
+const PANEL_BG_2 = "#FFFFFF";
+const BORDER = "rgba(234,88,12,0.10)";
+const TEXT = "#292524";
+const MUTED = "#78716C";
+const FAINT = "#A8A29E";
+const ACCENT = "#EA580C";
+const ACCENT_DEEP = "#F97316";
+const ACCENT_SOFT = "rgba(234,88,12,0.08)";
+const AMBER = "#D97706";
+const AMBER_SOFT = "rgba(245,158,11,0.12)";
+const GREEN = "#16A34A";
+const GREEN_SOFT = "rgba(22,163,74,0.12)";
+const RED = "#DC2626";
+const RED_SOFT = "rgba(220,38,38,0.12)";
 
 // Inline style tokens
-const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const FIELD_LABEL = { color: "#451A03", fontWeight: 500 };
 const GRADIENT_BTN = {
-  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  background: "linear-gradient(135deg, #EA580C, #F97316)",
   border: "none",
-  color: "#1F1A2E",
+  color: "#FFFFFF",
   fontWeight: 700,
-  boxShadow: "none",
+  boxShadow: "0 4px 15px rgba(234,88,12,0.35)",
 };
 const SECONDARY_BTN = {
-  background: PANEL_BG_2,
-  border: `1px solid ${BORDER}`,
-  color: TEXT,
+  background: "#FFFFFF",
+  border: "1px solid #E7E5E4",
+  color: "#292524",
   fontWeight: 500,
 };
 const GHOST_BTN = {
   background: "transparent",
-  border: `1px solid ${ACCENT}40`,
-  color: ACCENT,
+  border: "1px solid #EA580C",
+  color: "#EA580C",
   fontWeight: 500,
 };
 
@@ -209,7 +314,7 @@ function Staff() {
             <Avatar
               size={36}
               icon={<UserOutlined />}
-              style={{ backgroundColor: getPosition(r) === "Rider" ? ACCENT_DEEP : ACCENT, color: "#1F1A2E" }}
+              style={{ backgroundColor: getPosition(r) === "Rider" ? "#F59E0B" : "#EA580C", color: "#FFFFFF" }}
             />
             <div>
               <div className="font-semibold">
@@ -238,8 +343,8 @@ function Staff() {
       render: (_, r) => {
         const position = getPosition(r);
         return position === "Rider"
-          ? <Tag className="rounded-full px-3 py-1" style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>Rider</Tag>
-          : <Tag className="rounded-full px-3 py-1" style={{ background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` }}>Staff</Tag>;
+          ? <Tag className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-orange-600">Rider</Tag>
+          : <Tag className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-600">Staff</Tag>;
       },
     },
     {
@@ -247,8 +352,8 @@ function Staff() {
       key: "status",
       render: (_, r) =>
         r.is_active !== false
-          ? <Tag className="rounded-full px-3 py-1" style={{ background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }} icon={<CheckCircleOutlined />}>Active</Tag>
-          : <Tag className="rounded-full px-3 py-1" style={{ background: RED_SOFT, color: "#F87171", border: `1px solid ${RED}30` }} icon={<CloseCircleOutlined />}>Inactive</Tag>,
+          ? <Tag className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-green-600" icon={<CheckCircleOutlined />}>Active</Tag>
+          : <Tag className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-red-600" icon={<CloseCircleOutlined />}>Inactive</Tag>,
     },
     {
       title: "Actions",
@@ -262,7 +367,7 @@ function Staff() {
             <Button danger size="small" icon={<DeleteOutlined />} onClick={() => {
               setSelectedStaff(r);
               setShowDeleteModal(true);
-            }} className="rounded-xl" style={{ background: RED_SOFT, border: `1px solid ${RED}40`, color: "#F87171" }} />
+            }} className="rounded-xl" />
           </Tooltip>
         </Space>
       ),
@@ -270,112 +375,62 @@ function Staff() {
   ];
 
   return (
-    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
-      
-      {/* Header — dark plum + mint */}
-      <div
-        className="mb-6 overflow-hidden rounded-2xl"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-      >
-        <div className="relative px-8 py-6">
-          {/* Decorative circles */}
-          <div className="absolute right-0 top-0 opacity-10">
-            <div
-              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
-              style={{ background: ACCENT }}
-            />
-          </div>
-          <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
-          </div>
-
-          {/* Accent line */}
-          <div
-            className="absolute left-0 right-0 top-0 h-1"
-            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
-          />
-
-          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
-                <TeamOutlined className="mr-2" style={{ color: ACCENT }} />
-                Staff Management
-              </h1>
-              <p className="text-sm" style={{ color: MUTED }}>Manage your staff members and riders</p>
-            </div>
-            <Input
-              placeholder="Search by name or username..."
-              prefix={<SearchOutlined style={{ color: MUTED }} />}
-              value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-              style={{ width: 300 }}
-              allowClear
-              className="rounded-xl py-2"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <Card
-        className="mb-6"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
-      >
-        <Space wrap>
-          <Select
-            placeholder="Filter by position"
-            value={positionFilter}
-            onChange={(v) => { setPositionFilter(v); setCurrentPage(1); }}
+    <PageShell>
+      <HeroHeader
+        badgeIcon={<TeamOutlined />}
+        badge="Staff Management"
+        title="Staff"
+        accent="Management"
+        subtitle="Manage your staff members and riders"
+        actions={
+          <Input
+            placeholder="Search by name or username..."
+            prefix={<SearchOutlined className="text-white/60" />}
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            style={{ width: 300 }}
             allowClear
-            style={{ width: 160 }}
-            onClear={() => setPositionFilter(null)}
-            popupClassName="nm-dark-select-dropdown"
-          >
-            <Select.Option value="Staff">Staff</Select.Option>
-            <Select.Option value="Rider">Rider</Select.Option>
-          </Select>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={() => refetch()}
-            loading={isLoading}
-            style={GHOST_BTN}
-          >
-            Refresh
-          </Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => { addForm.resetFields(); setShowAddModal(true); }}
-            style={GRADIENT_BTN}
-          >
-            Add Staff
-          </Button>
-        </Space>
-      </Card>
+            className="h-11! rounded-xl! border-white/20! bg-white/10! px-4! text-white! placeholder:text-white/60! hover:border-orange-300!"
+          />
+        }
+      />
 
-      {/* Staff Members Section */}
-      <div className="mb-4">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
-              <TeamOutlined className="mr-2" style={{ color: ACCENT }} />
-              Staff Members
-            </h2>
-            <p className="mt-1 text-sm" style={{ color: MUTED }}>View and manage all staff and rider accounts</p>
-          </div>
-          <Tag
-            className="rounded-full px-3 py-1 text-sm font-semibold"
-            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-          >
-            {total} total
-          </Tag>
-        </div>
-      </div>
+      <FilterBar title="Filters" subtitle="Filter staff members by position">
+        <Select
+          placeholder="Filter by position"
+          value={positionFilter}
+          onChange={(v) => { setPositionFilter(v); setCurrentPage(1); }}
+          allowClear
+          style={{ width: 160 }}
+          onClear={() => setPositionFilter(null)}
+          className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
+        >
+          <Select.Option value="Staff">Staff</Select.Option>
+          <Select.Option value="Rider">Rider</Select.Option>
+        </Select>
+        <Button
+          icon={<ReloadOutlined />}
+          onClick={() => refetch()}
+          loading={isLoading}
+          className="h-11! rounded-xl! border-[#EA580C]! px-4! text-[#EA580C]! hover:bg-[#FFF1E6]! hover:border-[#F97316]!"
+        >
+          Refresh
+        </Button>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => { addForm.resetFields(); setShowAddModal(true); }}
+          className="h-11! rounded-xl! border-none! bg-linear-to-br! from-[#EA580C]! via-[#F97316]! to-amber! px-4! text-white! shadow-[0_4px_15px_rgba(234,88,12,0.35)]!"
+        >
+          Add Staff
+        </Button>
+      </FilterBar>
 
-      <Card
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
+      <SectionCard
+        icon={<TeamOutlined />}
+        title="Staff Members"
+        subtitle="View and manage all staff and rider accounts"
+        extra={<CountPill>{total} total</CountPill>}
       >
         {isLoading ? (
           <Loading full text="Loading staff members..." />
@@ -388,28 +443,23 @@ function Staff() {
           pagination={pagination}
           locale={{
             emptyText: (
-              <div className="py-10 text-center">
-                <div
-                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
-                  style={{ background: ACCENT_SOFT, color: ACCENT }}
-                >
-                  <TeamOutlined className="text-3xl" />
-                </div>
-                <p className="font-semibold" style={{ color: TEXT }}>No staff members found</p>
-                <p className="text-sm" style={{ color: MUTED }}>Try adjusting your search or filter</p>
-              </div>
+              <TableEmpty
+                icon={<TeamOutlined />}
+                title="No staff members found"
+                description="Try adjusting your search or filter"
+              />
             ),
           }}
         />
         )}
-      </Card>
+      </SectionCard>
 
       {/* Add Modal - NewMoon Style */}
       <Modal
         title={
           <span>
-            <PlusOutlined className="mr-2" style={{ color: ACCENT }} />
-            <span style={{ color: TEXT, fontWeight: 700 }}>Add Staff Member</span>
+            <PlusOutlined className="mr-2 text-[#EA580C]" />
+            <span className="font-bold text-[#451A03]">Add Staff Member</span>
           </span>
         }
         open={showAddModal}
@@ -465,22 +515,19 @@ function Staff() {
             <Input placeholder="Enter address" prefix={<HomeOutlined style={{ color: MUTED }} />} className="rounded-xl" />
           </Form.Item>
 <Form.Item label={<span style={FIELD_LABEL}>Position</span>} name="position" rules={[{ required: true, message: "Position is required" }]} initialValue="Staff">
-          <Select className="rounded-xl" popupClassName="nm-dark-select-dropdown">
+          <Select className="rounded-xl">
             <Select.Option value="Staff">Staff</Select.Option>
             <Select.Option value="Rider">Rider</Select.Option>
           </Select>
         </Form.Item>
-        <div
-          className="mb-4 rounded-xl p-3"
-          style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}
-        >
-          <p className="text-sm" style={{ color: ACCENT }}>
-            <InfoCircleOutlined className="mr-1" style={{ color: ACCENT }} /> New staff will be set as active by default. Default password is "default123".
+        <div className="mb-4 rounded-xl border border-orange-100 bg-[#FFF1E6] p-3">
+          <p className="text-sm text-[#EA580C]">
+            <InfoCircleOutlined className="mr-1" /> New staff will be set as active by default. Default password is "default123".
           </p>
         </div>
         <Form.Item className="mb-0">
           <Space className="w-full justify-end">
-            <Button onClick={() => { setShowAddModal(false); addForm.resetFields(); }} className="rounded-xl" style={SECONDARY_BTN}>Cancel</Button>
+            <Button onClick={() => { setShowAddModal(false); addForm.resetFields(); }} className="rounded-xl">Cancel</Button>
             <Button type="primary" htmlType="submit" loading={addMutation.isPending} className="rounded-xl" style={GRADIENT_BTN}>Add Staff</Button>
           </Space>
         </Form.Item>
@@ -491,8 +538,8 @@ function Staff() {
       <Modal
         title={
           <span>
-            <EditOutlined className="mr-2" style={{ color: ACCENT }} />
-            <span style={{ color: TEXT, fontWeight: 700 }}>Edit Staff Member</span>
+            <EditOutlined className="mr-2 text-[#EA580C]" />
+            <span className="font-bold text-[#451A03]">Edit Staff Member</span>
           </span>
         }
         open={showEditModal}
@@ -551,7 +598,7 @@ function Staff() {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item label={<span style={FIELD_LABEL}>Position</span>} name="position" rules={[{ required: true, message: "Position is required" }]}>
-                <Select className="rounded-xl" popupClassName="nm-dark-select-dropdown">
+                <Select className="rounded-xl">
                   <Select.Option value="Staff">Staff</Select.Option>
                   <Select.Option value="Rider">Rider</Select.Option>
                 </Select>
@@ -565,7 +612,7 @@ function Staff() {
           </Row>
           <Form.Item className="mb-0">
             <Space className="w-full justify-end">
-              <Button onClick={() => { setShowEditModal(false); setEditingStaff(null); editForm.resetFields(); }} className="rounded-xl" style={SECONDARY_BTN}>Cancel</Button>
+              <Button onClick={() => { setShowEditModal(false); setEditingStaff(null); editForm.resetFields(); }} className="rounded-xl">Cancel</Button>
               <Button type="primary" htmlType="submit" loading={updateMutation.isPending} className="rounded-xl" style={GRADIENT_BTN}>Update Staff</Button>
             </Space>
           </Form.Item>
@@ -576,8 +623,8 @@ function Staff() {
       <Modal
         title={
           <span>
-            <DeleteOutlined className="mr-2" style={{ color: ACCENT }} />
-            <span style={{ color: TEXT, fontWeight: 700 }}>Confirm Delete</span>
+            <DeleteOutlined className="mr-2 text-[#EA580C]" />
+            <span className="font-bold text-[#451A03]">Confirm Delete</span>
           </span>
         }
         open={showDeleteModal}
@@ -594,33 +641,30 @@ function Staff() {
             className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
             style={{ background: RED_SOFT, border: `1px solid ${RED}30` }}
           >
-            <DeleteOutlined className="text-2xl" style={{ color: "#F87171" }} />
+            <DeleteOutlined className="text-2xl text-red-500" />
           </div>
           <p className="mb-2 text-lg font-semibold" style={{ color: TEXT }}>
             Are you sure you want to delete this staff member?
           </p>
           {selectedStaff && (
-            <div className="rounded-xl p-3 text-left" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
-              <p><UserOutlined className="mr-2" style={{ color: ACCENT }} /><strong>{selectedStaff.firstname} {selectedStaff.lastname}</strong></p>
-              <p className="text-sm" style={{ color: MUTED }}><IdcardOutlined className="mr-2" />{selectedStaff.username}</p>
+            <div className="rounded-xl border border-orange-100 bg-[#FFF1E6] p-3 text-left">
+              <p><UserOutlined className="mr-2 text-[#EA580C]" /><strong>{selectedStaff.firstname} {selectedStaff.lastname}</strong></p>
+              <p className="text-sm text-stone-500"><IdcardOutlined className="mr-2" />{selectedStaff.username}</p>
               <Tag
-                className="rounded-full px-3 py-1"
-                style={getPosition(selectedStaff) === "Rider"
-                  ? { background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }
-                  : { background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` }}
+                className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-orange-600"
               >
                 {getPosition(selectedStaff)}
               </Tag>
             </div>
           )}
           {selectedStaff?.is_active !== false ? (
-            <p className="mt-3 text-sm" style={{ color: "#F87171" }}><InfoCircleOutlined className="mr-1" /> This action cannot be undone. Consider disabling instead.</p>
+            <p className="mt-3 text-sm text-red-600"><InfoCircleOutlined className="mr-1" /> This action cannot be undone. Consider disabling instead.</p>
           ) : (
-            <p className="mt-3 text-sm" style={{ color: "#F87171" }}><InfoCircleOutlined className="mr-1" /> This staff member is already inactive. This will permanently remove them.</p>
+            <p className="mt-3 text-sm text-red-600"><InfoCircleOutlined className="mr-1" /> This staff member is already inactive. This will permanently remove them.</p>
           )}
         </div>
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 

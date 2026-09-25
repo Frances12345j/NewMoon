@@ -4,8 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import api from '../../../lib/api';
-import { listenToOrder } from '../../../lib/websocket';
+import api, { listenToOrder } from '../../../lib/api';
 
 interface RiderInfo {
   id: number;

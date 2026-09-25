@@ -12,8 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import api from '../../../../lib/api';
-import { listenToStaffOrders } from '../../../../lib/websocket';
+import api, { listenToStaffOrders } from '../../../../lib/api';
 import { useAuth } from '../../../../context/authContext';
 
 type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'picked_up' | 'delivered' | 'cancelled';

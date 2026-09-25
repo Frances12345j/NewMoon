@@ -13,43 +13,146 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/config/api";
 import Loading from "@/components/Loading";
 import { clientPagination, useServerPagination } from "@/components/Pagination";
+const PageShell = ({ children }) => (
+  <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">{children}</div>
+);
 
-// ─── Palette — matches ProductList (dark plum + mint) ────────────────────
-const PANEL_BG = "#2A2438";
-const PANEL_BG_2 = "#332C45";
-const BORDER = "rgba(255,255,255,0.06)";
-const TEXT = "#FFFFFF";
-const MUTED = "#A5A0B5";
-const FAINT = "#6E6A7E";
-const ACCENT = "#22D3A8";
-const ACCENT_DEEP = "#16B48C";
-const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const CountPill = ({ children }) => (
+  <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+    {children}
+  </span>
+);
+
+const SectionCard = ({ icon, title, subtitle, extra, children, className = "" }) => (
+  <div className={`rounded-2xl border border-orange-100 bg-white shadow-sm ${className}`}>
+    {(title || extra) && (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+        <div className="flex items-center gap-3">
+          {icon && (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              {icon}
+            </div>
+          )}
+          <div>
+            <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+            {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}
+          </div>
+        </div>
+        {extra}
+      </div>
+    )}
+    <div className="p-4">{children}</div>
+  </div>
+);
+
+const FilterBar = ({ title = "Filters", subtitle = "Narrow down the view", children }) => (
+  <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
+    <div className="mb-4 flex items-center gap-3">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+        <SearchOutlined />
+      </div>
+      <div>
+        <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+        <p className="text-xs text-stone-500">{subtitle}</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap items-center gap-3">{children}</div>
+  </div>
+);
+
+const TableEmpty = ({ icon, title, description }) => (
+  <div className="py-10 text-center">
+    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+      {icon}
+    </div>
+    <p className="text-base font-semibold text-stone-700">{title}</p>
+    {description && <p className="mt-1 text-sm text-stone-400">{description}</p>}
+  </div>
+);
+
+const HeroHeader = ({ badgeIcon, badge, title, accent, subtitle, actions, stats = [] }) => (
+  <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+    <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+    <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+    <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
+    {badgeIcon && (
+      <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
+        {badgeIcon}
+      </div>
+    )}
+    <div className="relative z-10 px-6 py-7 sm:px-8">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          {badge && (
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-orange-300">
+              {badgeIcon}
+              {badge}
+            </div>
+          )}
+          <h1 className="text-2xl font-bold text-white">
+            {title} {accent && <span className="text-orange-400">{accent}</span>}
+          </h1>
+          {subtitle && <p className="mt-1 text-sm text-white/60">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap gap-2 xl:min-w-max">{actions}</div>}
+      </div>
+      {stats.length > 0 && (
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {stats.map((stat, i) => (
+            <div key={i} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${stat.iconBg || "bg-orange-500/15"}`}>
+                <span className={stat.iconColor || "text-orange-400"}>{stat.icon}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">{stat.label}</p>
+                <p className={`text-white font-bold text-lg leading-tight ${stat.valueColor || ""}`}>
+                  {stat.value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// ─── Palette — light warm-cream + orange (matches Inventory Report) ─────
+const PANEL_BG = "#FFFFFF";
+const PANEL_BG_2 = "#FFEDD5";
+const BORDER = "#FFEDD5";
+const TEXT = "#292524";
+const MUTED = "#78716C";
+const FAINT = "#A8A29E";
+const ACCENT = "#EA580C";
+const ACCENT_DEEP = "#F97316";
+const ACCENT_SOFT = "rgba(234,88,12,0.12)";
 const AMBER = "#F59E0B";
 const AMBER_SOFT = "rgba(245,158,11,0.15)";
-const GREEN = "#22D3A8";
-const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const GREEN = "#16A34A";
+const GREEN_SOFT = "rgba(22,163,74,0.12)";
 const RED = "#EF4444";
 const RED_SOFT = "rgba(239,68,68,0.15)";
 
 // Inline style tokens
-const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const FIELD_LABEL = { color: "#451A03", fontWeight: 500 };
 const GRADIENT_BTN = {
-  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  background: "linear-gradient(135deg, #EA580C, #F97316)",
   border: "none",
-  color: "#1F1A2E",
+  color: "#FFFFFF",
   fontWeight: 700,
-  boxShadow: "none",
+  boxShadow: "0 4px 15px rgba(234,88,12,0.35)",
 };
 const SECONDARY_BTN = {
-  background: PANEL_BG_2,
-  border: `1px solid ${BORDER}`,
-  color: TEXT,
+  background: "#FFFFFF",
+  border: "1px solid #EA580C",
+  color: "#EA580C",
   fontWeight: 500,
 };
 const GHOST_BTN = {
   background: "transparent",
-  border: `1px solid ${ACCENT}40`,
-  color: ACCENT,
+  border: "1px solid #EA580C",
+  color: "#EA580C",
   fontWeight: 500,
 };
 
@@ -90,7 +193,7 @@ const itemColumns = [
 
 const paymentMethodTag = (method) => {
   const tone = {
-    cash: { background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` },
+    cash: { background: GREEN_SOFT, color: GREEN, border: `1px solid ${GREEN}30` },
     cod: { background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` },
     gcash: { background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` },
     card: { background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` },
@@ -107,8 +210,8 @@ const statusColorMap = {
   confirmed: { background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` },
   preparing: { background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` },
   out_for_delivery: { background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` },
-  delivered: { background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` },
-  cancelled: { background: RED_SOFT, color: "#F87171", border: `1px solid ${RED}30` },
+  delivered: { background: GREEN_SOFT, color: GREEN, border: `1px solid ${GREEN}30` },
+  cancelled: { background: RED_SOFT, color: "#EF4444", border: `1px solid ${RED}30` },
 };
 
 function Customers() {
@@ -162,11 +265,11 @@ function Customers() {
       width: 220,
       render: (_, r) => (
         <div className="flex items-center gap-3">
-          <Avatar size={36} icon={<UserOutlined />} style={{ backgroundColor: ACCENT, color: "#1F1A2E" }} />
+          <Avatar size={36} icon={<UserOutlined />} style={{ backgroundColor: ACCENT, color: "#FFFFFF" }} />
           <div>
             <Text strong>{r.full_name}</Text>
             <br />
-            <Text style={{ fontSize: 12 }}>@{r.username}</Text>
+            <Text style={{ fontSize: 12, color: MUTED }}>@{r.username}</Text>
           </div>
         </div>
       ),
@@ -220,8 +323,8 @@ function Customers() {
         <Tag
           className="rounded-full px-3 py-1"
           style={r.is_active
-            ? { background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }
-            : { background: RED_SOFT, color: "#F87171", border: `1px solid ${RED}30` }}
+            ? { background: GREEN_SOFT, color: GREEN, border: `1px solid ${GREEN}30` }
+            : { background: RED_SOFT, color: "#EF4444", border: `1px solid ${RED}30` }}
         >
           {r.is_active ? "Active" : "Inactive"}
         </Tag>
@@ -257,10 +360,10 @@ function Customers() {
       width: 160,
       render: (_, r) => (
         <Space orientation="vertical" size={0}>
-          <Text style={{ fontSize: 12 }}>
+          <Text style={{ fontSize: 12, color: TEXT }}>
             Cash: ₱{Number(r.cash_collected || 0).toFixed(2)}
           </Text>
-          <Text style={{ fontSize: 12 }}>
+          <Text style={{ fontSize: 12, color: TEXT }}>
             Change: ₱{Number(r.change_given || 0).toFixed(2)}
           </Text>
         </Space>
@@ -273,7 +376,7 @@ function Customers() {
       width: 100,
       className: "text-right",
       sorter: (a, b) => a.total - b.total,
-      render: (v) => <Text strong>₱{Number(v).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>,
+      render: (v) => <Text strong style={{ color: ACCENT }}>₱{Number(v).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>,
     },
   ];
 
@@ -302,7 +405,7 @@ function Customers() {
         <Tag
           className="rounded-full px-2 py-0.5"
           style={v === "paid"
-            ? { background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }
+            ? { background: GREEN_SOFT, color: GREEN, border: `1px solid ${GREEN}30` }
             : { background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` }}
         >
           {v || "-"}
@@ -322,7 +425,7 @@ function Customers() {
       width: 100,
       className: "text-right",
       sorter: (a, b) => a.total - b.total,
-      render: (v) => <Text strong>₱{Number(v).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>,
+      render: (v) => <Text strong style={{ color: ACCENT }}>₱{Number(v).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>,
     },
     {
       title: "Date",
@@ -330,7 +433,7 @@ function Customers() {
       key: "created_at",
       width: 90,
       render: (v) => (
-        <Text style={{ fontSize: 12 }}>
+        <Text style={{ fontSize: 12, color: TEXT }}>
           {v ? new Date(v).toLocaleDateString() : "-"}
         </Text>
       ),
@@ -365,86 +468,67 @@ function Customers() {
   };
 
   return (
-    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
-      
-      {/* Header — dark plum + mint */}
-      <div
-        className="mb-6 overflow-hidden rounded-2xl"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-      >
-        <div className="relative px-8 py-6">
-          {/* Decorative circles */}
-          <div className="absolute right-0 top-0 opacity-10">
-            <div
-              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
-              style={{ background: ACCENT }}
-            />
-          </div>
-          <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
-          </div>
+    <PageShell>
+      <HeroHeader
+        badgeIcon={<TeamOutlined />}
+        badge="Customer Management"
+        title="Customer"
+        accent="Data"
+        subtitle="View and manage registered customers"
+        stats={[
+          {
+            icon: <TeamOutlined />,
+            iconColor: "text-orange-400",
+            label: "Total Customers",
+            value: total || 0,
+          },
+        ]}
+      />
 
-          {/* Accent line */}
-          <div
-            className="absolute left-0 right-0 top-0 h-1"
-            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
-          />
+      <FilterBar title="Filters" subtitle="Search registered customers">
+        <span className="text-sm font-semibold text-stone-700">Search:</span>
+        <Input
+          placeholder="Search customers..."
+          prefix={<SearchOutlined style={{ color: MUTED }} />}
+          allowClear
+          value={searchTerm}
+          onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+          style={{ width: 300 }}
+          className="rounded-xl"
+        />
+      </FilterBar>
 
-          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
-                <TeamOutlined className="mr-2" style={{ color: ACCENT }} />
-                Customer Data
-              </h1>
-              <p className="text-sm" style={{ color: MUTED }}>View and manage registered customers</p>
-            </div>
-            <Input
-              placeholder="Search customers..."
-              prefix={<SearchOutlined style={{ color: MUTED }} />}
-              allowClear
-              value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-              style={{ width: 300 }}
-              className="rounded-xl py-2"
-            />
-          </div>
-        </div>
-      </div>
-
-      <Card
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
+      <SectionCard
+        icon={<TeamOutlined />}
+        title="Customer Directory"
+        subtitle="All registered customers"
+        extra={<CountPill>{total || 0} customer(s)</CountPill>}
       >
         {isLoading ? (
           <Loading full text="Loading customers..." />
         ) : (
-        <Table
-          columns={listColumns}
-          dataSource={customers}
-          rowKey="id"
-          loading={false}
-          pagination={pagination}
-          scroll={{ x: 800 }}
-          locale={{
-            emptyText: (
-              <div className="py-10 text-center">
-                <div
-                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
-                  style={{ background: ACCENT_SOFT, color: ACCENT }}
-                >
-                  <TeamOutlined className="text-3xl" />
-                </div>
-                <p className="font-semibold" style={{ color: TEXT }}>No customers found</p>
-                <p className="text-sm" style={{ color: MUTED }}>Try adjusting your search</p>
-              </div>
-            ),
-          }}
-        />
+          <Table
+            columns={listColumns}
+            dataSource={customers}
+            rowKey="id"
+            loading={false}
+            pagination={pagination}
+            scroll={{ x: 800 }}
+            locale={{
+              emptyText: (
+                <TableEmpty
+                  icon={<TeamOutlined style={{ fontSize: 20 }} />}
+                  title="No customers found"
+                  description="Try adjusting your search"
+                />
+              ),
+            }}
+          />
         )}
-      </Card>
+      </SectionCard>
 
       <Modal
-        title={<span><UserOutlined className="mr-2" style={{ color: ACCENT }} /><span style={{ color: TEXT, fontWeight: 700 }}>Customer Details</span></span>}
+        title={<span><UserOutlined className="mr-2" style={{ color: ACCENT }} /><span style={{ color: "#451A03", fontWeight: 700 }}>Customer Details</span></span>}
         open={showDetailModal}
         onCancel={() => { setShowDetailModal(false); setSelectedCustomer(null); }}
         footer={null}
@@ -458,7 +542,8 @@ function Customers() {
             <Card
               variant="borderless"
               size="small"
-              style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
+              className="rounded-xl"
+              style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
             >
               <Descriptions column={2} bordered size="small"
                 styles={{
@@ -471,8 +556,8 @@ function Customers() {
                   <Tag
                     className="rounded-full px-3 py-1"
                     style={customerDetail.customer.is_active
-                      ? { background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }
-                      : { background: RED_SOFT, color: "#F87171", border: `1px solid ${RED}30` }}
+                      ? { background: GREEN_SOFT, color: GREEN, border: `1px solid ${GREEN}30` }
+                      : { background: RED_SOFT, color: "#EF4444", border: `1px solid ${RED}30` }}
                   >
                     {customerDetail.customer.is_active ? "Active" : "Inactive"}
                   </Tag>
@@ -497,12 +582,11 @@ function Customers() {
             </Card>
 
             {customerDetail.sales?.length > 0 && (
-              <Card
-                title={<span><DollarOutlined className="mr-1" style={{ color: ACCENT }} /><span style={{ color: TEXT, fontWeight: 600 }}>In-Store Sales — {customerDetail.sales.length} transaction{customerDetail.sales.length > 1 ? "s" : ""}</span></span>}
-                variant="borderless"
-                size="small"
-                style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-                styles={{ body: { background: PANEL_BG, padding: 12 } }}
+              <SectionCard
+                icon={<DollarOutlined />}
+                title="In-Store Sales"
+                subtitle="Transactions recorded in the POS"
+                extra={<CountPill>{customerDetail.sales.length} transaction{customerDetail.sales.length > 1 ? "s" : ""}</CountPill>}
               >
                 <Table
                   columns={saleColumns}
@@ -516,16 +600,15 @@ function Customers() {
                     rowExpandable: (r) => (r.items || []).length > 0,
                   }}
                 />
-              </Card>
+              </SectionCard>
             )}
 
             {customerDetail.orders?.length > 0 && (
-              <Card
-                title={<span><ShoppingCartOutlined className="mr-1" style={{ color: ACCENT }} /><span style={{ color: TEXT, fontWeight: 600 }}>Online Orders — {customerDetail.orders.length} order{customerDetail.orders.length > 1 ? "s" : ""}</span></span>}
-                variant="borderless"
-                size="small"
-                style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-                styles={{ body: { background: PANEL_BG, padding: 12 } }}
+              <SectionCard
+                icon={<ShoppingCartOutlined />}
+                title="Online Orders"
+                subtitle="Orders placed by this customer"
+                extra={<CountPill>{customerDetail.orders.length} order{customerDetail.orders.length > 1 ? "s" : ""}</CountPill>}
               >
                 <Table
                   columns={orderColumns}
@@ -538,17 +621,17 @@ function Customers() {
                     expandedRowRender: (r) => (
                       <Space orientation="vertical" size="small" style={{ width: "100%" }}>
                         {r.delivery_address && (
-                          <Text style={{ fontSize: 12 }}>
+                          <Text style={{ fontSize: 12, color: TEXT }}>
                             <HomeOutlined className="mr-1" style={{ color: ACCENT }} />Deliver to: {r.delivery_address}
                           </Text>
                         )}
                         {r.gcash_reference && (
-                          <Text style={{ fontSize: 12 }}>
+                          <Text style={{ fontSize: 12, color: TEXT }}>
                             <CreditCardOutlined className="mr-1" style={{ color: ACCENT }} />GCash Ref: {r.gcash_reference}
                           </Text>
                         )}
-                        {r.notes && <Text style={{ fontSize: 12 }}>Notes: {r.notes}</Text>}
-                        <Text style={{ fontSize: 12 }}>
+                        {r.notes && <Text style={{ fontSize: 12, color: TEXT }}>Notes: {r.notes}</Text>}
+                        <Text style={{ fontSize: 12, color: TEXT }}>
                           Subtotal: ₱{Number(r.subtotal || 0).toFixed(2)}
                           {Number(r.delivery_fee || 0) > 0 && ` • Delivery Fee: ₱${Number(r.delivery_fee).toFixed(2)}`}
                         </Text>
@@ -558,7 +641,7 @@ function Customers() {
                     rowExpandable: (r) => (r.items || []).length > 0 || !!r.delivery_address || !!r.gcash_reference,
                   }}
                 />
-              </Card>
+              </SectionCard>
             )}
 
             {!customerDetail.sales?.length && !customerDetail.orders?.length && (
@@ -571,7 +654,7 @@ function Customers() {
               icon={customerDetail.customer.is_active ? <CloseCircleOutlined /> : <CheckCircleOutlined />}
               onClick={() => handleToggleActive(customerDetail.customer)}
               style={customerDetail.customer.is_active
-                ? { background: "transparent", border: `1px solid ${RED}40`, color: "#F87171", fontWeight: 500 }
+                ? { background: "transparent", border: `1px solid ${RED}40`, color: "#EF4444", fontWeight: 500 }
                 : { ...GRADIENT_BTN, borderRadius: 10 }}
             >
               {customerDetail.customer.is_active ? "Deactivate Customer" : "Activate Customer"}
@@ -579,7 +662,7 @@ function Customers() {
           </Space>
         ) : null}
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 

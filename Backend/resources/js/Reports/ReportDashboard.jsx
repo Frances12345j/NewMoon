@@ -99,7 +99,7 @@ const ReportDashboard = () => {
       description: "Item transfers between branches",
       icon: <SwapOutlined className="text-2xl" style={{ color: "#F97316" }} />,
       color: "#F97316",
-      path: "/reports/PullOut",
+      path: "/reports/pullout",
       stats: dashboardData?.pullout,
     },
   ];

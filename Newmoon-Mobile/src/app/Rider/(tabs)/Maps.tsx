@@ -17,10 +17,9 @@ import { WebView } from 'react-native-webview';
 import type { WebViewMessageEvent } from 'react-native-webview';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import api from '../../../../lib/api';
+import api, { listenToRider } from '../../../../lib/api';
 import { subscribeRiderLocation } from '../../../../lib/riderLocationService';
 import { useAuth } from '../../../../context/authContext';
-import { listenToRider } from '../../../../lib/websocket';
 
 const { width, height } = Dimensions.get('window');
 

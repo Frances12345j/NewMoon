@@ -14,10 +14,6 @@ import {
   InfoCircleOutlined,
   UserOutlined,
   ExportOutlined,
-  HistoryOutlined,
-  UndoOutlined,
-  ExclamationCircleOutlined,
-  SwapOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { api, API_BASE_URL } from "@/config/api";
@@ -155,7 +151,7 @@ function StockInForm({ form, product, branches, onSubmit, onCancel, currentUserN
           <Button
             type="primary"
             htmlType="submit"
-            className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-amber border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
           >
             Add Stock
           </Button>
@@ -165,9 +161,9 @@ function StockInForm({ form, product, branches, onSubmit, onCancel, currentUserN
   );
 }
 
-const STOCK_OUT_REASONS = ["Sales", "Damage", "Pull-out", "Spoilage", "Expired", "Wastage", "Breakage", "Adjustment", "Other"];
+const PULL_OUT_REASONS = ["Sales", "Damage", "Pull-out", "Spoilage", "Expired", "Wastage", "Breakage", "Adjustment", "Other"];
 
-function StockOutForm({ form, product, branches, onSubmit, onCancel, currentUserName, allowedReasons }) {
+function PullOutForm({ form, product, branches, onSubmit, onCancel, currentUserName, allowedReasons }) {
   const fieldLabel = (text) => <span className="text-[#451A03] font-medium">{text}</span>;
 
   return (
@@ -260,141 +256,9 @@ function StockOutForm({ form, product, branches, onSubmit, onCancel, currentUser
           <Button
             type="primary"
             htmlType="submit"
-            className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-amber border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
           >
-            Save Stock Out
-          </Button>
-        </Space>
-      </Form.Item>
-    </Form>
-  );
-}
-
-const ADJUSTMENT_REASONS = [
-  "Inventory Count",
-  "Spoilage",
-  "Damaged",
-  "Breakage",
-  "Overstock",
-  "Shrinkage",
-  "System Correction",
-  "Other",
-];
-
-function StockAdjustForm({ form, product, branches, onSubmit, onCancel, currentUserName }) {
-  const fieldLabel = (text) => <span className="text-[#451A03] font-medium">{text}</span>;
-  const systemQty = Form.useWatch("system_quantity", form) || 0;
-  const actualQty = Form.useWatch("actual_quantity", form);
-  const hasActual = typeof actualQty === "number" && !Number.isNaN(actualQty);
-  const difference = hasActual ? actualQty - systemQty : 0;
-  const diffText = hasActual
-    ? (difference > 0 ? `+${difference}` : String(difference))
-    : "";
-
-  return (
-    <Form form={form} layout="vertical" onFinish={onSubmit}>
-      <Row gutter={16}>
-        <Col span={24}>
-          <Form.Item label={fieldLabel("Product")}>
-            <Input
-              value={product?.name || ""}
-              disabled
-              prefix={<ShoppingOutlined className="text-[#F97316]" />}
-              className="rounded-xl bg-[#FFFBF5]"
-            />
-          </Form.Item>
-        </Col>
-
-        <Col span={12}>
-          <Form.Item
-            label={fieldLabel("Branch")}
-            name="branch_id"
-            rules={[{ required: true, message: "Please select a branch" }]}
-          >
-            <Select placeholder="Select Branch" className="rounded-xl">
-              {branches.map((b) => (
-                <Select.Option key={b.id} value={b.id}>{b.name}</Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-
-        <Col span={12}>
-          <Form.Item label={fieldLabel("System Quantity")} name="system_quantity">
-            <InputNumber disabled style={{ width: "100%" }} className="rounded-xl bg-[#FFFBF5]" />
-          </Form.Item>
-        </Col>
-
-        <Col span={12}>
-          <Form.Item
-            label={fieldLabel("Actual Quantity")}
-            name="actual_quantity"
-            rules={[{ required: true, message: "Please enter actual count" }]}
-          >
-            <InputNumber min={0} step={0.5} style={{ width: "100%" }} placeholder="Physical count" className="rounded-xl" />
-          </Form.Item>
-        </Col>
-
-        <Col span={12}>
-          <Form.Item label={fieldLabel("Difference")}>
-            <Input
-              value={diffText}
-              disabled
-              prefix={<SwapOutlined className={difference > 0 ? "text-green-600" : difference < 0 ? "text-red-600" : "text-gray-400"} />}
-              className="rounded-xl bg-[#FFFBF5]"
-              styles={{
-                input: {
-                  color: difference > 0 ? "#16a34a" : difference < 0 ? "#dc2626" : "#9ca3af",
-                  fontWeight: 600,
-                },
-              }}
-            />
-          </Form.Item>
-        </Col>
-
-        <Col span={12}>
-          <Form.Item
-            label={fieldLabel("Reason")}
-            name="reason"
-            rules={[{ required: true, message: "Please select a reason" }]}
-          >
-            <Select placeholder="Select reason" className="rounded-xl">
-              {ADJUSTMENT_REASONS.map((r) => (
-                <Select.Option key={r} value={r}>{r}</Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Col>
-
-        <Col span={12}>
-          <Form.Item label={fieldLabel("Adjusted By")}>
-            <Input
-              value={currentUserName}
-              disabled
-              prefix={<UserOutlined className="text-[#451A03]" />}
-              className="rounded-xl bg-[#FFFBF5]"
-            />
-          </Form.Item>
-        </Col>
-
-        <Col span={12}>
-          <Form.Item label={fieldLabel("Date")} name="adjusted_at">
-            <DatePicker className="rounded-xl" style={{ width: "100%" }} />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      <Form.Item className="mb-0 mt-2">
-        <Space className="w-full justify-end">
-          <Button onClick={onCancel} className="rounded-xl">
-            Cancel
-          </Button>
-          <Button
-            type="primary"
-            htmlType="submit"
-            className="rounded-xl bg-linear-to-br from-[#F59E0B] via-[#F97316] to-[#EA580C] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
-          >
-            Save Adjustment
+            Save Pull Out
           </Button>
         </Space>
       </Form.Item>
@@ -407,18 +271,10 @@ function ProductList() {
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isRestockModalVisible, setIsRestockModalVisible] = useState(false);
-  const [isStockOutModalVisible, setIsStockOutModalVisible] = useState(false);
+  const [isPullOutModalVisible, setIsPullOutModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
-  const [isStockAdjustModalVisible, setIsStockAdjustModalVisible] = useState(false);
-  const [isStockOutRecordsVisible, setIsStockOutRecordsVisible] = useState(false);
-  const [stockOutRecords, setStockOutRecords] = useState([]);
-  const [stockOutRecordsLoading, setStockOutRecordsLoading] = useState(false);
-  const [reverseTarget, setReverseTarget] = useState(null);
-  const [isAdjustRecordsVisible, setIsAdjustRecordsVisible] = useState(false);
-  const [adjustRecords, setAdjustRecords] = useState([]);
-  const [adjustRecordsLoading, setAdjustRecordsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [stockQuantity, setStockQuantity] = useState("");
@@ -436,8 +292,7 @@ function ProductList() {
   const [imageFileName, setImageFileName] = useState('');
   const imageFileRef = useRef(null);
   const [restockForm] = Form.useForm();
-  const [stockOutForm] = Form.useForm();
-  const [adjustForm] = Form.useForm();
+  const [pullOutForm] = Form.useForm();
   const [createForm] = Form.useForm();
   const [statusForm] = Form.useForm();
   const [editForm] = Form.useForm();
@@ -448,9 +303,7 @@ function ProductList() {
     `${currentUser.firstname || ""} ${currentUser.lastname || ""}`.trim() ||
     currentUser.username ||
     "Admin";
-  const userRole = localStorage.getItem("role") || "admin";
-  const isAdmin = userRole === "admin";
-  const allowedStockOutReasons = STOCK_OUT_REASONS;
+  const allowedPullOutReasons = PULL_OUT_REASONS;
 
   const loadData = async (forceRefresh = false) => {
     setLoading(true);
@@ -559,83 +412,25 @@ function ProductList() {
     }
   };
 
-  const handleStockOut = async () => {
+  const handlePullOut = async () => {
     try {
-      const values = await stockOutForm.validateFields();
-      await api.post(`/products/${selectedProduct.id}/stock-out`, {
+      const values = await pullOutForm.validateFields();
+      await api.post(`/products/${selectedProduct.id}/pull-out`, {
         branch_id: values.branch_id,
         quantity: values.quantity,
         reason: values.reason,
         stock_out_date: values.stock_out_date ? values.stock_out_date.format("YYYY-MM-DD") : null,
         reference: values.reference || null,
       });
-      message.success(`Stock out recorded for ${selectedProduct.name}`);
-      setIsStockOutModalVisible(false);
-      stockOutForm.resetFields();
+      message.success(`Pull Out recorded for ${selectedProduct.name}`);
+      setIsPullOutModalVisible(false);
+      pullOutForm.resetFields();
       setSelectedProduct(null);
       invalidateCache('products');
       await loadData(true);
     } catch (error) {
       if (error.errorFields) return;
-      message.error(error?.response?.data?.message || error?.response?.data?.error || "Failed to record stock out");
-    }
-  };
-
-  const loadStockOutRecords = async () => {
-    try {
-      setStockOutRecordsLoading(true);
-      const res = await api.get("/manual-stock-outs");
-      setStockOutRecords(res.data);
-    } catch (error) {
-      message.error(error?.response?.data?.message || "Failed to load stock out records");
-    } finally {
-      setStockOutRecordsLoading(false);
-    }
-  };
-
-  const handleReverseStockOut = async (record) => {
-    try {
-      await api.delete(`/manual-stock-outs/${record.id}`);
-      message.success("Stock-out record reversed and stock restored");
-      setReverseTarget(null);
-      await loadStockOutRecords();
-      invalidateCache('products');
-      await loadData(true);
-    } catch (error) {
-      message.error(error?.response?.data?.message || "Failed to reverse stock out");
-    }
-  };
-
-  const handleStockAdjust = async () => {
-    try {
-      const values = await adjustForm.validateFields();
-      await api.post(`/products/${selectedProduct.id}/adjust-stock`, {
-        branch_id: values.branch_id,
-        actual_quantity: values.actual_quantity,
-        reason: values.reason,
-        adjusted_at: values.adjusted_at ? values.adjusted_at.format("YYYY-MM-DD") : null,
-      });
-      message.success(`Stock adjusted for ${selectedProduct.name}`);
-      setIsStockAdjustModalVisible(false);
-      adjustForm.resetFields();
-      setSelectedProduct(null);
-      invalidateCache('products');
-      await loadData(true);
-    } catch (error) {
-      if (error.errorFields) return;
-      message.error(error?.response?.data?.message || error?.response?.data?.error || "Failed to adjust stock");
-    }
-  };
-
-  const loadAdjustRecords = async () => {
-    try {
-      setAdjustRecordsLoading(true);
-      const res = await api.get("/stock-adjustments");
-      setAdjustRecords(res.data);
-    } catch (error) {
-      message.error(error?.response?.data?.message || "Failed to load adjustment records");
-    } finally {
-      setAdjustRecordsLoading(false);
+      message.error(error?.response?.data?.message || error?.response?.data?.error || "Failed to record Pull Out");
     }
   };
 
@@ -859,7 +654,7 @@ function ProductList() {
               <span className="text-xs text-gray-500">Stock</span>
             </div>
             <div className="w-32 bg-[#F5EDE0] rounded-full h-1.5 mt-1">
-              <div className={`h-1.5 rounded-full ${isLowStock ? 'bg-linear-to-r from-[#EA580C] to-[#F59E0B]' : 'bg-linear-to-r from-[#22C55E] to-[#16A34A]'}`} style={{ width: `${stockPercentage}%` }} />
+              <div className={`h-1.5 rounded-full ${isLowStock ? 'bg-linear-to-r from-[#EA580C] to-amber' : 'bg-linear-to-r from-[#22C55E] to-[#16A34A]'}`} style={{ width: `${stockPercentage}%` }} />
             </div>
           </div>
         );
@@ -917,49 +712,29 @@ function ProductList() {
                 });
                 setIsRestockModalVisible(true);
               }}
-              className="rounded-full bg-linear-to-br from-[#EA580C] to-[#F59E0B] text-white border-none text-[11px] hover:brightness-110 transition-all duration-200 shadow-[0_2px_8px_rgba(234,88,12,0.3)]"
+              className="rounded-full bg-linear-to-br from-[#EA580C] to-amber text-white border-none text-[11px] hover:brightness-110 transition-all duration-200 shadow-[0_2px_8px_rgba(234,88,12,0.3)]"
             >
               Restock
             </Button>
           </Tooltip>
-          <Tooltip title="Stock Out">
+          <Tooltip title="Pull Out">
             <Button
               size="small"
               icon={<ExportOutlined />}
               onClick={() => {
                 setSelectedProduct(r.product);
-                stockOutForm.setFieldsValue({
+                pullOutForm.setFieldsValue({
                   branch_id: r.branchId,
                   quantity: 1,
                   reason: "Sales",
                   stock_out_date: dayjs(),
                   reference: "",
                 });
-                setIsStockOutModalVisible(true);
+                setIsPullOutModalVisible(true);
               }}
               className="rounded-full border-[#F97316] text-[#EA580C] text-[11px] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
             >
-              Stock Out
-            </Button>
-          </Tooltip>
-          <Tooltip title="Stock Adjust">
-            <Button
-              size="small"
-              icon={<SwapOutlined />}
-              onClick={() => {
-                setSelectedProduct(r.product);
-                adjustForm.setFieldsValue({
-                  branch_id: r.branchId,
-                  system_quantity: Number(r.receivedQty) || 0,
-                  actual_quantity: Number(r.receivedQty) || 0,
-                  reason: "Inventory Count",
-                  adjusted_at: dayjs(),
-                });
-                setIsStockAdjustModalVisible(true);
-              }}
-              className="rounded-full border border-amber-500 bg-amber-50 text-[#B45309] text-[11px] hover:bg-amber-100 transition-all duration-200"
-            >
-              Adjust
+              Pull Out
             </Button>
           </Tooltip>
           <Tooltip title="Edit">
@@ -1004,7 +779,7 @@ function ProductList() {
               }}
               className={`rounded-full text-[11px] transition-all duration-200 ${isProductActive(r.product?.is_active)
                 ? "border border-stone-300 text-stone-500 hover:bg-stone-100"
-                : "bg-linear-to-br from-[#EA580C] to-[#F59E0B] border-none text-white hover:brightness-110"
+                : "bg-linear-to-br from-[#EA580C] to-amber border-none text-white hover:brightness-110"
                 }`}
             >
               {isProductActive(r.product?.is_active) ? "Disable" : "Enable"}
@@ -1025,11 +800,11 @@ function ProductList() {
             <div className="w-64 h-64 rounded-full bg-[#F97316] -mr-32 -mt-32"></div>
           </div>
           <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="w-48 h-48 rounded-full bg-[#F59E0B]"></div>
+            <div className="w-48 h-48 rounded-full bg-amber"></div>
           </div>
 
           {/* Flame accent line */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#EA580C] via-[#F97316] to-[#F59E0B]" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-[#EA580C] via-[#F97316] to-amber" />
 
           <div className="flex items-center justify-between relative z-10">
             <div>
@@ -1098,24 +873,10 @@ function ProductList() {
             Refresh
           </Button>
           <Button
-            icon={<HistoryOutlined />}
-            onClick={() => { setIsStockOutRecordsVisible(true); loadStockOutRecords(); }}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
-          >
-            Stock Out Records
-          </Button>
-          <Button
-            icon={<SwapOutlined />}
-            onClick={() => { setIsAdjustRecordsVisible(true); loadAdjustRecords(); }}
-            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316] transition-all duration-200"
-          >
-            Adjustment Records
-          </Button>
-          <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setIsCreateModalVisible(true)}
-            className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+            className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-amber border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
           >
             Create New Product
           </Button>
@@ -1132,7 +893,7 @@ function ProductList() {
             </h2>
             <p className="text-sm text-gray-500 mt-1">Track stock levels across all branches</p>
           </div>
-          <Tag className="text-sm px-3 py-1 rounded-full bg-linear-to-br from-[#EA580C] to-[#F59E0B] text-white border-none">
+          <Tag className="text-sm px-3 py-1 rounded-full bg-linear-to-br from-[#EA580C] to-amber text-white border-none">
             {filteredTableData.length} stock entries
           </Tag>
         </div>
@@ -1235,7 +996,7 @@ function ProductList() {
               <Button
                 type="primary"
                 htmlType="submit"
-                className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+                className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-amber border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
               >
                 Create Product
               </Button>
@@ -1321,7 +1082,7 @@ function ProductList() {
               <Button
                 type="primary"
                 htmlType="submit"
-                className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-[#F59E0B] border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
+                className="rounded-xl bg-linear-to-br from-[#EA580C] via-[#F97316] to-amber border-none shadow-[0_4px_15px_rgba(234,88,12,0.35)] hover:opacity-90 hover:brightness-110 transition-all duration-200"
               >
                 Update Product
               </Button>
@@ -1356,275 +1117,31 @@ function ProductList() {
         />
       </Modal>
 
-      {/* Stock Out Modal - NewMoon Style */}
+      {/* Pull Out Modal - NewMoon Style */}
       <Modal
         title={
           <span>
             <ExportOutlined className="mr-2 text-[#F97316]" />
-            <span className="text-[#451A03] font-bold">Stock Out</span>
+            <span className="text-[#451A03] font-bold">Pull Out</span>
           </span>
         }
-        open={isStockOutModalVisible}
-        onCancel={() => { setIsStockOutModalVisible(false); stockOutForm.resetFields(); setSelectedProduct(null); }}
+        open={isPullOutModalVisible}
+        onCancel={() => { setIsPullOutModalVisible(false); pullOutForm.resetFields(); setSelectedProduct(null); }}
         footer={null}
         destroyOnHidden
         className="rounded-2xl"
         width={560}
         styles={{ body: { maxHeight: "70vh", overflowY: "auto" } }}
       >
-        <StockOutForm
-          form={stockOutForm}
+        <PullOutForm
+          form={pullOutForm}
           product={selectedProduct}
           branches={branches}
-          onSubmit={handleStockOut}
-          onCancel={() => { setIsStockOutModalVisible(false); stockOutForm.resetFields(); setSelectedProduct(null); }}
+            onSubmit={handlePullOut}
+          onCancel={() => { setIsPullOutModalVisible(false); pullOutForm.resetFields(); setSelectedProduct(null); }}
           currentUserName={currentUserName}
-          allowedReasons={allowedStockOutReasons}
+          allowedReasons={allowedPullOutReasons}
         />
-      </Modal>
-
-      {/* Stock Adjust Modal - NewMoon Style */}
-      <Modal
-        title={
-          <span>
-            <SwapOutlined className="mr-2 text-[#451A03]" />
-            <span className="text-[#451A03] font-bold">Stock Adjustment</span>
-          </span>
-        }
-        open={isStockAdjustModalVisible}
-        onCancel={() => { setIsStockAdjustModalVisible(false); adjustForm.resetFields(); setSelectedProduct(null); }}
-        footer={null}
-        destroyOnHidden
-        className="rounded-2xl"
-        width={560}
-        styles={{ body: { maxHeight: "70vh", overflowY: "auto" } }}
-      >
-        <StockAdjustForm
-          form={adjustForm}
-          product={selectedProduct}
-          branches={branches}
-          onSubmit={handleStockAdjust}
-          onCancel={() => { setIsStockAdjustModalVisible(false); adjustForm.resetFields(); setSelectedProduct(null); }}
-          currentUserName={currentUserName}
-        />
-      </Modal>
-
-      {/* Adjustment Records / Audit Trail - NewMoon Style */}
-      <Modal
-        title={
-          <span>
-            <SwapOutlined className="mr-2 text-[#451A03]" />
-            <span className="text-[#451A03] font-bold">
-              Adjustment Records {isAdmin ? "(All Branches)" : "(My Records)"}
-            </span>
-          </span>
-        }
-        open={isAdjustRecordsVisible}
-        onCancel={() => setIsAdjustRecordsVisible(false)}
-        footer={null}
-        destroyOnHidden
-        className="rounded-2xl"
-        width={860}
-        styles={{ body: { maxHeight: "70vh", overflowY: "auto" } }}
-      >
-        <Table
-          rowKey="id"
-          size="small"
-          loading={adjustRecordsLoading}
-          dataSource={adjustRecords}
-          pagination={clientPagination({ label: "adjustments" })}
-          scroll={{ x: 760 }}
-          locale={{ emptyText: "No adjustment records yet." }}
-          columns={[
-            {
-              title: "Product",
-              dataIndex: ["product", "name"],
-              render: (name, r) => (
-                <div className="flex items-center gap-2">
-                  {r.product?.image_url ? (
-                    <img src={r.product.image_url} alt="" className="w-8 h-8 rounded-lg object-cover" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-lg bg-[#F5EDE0] flex items-center justify-center">
-                      <ShoppingOutlined className="text-gray-400" />
-                    </div>
-                  )}
-                  <span className="font-medium">{name}</span>
-                </div>
-              ),
-            },
-            {
-              title: "System Qty",
-              dataIndex: "system_quantity",
-              align: "right",
-              render: (v) => <span>{Number(v) || 0}</span>,
-            },
-            {
-              title: "Actual Qty",
-              dataIndex: "actual_quantity",
-              align: "right",
-              render: (v) => <span className="font-semibold">{Number(v) || 0}</span>,
-            },
-            {
-              title: "Difference",
-              dataIndex: "difference",
-              align: "right",
-              render: (v) => {
-                const n = Number(v) || 0;
-                return (
-                  <span className={n > 0 ? "text-green-600 font-semibold" : n < 0 ? "text-red-600 font-semibold" : "text-gray-400"}>
-                    {n > 0 ? `+${n}` : n}
-                  </span>
-                );
-              },
-            },
-            { title: "Reason", dataIndex: "reason", render: (r) => <Tag color="purple">{r}</Tag> },
-            { title: "Branch", dataIndex: ["branch", "name"], render: (n) => n || "—" },
-            {
-              title: "Adjusted By",
-              dataIndex: ["adjuster", "name"],
-              render: (name, r) => {
-                const adjuster = r.adjuster;
-                if (!adjuster) return <span className="text-gray-400">Unknown</span>;
-                const displayName =
-                  adjuster.name ||
-                  `${adjuster.firstname || ""} ${adjuster.lastname || ""}`.trim() ||
-                  adjuster.username ||
-                  "—";
-                return (
-                  <span>
-                    {displayName} <Tag color={adjuster.role === "admin" ? "blue" : "default"}>{adjuster.role === "admin" ? "Admin" : "Staff"}</Tag>
-                  </span>
-                );
-              },
-            },
-            {
-              title: "Date",
-              dataIndex: "created_at",
-              render: (d) => (d ? dayjs(d).format("MMM D, YYYY h:mm A") : "—"),
-            },
-          ]}
-        />
-      </Modal>
-
-      {/* Stock Out Records / Audit Trail - NewMoon Style */}
-      <Modal
-        title={
-          <span>
-            <HistoryOutlined className="mr-2 text-[#451A03]" />
-            <span className="text-[#451A03] font-bold">
-              Stock Out Records {isAdmin ? "(All Branches)" : "(My Records)"}
-            </span>
-          </span>
-        }
-        open={isStockOutRecordsVisible}
-        onCancel={() => setIsStockOutRecordsVisible(false)}
-        footer={null}
-        destroyOnHidden
-        className="rounded-2xl"
-        width={860}
-        styles={{ body: { maxHeight: "70vh", overflowY: "auto" } }}
-      >
-        <Table
-          rowKey="id"
-          size="small"
-          loading={stockOutRecordsLoading}
-          dataSource={stockOutRecords}
-          pagination={clientPagination({ label: "stock-outs" })}
-          scroll={{ x: 720 }}
-          locale={{ emptyText: "No stock-out records yet." }}
-          columns={[
-            {
-              title: "Product",
-              dataIndex: ["product", "name"],
-              render: (name, r) => (
-                <div className="flex items-center gap-2">
-                  {r.product?.image_url ? (
-                    <img src={r.product.image_url} alt="" className="w-8 h-8 rounded-lg object-cover" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-lg bg-[#F5EDE0] flex items-center justify-center">
-                      <ShoppingOutlined className="text-gray-400" />
-                    </div>
-                  )}
-                  <span className="font-medium">{name}</span>
-                </div>
-              ),
-            },
-            {
-              title: "Quantity",
-              dataIndex: "quantity",
-              align: "right",
-              render: (q) => <span className="text-red-600 font-semibold">-{q}pcs</span>,
-            },
-            { title: "Reason", dataIndex: "reason", render: (r) => <Tag color="volcano">{r}</Tag> },
-            { title: "Branch", dataIndex: ["branch", "name"], render: (n) => n || "—" },
-            {
-              title: "Staff/Admin",
-              dataIndex: ["creator", "name"],
-              render: (name, r) => {
-                const creator = r.creator;
-                if (!creator) return <span className="text-gray-400">Unknown</span>;
-                const displayName =
-                  creator.name ||
-                  `${creator.firstname || ""} ${creator.lastname || ""}`.trim() ||
-                  creator.username ||
-                  "—";
-                const roleLabel = creator.role === "admin" ? "Admin" : "Staff";
-                return (
-                  <span>
-                    {displayName} <Tag color={creator.role === "admin" ? "blue" : "default"}>{roleLabel}</Tag>
-                  </span>
-                );
-              },
-            },
-            {
-              title: "Reference",
-              dataIndex: "reference",
-              render: (ref) => ref ? <Tag color="geekblue">{ref}</Tag> : "—",
-            },
-            {
-              title: "Date",
-              dataIndex: "created_at",
-              render: (d) => (d ? dayjs(d).format("MMM D, YYYY h:mm A") : "—"),
-            },
-            ...(isAdmin
-              ? [{
-                title: "Action",
-                key: "action",
-                align: "center",
-                render: (_, r) => (
-                  <Tooltip title="Reverse & restore stock">
-                    <Button danger size="small" icon={<UndoOutlined />} onClick={() => setReverseTarget(r)}>
-                      Undo
-                    </Button>
-                  </Tooltip>
-                ),
-              }]
-              : []),
-          ]}
-        />
-      </Modal>
-
-      {/* Reverse Stock Out Confirmation - Admin only */}
-      <Modal
-        title={
-          <span className="text-[#F97316] font-bold">
-            <ExclamationCircleOutlined className="mr-2" />
-            Reverse Stock Out
-          </span>
-        }
-        open={!!reverseTarget}
-        onCancel={() => setReverseTarget(null)}
-        onOk={() => handleReverseStockOut(reverseTarget)}
-        okText="Yes, Reverse"
-        okButtonProps={{ danger: true }}
-        cancelButtonProps={{ className: "rounded-xl" }}
-        className="rounded-2xl"
-      >
-        <p>
-          This will remove the record{" "}
-          <b>{reverseTarget?.product?.name}</b> (-{reverseTarget?.quantity}pcs,{" "}
-          {reverseTarget?.reason}) and restore the stock quantity. Continue?
-        </p>
       </Modal>
 
       {/* Delete Confirmation Modal - NewMoon Style */}

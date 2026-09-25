@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCart } from '../../../context/cartContext';
-import api from '../../../lib/api';
+import { STORAGE_URL } from '../../../lib/api';
 
 export default function CartScreen() {
   const {
@@ -29,7 +29,7 @@ export default function CartScreen() {
     router.push('/Customer/Checkout');
   };
 
-  const imageBaseUrl = (api.defaults?.baseURL ?? '').replace('/api', '');
+  const imageBaseUrl = STORAGE_URL;
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFF7ED]">

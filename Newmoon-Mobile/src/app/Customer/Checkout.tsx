@@ -11,7 +11,7 @@ import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
 import { useCart } from '../../../context/cartContext';
 import { useAddress } from '../../../context/addressContext';
-import api from '../../../lib/api';
+import api, { STORAGE_URL } from '../../../lib/api';
 import { Image } from 'react-native';
 
 type PaymentMethod = 'cod' | 'gcash';
@@ -315,7 +315,7 @@ export default function CheckoutScreen() {
                 {item.image ? (
                   <Image
                     source={{
-                      uri: `${(api.defaults?.baseURL ?? '').replace('/api', '')}/storage/${item.image}`,
+                      uri: `${STORAGE_URL}/${item.image}`,
                     }}
                     style={{ width: 56, height: 56 }}
                     resizeMode="cover"

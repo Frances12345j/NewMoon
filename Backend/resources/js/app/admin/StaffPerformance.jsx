@@ -28,65 +28,62 @@ import MuiMenuItem from "@mui/material/MenuItem";
 
 const { MonthPicker } = DatePicker;
 
-// ─── Palette — matches ProductList (dark plum + mint) ─────
-const PANEL_BG = "#2A2438";
-const PANEL_BG_2 = "#332C45";
-const BORDER = "rgba(255,255,255,0.06)";
-const TEXT = "#FFFFFF";
-const MUTED = "#A5A0B5";
-const FAINT = "#6E6A7E";
-const ACCENT = "#22D3A8";
-const ACCENT_DEEP = "#16B48C";
-const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const PANEL_BG = "#FFFFFF";
+const PANEL_BG_2 = "#FFF7ED";
+const BORDER = "#FED7AA";
+const TEXT = "#292524";
+const MUTED = "#78716C";
+const FAINT = "#A8A29E";
+const ACCENT = "#EA580C";
+const ACCENT_DEEP = "#F97316";
+const ACCENT_SOFT = "#FFF1E6";
 const AMBER = "#F59E0B";
-const AMBER_SOFT = "rgba(245,158,11,0.15)";
-const GREEN = "#22D3A8";
-const GREEN_SOFT = "rgba(34,211,168,0.12)";
-const RED = "#EF4444";
-const RED_SOFT = "rgba(239,68,68,0.15)";
+const AMBER_SOFT = "#FFFBEB";
+const GREEN = "#16A34A";
+const GREEN_SOFT = "#F0FDF4";
+const RED = "#DC2626";
+const RED_SOFT = "#FEF2F2";
 
-// Inline style tokens
-const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const FIELD_LABEL = { color: "#451A03", fontWeight: 500 };
 const GRADIENT_BTN = {
-  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  background: "linear-gradient(135deg, #EA580C, #F97316)",
   border: "none",
-  color: "#1F1A2E",
+  color: "#FFFFFF",
   fontWeight: 700,
-  boxShadow: "none",
+  boxShadow: "0 4px 15px rgba(234,88,12,0.35)",
 };
 const SECONDARY_BTN = {
-  background: PANEL_BG_2,
-  border: `1px solid ${BORDER}`,
+  background: "#FFFFFF",
+  border: "1px solid #FED7AA",
   color: TEXT,
   fontWeight: 500,
 };
 const GHOST_BTN = {
-  background: "transparent",
-  border: `1px solid ${ACCENT}40`,
+  background: "#FFFFFF",
+  border: "1px solid #EA580C",
   color: ACCENT,
   fontWeight: 500,
 };
 
 const RATING_COLORS = {
-  Excellent: { color: "green", bg: GREEN_SOFT, border: "#22D3A8" },
+  Excellent: { color: "green", bg: GREEN_SOFT, border: "#16A34A" },
   Good: { color: "gold", bg: AMBER_SOFT, border: "#F59E0B" },
-  Average: { color: "orange", bg: AMBER_SOFT, border: "#F59E0B" },
-  "Needs Improvement": { color: "volcano", bg: RED_SOFT, border: "#EF4444" },
-  Poor: { color: "red", bg: RED_SOFT, border: "#EF4444" },
+  Average: { color: "orange", bg: AMBER_SOFT, border: "#F97316" },
+  "Needs Improvement": { color: "volcano", bg: RED_SOFT, border: "#DC2626" },
+  Poor: { color: "red", bg: RED_SOFT, border: "#DC2626" },
 };
 
-const CHART_COLORS = ["#22D3A8", "#16B48C", "#F59E0B", "#22c55e", "#14b8a6", "#8b5cf6", "#ec4899", "#3B82F6"];
+const CHART_COLORS = ["#EA580C", "#F97316", "#F59E0B", "#16A34A", "#F97316", "#8b5cf6", "#ec4899", "#3B82F6"];
 
-// MUI X Charts dark styling — readable axis/legend/grid on plum cards
 const CHART_SX = {
-  "& .MuiChartsSurface": { color: "#FFFFFF" },
-  "& .MuiChartsAxis-tickLabel": { fill: "#A5A0B5" },
-  "& .MuiChartsAxis-label": { fill: "#FFFFFF" },
-  "& .MuiChartsAxis-line": { stroke: "rgba(255,255,255,0.15)" },
-  "& .MuiChartsAxis-tick": { stroke: "rgba(255,255,255,0.15)" },
-  "& .MuiChartsGrid-line": { stroke: "rgba(255,255,255,0.08)" },
-  "& .MuiChartsLegend-root text": { fill: "#FFFFFF", fontSize: 12 },
-  "& .MuiChartsLegend-markLabel": { fill: "#FFFFFF" },
+  "& .MuiChartsSurface": { color: TEXT },
+  "& .MuiChartsAxis-tickLabel": { fill: MUTED },
+  "& .MuiChartsAxis-label": { fill: TEXT },
+  "& .MuiChartsAxis-line": { stroke: "#FED7AA" },
+  "& .MuiChartsAxis-tick": { stroke: "#FED7AA" },
+  "& .MuiChartsGrid-line": { stroke: "#F5F5F4" },
+  "& .MuiChartsLegend-root text": { fill: TEXT, fontSize: 12 },
+  "& .MuiChartsLegend-markLabel": { fill: TEXT },
 };
 
 const shapes = ["circle", "square", "diamond", "cross", "star", "triangle", "wye"];
@@ -249,7 +246,7 @@ function StaffPerformance() {
     const totalDays = onTime + late;
     if (totalDays === 0) return [];
     return [
-      { name: "On Time", value: onTime, color: "#22D3A8" },
+      { name: "On Time", value: onTime, color: "#F97316" },
       { name: "Late", value: late, color: "#F59E0B" },
     ];
   })();
@@ -430,99 +427,113 @@ function StaffPerformance() {
   ];
 
   return (
-    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
-      
+    <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">
+      <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+        <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+        <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
+        <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
+          <TrophyOutlined />
+        </div>
 
-      {/* Header — dark plum with mint accents */}
-      <div
-        className="mb-6 overflow-hidden rounded-2xl"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-      >
-        <div className="relative px-8 py-6">
-          {/* Decorative circles */}
-          <div className="absolute right-0 top-0 opacity-10">
-            <div className="-mr-32 -mt-32 h-64 w-64 rounded-full" style={{ background: ACCENT }} />
-          </div>
-          <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
-          </div>
-
-          {/* Accent line */}
-          <div
-            className="absolute left-0 right-0 top-0 h-1"
-            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
-          />
-
-          <div className="relative z-10 flex items-center justify-between">
+        <div className="relative z-10 px-6 py-7 sm:px-8">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div>
-              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
-                <TrophyOutlined className="mr-2" style={{ color: ACCENT }} />
-                Staff Monitoring
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-orange-300">
+                <TeamOutlined />
+                People &amp; Performance
+              </div>
+              <h1 className="text-2xl font-bold text-white">
+                Staff <span className="text-orange-400">Performance</span>
               </h1>
-              <p className="text-sm" style={{ color: MUTED }}>
-                Evaluate employee productivity based on sales targets, attendance, and branch performance
-              </p>
+              <p className="mt-1 text-sm text-white/60">Evaluate employee productivity based on sales targets, attendance, and branch performance</p>
+            </div>
+
+            <div className="flex flex-wrap gap-2 xl:min-w-max">
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={() => refetch()}
+                loading={isLoading}
+                className="h-11! rounded-xl! border-white/20! bg-white/5! px-5! font-medium! text-white! hover:border-orange-300! hover:text-orange-300!"
+              >
+                Refresh
+              </Button>
+              <Button
+                type="primary"
+                icon={<SettingOutlined />}
+                onClick={() => openTargetModal()}
+                className="h-11! rounded-xl! border-none! bg-linear-to-r! from-orange-600! to-amber-500! px-5! font-semibold! shadow-lg! shadow-orange-500/20! hover:brightness-110!"
+              >
+                Manage Targets
+              </Button>
             </div>
           </div>
 
-          {/* Quick Stats in Header */}
-          <div className="relative z-10 mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <TeamOutlined style={{ color: ACCENT }} /> Total Staff
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{meta.total_staff || 0}</p>
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/15">
+                <TeamOutlined className="text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">Total Staff</p>
+                <p className="text-white font-bold text-lg leading-tight">{meta.total_staff || 0}</p>
+              </div>
             </div>
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <ShoppingCartOutlined style={{ color: ACCENT }} /> Total Sales
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: ACCENT }}>₱{Number(meta.total_sales || 0).toLocaleString()}</p>
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/15">
+                <ShoppingCartOutlined className="text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">Total Sales</p>
+                <p className="text-orange-300 font-bold text-lg leading-tight">₱{Number(meta.total_sales || 0).toLocaleString()}</p>
+              </div>
             </div>
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <RiseOutlined style={{ color: ACCENT }} /> Today&apos;s Achievement
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{meta.daily_target_achievement_pct || 0}%</p>
-              <p className="text-xs" style={{ color: FAINT }}>{meta.total_daily_products || 0} / {meta.total_daily_targets || 0} pcs today</p>
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/15">
+                <RiseOutlined className="text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">Today&apos;s Achievement</p>
+                <p className="text-white font-bold text-lg leading-tight">{meta.daily_target_achievement_pct || 0}%</p>
+                <p className="text-white/40 text-xs">{meta.total_daily_products || 0} / {meta.total_daily_targets || 0} pcs today</p>
+              </div>
             </div>
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <TrophyOutlined style={{ color: ACCENT }} /> Avg Performance
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{meta.avg_performance_score || 0}/100</p>
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/15">
+                <TrophyOutlined className="text-orange-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">Avg Performance</p>
+                <p className="text-white font-bold text-lg leading-tight">{meta.avg_performance_score || 0}/100</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <Card
-        className="mb-6"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
-      >
+      <div className="mb-6 rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+            <BarChartOutlined />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-stone-900">Filters</h2>
+            <p className="text-xs text-stone-500">Narrow down the performance view</p>
+          </div>
+        </div>
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <div className="mb-1 text-xs font-semibold" style={FIELD_LABEL}>Month</div>
+            <div className="mb-1 text-xs font-semibold text-stone-700">Month</div>
             <MonthPicker value={month ? dayjs(month, "YYYY-MM") : null} onChange={handleMonthChange}
-              allowClear={false} format="MMMM YYYY" style={{ width: 160 }} className="rounded-xl" popupClassName="nm-dark-select-dropdown" />
+              allowClear={false} format="MMMM YYYY" style={{ width: 160 }} className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!" />
           </div>
           <div>
-            <div className="mb-1 text-xs font-semibold" style={FIELD_LABEL}>Branch</div>
-            <Select value={branchId} onChange={setBranchId} style={{ width: 180 }} className="rounded-xl"
-              popupClassName="nm-dark-select-dropdown"
+            <div className="mb-1 text-xs font-semibold text-stone-700">Branch</div>
+            <Select value={branchId} onChange={setBranchId} style={{ width: 180 }} className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
               options={[{ value: "all", label: "All Branches" }, ...branches.map((b) => ({ value: String(b.id), label: b.name }))]} />
           </div>
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={isLoading} style={GHOST_BTN}>
-            Refresh
-          </Button>
-          <Button type="primary" icon={<SettingOutlined />}
-            onClick={() => openTargetModal()} style={GRADIENT_BTN}>
-            Manage Targets
-          </Button>
         </div>
-      </Card>
+      </div>
 
       {/* Tabs */}
       <Tabs activeKey={activeTab} onChange={setActiveTab}

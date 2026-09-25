@@ -15,10 +15,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import api from '../../../../lib/api';
+import api, { listenToRider } from '../../../../lib/api';
 import * as Location from 'expo-location';
 import { useAuth } from '../../../../context/authContext';
-import { listenToRider } from '../../../../lib/websocket';
 import ProofOfDelivery from '../ProofOfDelivery';
 import MapView, { Marker } from 'react-native-maps';
 

@@ -61,11 +61,11 @@ const reportCards = [
   },
   {
     title: "Pull Out Report",
-    description: "Item transfers, stock-out requests, and stock adjustments",
+    description: "Item transfers, Pull out requests",
     icon: <SwapOutlined style={{ fontSize: 32, color: "#D97706" }} />,
     color: "#D97706",
     bg: "from-amber-500 to-amber-600",
-    path: "/reports/pull-out",
+    path: "/reports/pullout",
     tag: "Stock",
     iconTileBg: "bg-amber-500/15",
     iconTileText: "text-amber-400",

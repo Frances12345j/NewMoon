@@ -12,8 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import api from '../lib/api';
-import { listenToOrder } from '../lib/websocket';
+import api, { listenToOrder } from '../lib/api';
 
 interface Sender {
   id: number;

@@ -1,59 +1,163 @@
 import { useState } from "react";
-import { Card, Table, Button, Modal, Form, Input, message, Tag, Space, Select, Tooltip } from "antd";
+import { Table, Button, Modal, Form, Input, message, Tag, Space, Select, Tooltip } from "antd";
 import {
   InboxOutlined, ReloadOutlined, CheckCircleOutlined,
   ClockCircleOutlined, CloseCircleOutlined,
   CheckOutlined, CloseOutlined, ShopOutlined,
-  InfoCircleOutlined,
+  InfoCircleOutlined, SearchOutlined,
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/config/api";
-import { clientPagination, serverPagination } from "@/components/Pagination";
+import { clientPagination } from "@/components/Pagination";
 
-// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
-const PANEL_BG = "#2A2438";
-const PANEL_BG_2 = "#332C45";
-const BORDER = "rgba(255,255,255,0.06)";
-const TEXT = "#FFFFFF";
-const MUTED = "#A5A0B5";
-const FAINT = "#6E6A7E";
-const ACCENT = "#22D3A8";
-const ACCENT_DEEP = "#16B48C";
-const ACCENT_SOFT = "rgba(34,211,168,0.12)";
-const AMBER = "#F59E0B";
+const PageShell = ({ children }) => (
+  <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">{children}</div>
+);
+
+const CountPill = ({ children }) => (
+  <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+    {children}
+  </span>
+);
+
+const SectionCard = ({ icon, title, subtitle, extra, children, className = "" }) => (
+  <div className={`rounded-2xl border border-orange-100 bg-white shadow-sm ${className}`}>
+    {(title || extra) && (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+        <div className="flex items-center gap-3">
+          {icon && (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              {icon}
+            </div>
+          )}
+          <div>
+            <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+            {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}
+          </div>
+        </div>
+        {extra}
+      </div>
+    )}
+    <div className="p-4">{children}</div>
+  </div>
+);
+
+const FilterBar = ({ title = "Filters", subtitle = "Narrow down the view", children }) => (
+  <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
+    <div className="mb-4 flex items-center gap-3">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+        <SearchOutlined />
+      </div>
+      <div>
+        <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+        <p className="text-xs text-stone-500">{subtitle}</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap items-center gap-3">{children}</div>
+  </div>
+);
+
+const TableEmpty = ({ icon, title, description }) => (
+  <div className="py-10 text-center">
+    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+      {icon}
+    </div>
+    <p className="text-base font-semibold text-stone-700">{title}</p>
+    {description && <p className="mt-1 text-sm text-stone-400">{description}</p>}
+  </div>
+);
+
+const HeroHeader = ({ badgeIcon, badge, title, accent, subtitle, actions, stats = [] }) => (
+  <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+    <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+    <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+    <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
+    {badgeIcon && (
+      <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
+        {badgeIcon}
+      </div>
+    )}
+    <div className="relative z-10 px-6 py-7 sm:px-8">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          {badge && (
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-orange-300">
+              {badgeIcon}
+              {badge}
+            </div>
+          )}
+          <h1 className="text-2xl font-bold text-white">
+            {title} {accent && <span className="text-orange-400">{accent}</span>}
+          </h1>
+          {subtitle && <p className="mt-1 text-sm text-white/60">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap gap-2 xl:min-w-max">{actions}</div>}
+      </div>
+      {stats.length > 0 && (
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {stats.map((stat, i) => (
+            <div key={i} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${stat.iconBg || "bg-orange-500/15"}`}>
+                <span className={stat.iconColor || "text-orange-400"}>{stat.icon}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">{stat.label}</p>
+                <p className={`text-white font-bold text-lg leading-tight ${stat.valueColor || ""}`}>
+                  {stat.value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// ─── Palette — matches Inventory Report (warm cream + orange) ─────
+const PANEL_BG = "#FFFFFF";
+const PANEL_BG_2 = "#FFF7ED";
+const BORDER = "rgba(234,88,12,0.10)";
+const TEXT = "#292524";
+const MUTED = "#78716C";
+const FAINT = "#A8A29E";
+const ACCENT = "#EA580C";
+const ACCENT_DEEP = "#F97316";
+const ACCENT_SOFT = "rgba(234,88,12,0.12)";
+const AMBER = "#D97706";
 const AMBER_SOFT = "rgba(245,158,11,0.15)";
-const GREEN = "#22D3A8";
-const GREEN_SOFT = "rgba(34,211,168,0.12)";
-const RED = "#EF4444";
-const RED_SOFT = "rgba(239,68,68,0.15)";
+const GREEN = "#16A34A";
+const GREEN_SOFT = "rgba(22,163,74,0.12)";
+const RED = "#DC2626";
+const RED_SOFT = "rgba(220,38,38,0.12)";
 
 // Inline style tokens
-const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const FIELD_LABEL = { color: "#451A03", fontWeight: 500 };
 const GRADIENT_BTN = {
-  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  background: "linear-gradient(135deg, #EA580C, #F97316)",
   border: "none",
-  color: "#1F1A2E",
-  fontWeight: 700,
-  boxShadow: "none",
+  color: "#FFFFFF",
+  fontWeight: 600,
+  boxShadow: "0 4px 15px rgba(234,88,12,0.35)",
 };
 const SECONDARY_BTN = {
-  background: PANEL_BG_2,
-  border: `1px solid ${BORDER}`,
-  color: TEXT,
+  background: "#FFFFFF",
+  border: `1px solid ${ACCENT}`,
+  color: ACCENT,
   fontWeight: 500,
 };
 const GHOST_BTN = {
   background: "transparent",
-  border: `1px solid ${ACCENT}40`,
+  border: `1px solid ${ACCENT}80`,
   color: ACCENT,
   fontWeight: 500,
 };
 const RED_BTN = {
-  background: "linear-gradient(135deg, #EF4444, #DC2626)",
+  background: "linear-gradient(135deg, #DC2626, #EF4444)",
   border: "none",
   color: "#FFFFFF",
-  fontWeight: 700,
-  boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+  fontWeight: 600,
+  boxShadow: "0 4px 15px rgba(220,38,38,0.3)",
 };
 
 const { TextArea } = Input;
@@ -115,11 +219,11 @@ function SupplyRequest() {
   const statusTag = (status) => {
     const m = {
       pending: { soft: AMBER_SOFT, color: AMBER, icon: <ClockCircleOutlined />, text: "Pending" },
-      approved: { soft: GREEN_SOFT, color: ACCENT, icon: <CheckCircleOutlined />, text: "Approved" },
-      rejected: { soft: RED_SOFT, color: "#F87171", icon: <CloseCircleOutlined />, text: "Rejected" },
+      approved: { soft: GREEN_SOFT, color: GREEN, icon: <CheckCircleOutlined />, text: "Approved" },
+      rejected: { soft: RED_SOFT, color: "#DC2626", icon: <CloseCircleOutlined />, text: "Rejected" },
     };
     const c = m[status] || m.pending;
-    return <Tag className="rounded-full px-3 py-1" icon={c.icon} style={{ background: c.soft, color: c.color, border: `1px solid ${c.color}30` }}>{c.text}</Tag>;
+    return <Tag className="rounded-full px-3 py-1" icon={c.icon} style={{ background: c.soft, color: c.color, border: "none", fontWeight: 600 }}>{c.text}</Tag>;
   };
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
@@ -130,7 +234,7 @@ function SupplyRequest() {
       key: "staff",
       render: (_, r) => (
         <div>
-          <div className="font-semibold">{r.user?.firstname} {r.user?.lastname}</div>
+          <div className="font-semibold" style={{ color: TEXT }}>{r.user?.firstname} {r.user?.lastname}</div>
           <div className="text-xs" style={{ color: MUTED }}>ID: {r.user?.id}</div>
         </div>
       ),
@@ -140,7 +244,7 @@ function SupplyRequest() {
       key: "product",
       render: (_, r) => (
         <div>
-          <div className="font-semibold">{r.product?.name}</div>
+          <div className="font-semibold" style={{ color: TEXT }}>{r.product?.name}</div>
           <div className="text-xs" style={{ color: MUTED }}>Qty: {r.quantity}</div>
         </div>
       ),
@@ -174,8 +278,8 @@ function SupplyRequest() {
       title: "Processed At",
       key: "processed",
       render: (_, r) => {
-        if (r.status === "approved" && r.approved_at) return <span style={{ color: ACCENT }}>{fmtDate(r.approved_at)}</span>;
-        if (r.status === "rejected" && r.rejected_at) return <span style={{ color: "#F87171" }}>{fmtDate(r.rejected_at)}</span>;
+        if (r.status === "approved" && r.approved_at) return <span style={{ color: GREEN }}>{fmtDate(r.approved_at)}</span>;
+        if (r.status === "rejected" && r.rejected_at) return <span style={{ color: "#DC2626" }}>{fmtDate(r.rejected_at)}</span>;
         return <span style={{ color: MUTED }}>-</span>;
       },
     },
@@ -193,7 +297,7 @@ function SupplyRequest() {
           {r.status === "pending" && (
             <>
               <Tooltip title="Approve">
-                <Button type="primary" size="small" icon={<CheckOutlined />}
+                <Button size="small" icon={<CheckOutlined />}
                   onClick={() => { setSelected(r); setShowApproveModal(true); }}
                   style={GRADIENT_BTN}>
                   Approve
@@ -223,77 +327,29 @@ function SupplyRequest() {
   };
 
   return (
-    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
-      
+    <PageShell>
+      <HeroHeader
+        badgeIcon={<InboxOutlined />}
+        badge="Supply Center"
+        title="Supply Request"
+        accent="Management"
+        subtitle="Approve or reject staff supply requests"
+        stats={[
+          { icon: <InboxOutlined />, iconBg: "bg-orange-500/15", iconColor: "text-orange-400", label: "Total Requests", value: stats.total },
+          { icon: <ClockCircleOutlined />, iconBg: "bg-amber-500/15", iconColor: "text-amber-400", label: "Pending", value: stats.pending, valueColor: "text-amber-300" },
+          { icon: <CheckCircleOutlined />, iconBg: "bg-green-500/15", iconColor: "text-green-400", label: "Approved", value: stats.approved, valueColor: "text-green-300" },
+          { icon: <InboxOutlined />, iconBg: "bg-orange-500/15", iconColor: "text-orange-400", label: "Approved Qty", value: `${stats.totalQty} pcs` },
+        ]}
+      />
 
-      {/* Header */}
-      <div
-        className="mb-6 overflow-hidden rounded-2xl"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-      >
-        <div className="relative px-8 py-6">
-          {/* Decorative circles */}
-          <div className="absolute right-0 top-0 opacity-10">
-            <div className="-mr-32 -mt-32 h-64 w-64 rounded-full" style={{ background: ACCENT }} />
-          </div>
-          <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
-          </div>
-
-          {/* Accent line */}
-          <div
-            className="absolute left-0 right-0 top-0 h-1"
-            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
-          />
-
-          <div className="relative z-10 flex items-center justify-between">
-            <div>
-              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
-                <InboxOutlined className="mr-2" style={{ color: ACCENT }} />
-                Supply Request Management
-              </h1>
-              <p className="text-sm" style={{ color: MUTED }}>
-                Approve or reject staff supply requests
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Stats in Header */}
-          <div className="relative z-10 mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="text-xs" style={{ color: MUTED }}>Total Requests</p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.total}</p>
-            </div>
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="text-xs" style={{ color: MUTED }}>Pending</p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.pending}</p>
-            </div>
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="text-xs" style={{ color: MUTED }}>Approved</p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.approved}</p>
-            </div>
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="text-xs" style={{ color: MUTED }}>Approved Qty</p>
-              <p className="mt-1 text-xl font-bold" style={{ color: ACCENT }}>{stats.totalQty} pcs</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <Card
-        className="mb-6"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
-      >
-        <Space>
-          <span className="text-sm font-medium" style={{ color: MUTED }}>Filter by status:</span>
+      <div className="mb-6">
+        <FilterBar title="Filters" subtitle="Narrow down the supply requests">
+          <span className="text-sm font-semibold text-stone-700">Filter by status:</span>
           <Select
             value={statusFilter}
             onChange={setStatusFilter}
             style={{ width: 150 }}
             className="rounded-xl"
-            popupClassName="nm-dark-select-dropdown"
           >
             <Select.Option value="all">All</Select.Option>
             <Select.Option value="pending">Pending</Select.Option>
@@ -304,37 +360,18 @@ function SupplyRequest() {
             icon={<ReloadOutlined />}
             onClick={() => refetch()}
             loading={isLoading}
-            style={GHOST_BTN}
+            className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316]"
           >
             Refresh
           </Button>
-        </Space>
-      </Card>
-
-      {/* Requests Section */}
-      <div className="mb-4">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
-              <InboxOutlined className="mr-2" style={{ color: ACCENT }} />
-              Supply Requests
-            </h2>
-            <p className="mt-1 text-sm" style={{ color: MUTED }}>
-              Review and process staff supply requests
-            </p>
-          </div>
-          <Tag
-            className="rounded-full px-3 py-1 text-sm"
-            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-          >
-            {filtered.length} request(s)
-          </Tag>
-        </div>
+        </FilterBar>
       </div>
 
-      <Card
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
+      <SectionCard
+        icon={<InboxOutlined />}
+        title="Supply Requests"
+        subtitle="Review and process staff supply requests"
+        extra={<CountPill>{filtered.length} request(s)</CountPill>}
       >
         <Table
           columns={columns}
@@ -344,32 +381,26 @@ function SupplyRequest() {
           pagination={clientPagination({ label: "requests" })}
           locale={{
             emptyText: (
-              <div className="py-10 text-center">
-                <div
-                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
-                  style={{ background: ACCENT_SOFT, color: ACCENT }}
-                >
-                  <InboxOutlined className="text-3xl" />
-                </div>
-                <p className="font-semibold" style={{ color: TEXT }}>No supply requests found</p>
-                <p className="text-sm" style={{ color: MUTED }}>Try adjusting your filter</p>
-              </div>
+              <TableEmpty
+                icon={<InboxOutlined />}
+                title="No supply requests found"
+                description="Try adjusting your filter"
+              />
             ),
           }}
         />
-      </Card>
+      </SectionCard>
 
       {/* Approve Modal */}
       <Modal
         title={
           <div className="flex items-center gap-2">
             <div
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
-              style={{ background: ACCENT_SOFT, color: ACCENT }}
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg bg-[#FFF1E6] text-[#EA580C]"
             ><CheckOutlined /></div>
             <div>
-              <p className="font-bold" style={{ color: TEXT }}>Approve Supply Request</p>
-              <p className="text-xs font-normal" style={{ color: MUTED }}>Approve this staff supply request</p>
+              <p className="font-bold text-[#451A03]">Approve Supply Request</p>
+              <p className="text-xs font-normal text-stone-500">Approve this staff supply request</p>
             </div>
           </div>
         }
@@ -380,17 +411,17 @@ function SupplyRequest() {
         className="rounded-2xl"
       >
         {selected && (
-          <div className="mb-4 rounded-xl p-4" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
-            <div className="font-semibold" style={{ color: TEXT }}>{selected.user?.firstname} {selected.user?.lastname}</div>
-            <div className="font-bold" style={{ color: ACCENT }}>{selected.product?.name}</div>
-            <div className="text-sm" style={{ color: MUTED }}>Quantity: {selected.quantity}</div>
-            <div className="text-sm" style={{ color: MUTED }}>Branch: {selected.branch?.name}</div>
-            {selected.reason && <div className="mt-1 text-sm" style={{ color: MUTED }}>Reason: {selected.reason}</div>}
+          <div className="mb-4 rounded-xl border border-orange-100 bg-[#FFF1E6] p-4">
+            <div className="font-semibold text-stone-800">{selected.user?.firstname} {selected.user?.lastname}</div>
+            <div className="font-bold text-[#EA580C]">{selected.product?.name}</div>
+            <div className="text-sm text-stone-500">Quantity: {selected.quantity}</div>
+            <div className="text-sm text-stone-500">Branch: {selected.branch?.name}</div>
+            {selected.reason && <div className="mt-1 text-sm text-stone-500">Reason: {selected.reason}</div>}
           </div>
         )}
         <Form form={approveForm} layout="vertical" onFinish={handleApprove} initialValues={{ admin_notes: "" }}>
           <Form.Item
-            label={<span className="text-sm font-semibold" style={{ color: TEXT }}>Admin Notes (Optional)</span>}
+            label={<span style={FIELD_LABEL} className="text-sm font-semibold">Admin Notes (Optional)</span>}
             name="admin_notes"
             rules={[{ max: 500, message: "Notes cannot exceed 500 characters" }]}
           >
@@ -403,8 +434,8 @@ function SupplyRequest() {
               className="rounded-xl"
             />
           </Form.Item>
-          <div className="mb-4 rounded-xl p-3" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
-            <p className="mb-0 text-xs" style={{ color: ACCENT }}>
+          <div className="mb-4 rounded-xl border border-orange-100 bg-[#FFF1E6] p-3">
+            <p className="mb-0 text-xs text-[#EA580C]">
               <InfoCircleOutlined className="mr-1" />
               This action will approve the supply request and notify the staff member.
             </p>
@@ -414,16 +445,16 @@ function SupplyRequest() {
               <Button
                 onClick={() => { setShowApproveModal(false); approveForm.resetFields(); setSelected(null); }}
                 disabled={approveMutation.isPending}
-                style={SECONDARY_BTN}
+                className="rounded-xl"
               >
                 Cancel
               </Button>
               <Button
-                type="primary"
                 htmlType="submit"
                 loading={approveMutation.isPending}
                 icon={<CheckOutlined />}
                 style={GRADIENT_BTN}
+                className="rounded-xl"
               >
                 Approve
               </Button>
@@ -437,12 +468,11 @@ function SupplyRequest() {
         title={
           <div className="flex items-center gap-2">
             <div
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
-              style={{ background: RED_SOFT, color: "#F87171" }}
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg bg-[#FEF2F2] text-[#DC2626]"
             ><CloseOutlined /></div>
             <div>
-              <p className="font-bold" style={{ color: TEXT }}>Reject Supply Request</p>
-              <p className="text-xs font-normal" style={{ color: MUTED }}>Reject this staff supply request</p>
+              <p className="font-bold text-[#451A03]">Reject Supply Request</p>
+              <p className="text-xs font-normal text-stone-500">Reject this staff supply request</p>
             </div>
           </div>
         }
@@ -453,17 +483,17 @@ function SupplyRequest() {
         className="rounded-2xl"
       >
         {selected && (
-          <div className="mb-4 rounded-xl p-4" style={{ background: RED_SOFT, border: `1px solid ${RED}30` }}>
-            <div className="font-semibold" style={{ color: TEXT }}>{selected.user?.firstname} {selected.user?.lastname}</div>
-            <div className="font-bold" style={{ color: "#F87171" }}>{selected.product?.name}</div>
-            <div className="text-sm" style={{ color: MUTED }}>Quantity: {selected.quantity}</div>
-            <div className="text-sm" style={{ color: MUTED }}>Branch: {selected.branch?.name}</div>
-            {selected.reason && <div className="mt-1 text-sm" style={{ color: MUTED }}>Reason: {selected.reason}</div>}
+          <div className="mb-4 rounded-xl border border-red-100 bg-[#FEF2F2] p-4">
+            <div className="font-semibold text-stone-800">{selected.user?.firstname} {selected.user?.lastname}</div>
+            <div className="font-bold text-[#DC2626]">{selected.product?.name}</div>
+            <div className="text-sm text-stone-500">Quantity: {selected.quantity}</div>
+            <div className="text-sm text-stone-500">Branch: {selected.branch?.name}</div>
+            {selected.reason && <div className="mt-1 text-sm text-stone-500">Reason: {selected.reason}</div>}
           </div>
         )}
         <Form form={rejectForm} layout="vertical" onFinish={handleReject} initialValues={{ admin_notes: "" }}>
           <Form.Item
-            label={<span className="text-sm font-semibold" style={{ color: TEXT }}>Rejection Reason (Optional)</span>}
+            label={<span style={FIELD_LABEL} className="text-sm font-semibold">Rejection Reason (Optional)</span>}
             name="admin_notes"
             rules={[{ max: 500, message: "Reason cannot exceed 500 characters" }]}
           >
@@ -476,8 +506,8 @@ function SupplyRequest() {
               className="rounded-xl"
             />
           </Form.Item>
-          <div className="mb-4 rounded-xl p-3" style={{ background: RED_SOFT, border: `1px solid ${RED}30` }}>
-            <p className="mb-0 text-xs" style={{ color: "#F87171" }}>
+          <div className="mb-4 rounded-xl border border-red-100 bg-[#FEF2F2] p-3">
+            <p className="mb-0 text-xs text-[#DC2626]">
               <InfoCircleOutlined className="mr-1" />
               This action will reject the supply request and notify the staff member.
             </p>
@@ -487,7 +517,7 @@ function SupplyRequest() {
               <Button
                 onClick={() => { setShowRejectModal(false); rejectForm.resetFields(); setSelected(null); }}
                 disabled={rejectMutation.isPending}
-                style={SECONDARY_BTN}
+                className="rounded-xl"
               >
                 Cancel
               </Button>
@@ -496,6 +526,7 @@ function SupplyRequest() {
                 loading={rejectMutation.isPending}
                 icon={<CloseOutlined />}
                 style={RED_BTN}
+                className="rounded-xl"
               >
                 Reject
               </Button>
@@ -503,7 +534,7 @@ function SupplyRequest() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 

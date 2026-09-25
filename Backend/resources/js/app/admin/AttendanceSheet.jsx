@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Tag, Button, Space, DatePicker, Input, message } from "antd";
+import { Table, Tag, Button, DatePicker, Input, message } from "antd";
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -12,43 +12,146 @@ import {
 import dayjs from "dayjs";
 import { api } from "@/config/api";
 import { clientPagination, serverPagination } from "@/components/Pagination";
+const PageShell = ({ children }) => (
+  <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">{children}</div>
+);
 
-// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
-const PANEL_BG = "#2A2438";
-const PANEL_BG_2 = "#332C45";
-const BORDER = "rgba(255,255,255,0.06)";
-const TEXT = "#FFFFFF";
-const MUTED = "#A5A0B5";
-const FAINT = "#6E6A7E";
-const ACCENT = "#22D3A8";
-const ACCENT_DEEP = "#16B48C";
-const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const CountPill = ({ children }) => (
+  <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+    {children}
+  </span>
+);
+
+const SectionCard = ({ icon, title, subtitle, extra, children, className = "" }) => (
+  <div className={`rounded-2xl border border-orange-100 bg-white shadow-sm ${className}`}>
+    {(title || extra) && (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+        <div className="flex items-center gap-3">
+          {icon && (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              {icon}
+            </div>
+          )}
+          <div>
+            <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+            {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}
+          </div>
+        </div>
+        {extra}
+      </div>
+    )}
+    <div className="p-4">{children}</div>
+  </div>
+);
+
+const FilterBar = ({ title = "Filters", subtitle = "Narrow down the view", children }) => (
+  <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
+    <div className="mb-4 flex items-center gap-3">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+        <SearchOutlined />
+      </div>
+      <div>
+        <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+        <p className="text-xs text-stone-500">{subtitle}</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap items-center gap-3">{children}</div>
+  </div>
+);
+
+const TableEmpty = ({ icon, title, description }) => (
+  <div className="py-10 text-center">
+    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+      {icon}
+    </div>
+    <p className="text-base font-semibold text-stone-700">{title}</p>
+    {description && <p className="mt-1 text-sm text-stone-400">{description}</p>}
+  </div>
+);
+
+const HeroHeader = ({ badgeIcon, badge, title, accent, subtitle, actions, stats = [] }) => (
+  <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+    <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+    <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+    <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
+    {badgeIcon && (
+      <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
+        {badgeIcon}
+      </div>
+    )}
+    <div className="relative z-10 px-6 py-7 sm:px-8">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          {badge && (
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-orange-300">
+              {badgeIcon}
+              {badge}
+            </div>
+          )}
+          <h1 className="text-2xl font-bold text-white">
+            {title} {accent && <span className="text-orange-400">{accent}</span>}
+          </h1>
+          {subtitle && <p className="mt-1 text-sm text-white/60">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap gap-2 xl:min-w-max">{actions}</div>}
+      </div>
+      {stats.length > 0 && (
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {stats.map((stat, i) => (
+            <div key={i} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${stat.iconBg || "bg-orange-500/15"}`}>
+                <span className={stat.iconColor || "text-orange-400"}>{stat.icon}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">{stat.label}</p>
+                <p className={`text-white font-bold text-lg leading-tight ${stat.valueColor || ""}`}>
+                  {stat.value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// ─── Palette — light warm-cream + orange (matches Inventory Report) ─────
+const PANEL_BG = "#FFFFFF";
+const PANEL_BG_2 = "#FFEDD5";
+const BORDER = "#FFEDD5";
+const TEXT = "#292524";
+const MUTED = "#78716C";
+const FAINT = "#A8A29E";
+const ACCENT = "#EA580C";
+const ACCENT_DEEP = "#F97316";
+const ACCENT_SOFT = "rgba(234,88,12,0.12)";
 const AMBER = "#F59E0B";
 const AMBER_SOFT = "rgba(245,158,11,0.15)";
-const GREEN = "#22D3A8";
-const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const GREEN = "#16A34A";
+const GREEN_SOFT = "rgba(22,163,74,0.12)";
 const RED = "#EF4444";
 const RED_SOFT = "rgba(239,68,68,0.15)";
 
 // Inline style tokens
-const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const FIELD_LABEL = { color: "#451A03", fontWeight: 500 };
 const GRADIENT_BTN = {
-  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  background: "linear-gradient(135deg, #EA580C, #F97316)",
   border: "none",
-  color: "#1F1A2E",
+  color: "#FFFFFF",
   fontWeight: 700,
-  boxShadow: "none",
+  boxShadow: "0 4px 15px rgba(234,88,12,0.35)",
 };
 const SECONDARY_BTN = {
-  background: PANEL_BG_2,
-  border: `1px solid ${BORDER}`,
-  color: TEXT,
+  background: "#FFFFFF",
+  border: "1px solid #EA580C",
+  color: "#EA580C",
   fontWeight: 500,
 };
 const GHOST_BTN = {
   background: "transparent",
-  border: `1px solid ${ACCENT}40`,
-  color: ACCENT,
+  border: "1px solid #EA580C",
+  color: "#EA580C",
   fontWeight: 500,
 };
 
@@ -112,16 +215,16 @@ function AttendanceView() {
   const statusTag = (status) => {
     const normalized = String(status).toLowerCase().trim();
     if (normalized === "present" || normalized === "completed") {
-      return <Tag className="rounded-full px-3 py-1" icon={<CheckCircleOutlined />} style={{ background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>Present</Tag>;
+      return <Tag className="rounded-full px-3 py-1" icon={<CheckCircleOutlined />} style={{ background: GREEN_SOFT, color: GREEN, border: `1px solid ${GREEN}30` }}>Present</Tag>;
     }
     if (normalized === "completed_late") {
-      return <Tag className="rounded-full px-3 py-1" icon={<CheckCircleOutlined />} style={{ background: GREEN_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}>Completed (Late)</Tag>;
+      return <Tag className="rounded-full px-3 py-1" icon={<CheckCircleOutlined />} style={{ background: GREEN_SOFT, color: GREEN, border: `1px solid ${GREEN}30` }}>Completed (Late)</Tag>;
     }
     if (normalized === "late") {
       return <Tag className="rounded-full px-3 py-1" icon={<ClockCircleOutlined />} style={{ background: AMBER_SOFT, color: AMBER, border: `1px solid ${AMBER}30` }}>Late</Tag>;
     }
     if (normalized === "absent") {
-      return <Tag className="rounded-full px-3 py-1" icon={<CloseCircleOutlined />} style={{ background: RED_SOFT, color: "#F87171", border: `1px solid ${RED}30` }}>Absent</Tag>;
+      return <Tag className="rounded-full px-3 py-1" icon={<CloseCircleOutlined />} style={{ background: RED_SOFT, color: "#EF4444", border: `1px solid ${RED}30` }}>Absent</Tag>;
     }
     return <Tag style={{ background: PANEL_BG_2, color: MUTED, border: "none" }}>{status || "Unknown"}</Tag>;
   };
@@ -198,128 +301,74 @@ function AttendanceView() {
   ];
 
   return (
-    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
-      
+    <PageShell>
+      <HeroHeader
+        badgeIcon={<TeamOutlined />}
+        badge="Staff Management"
+        title="Attendance"
+        accent="Records"
+        subtitle={`Staff attendance for ${dayjs(selectedDate).format("MMMM D, YYYY")}`}
+        stats={[
+          {
+            icon: <CheckCircleOutlined />,
+            iconColor: "text-emerald-400",
+            label: "Present",
+            value: stats.present,
+          },
+          {
+            icon: <ClockCircleOutlined />,
+            iconColor: "text-amber-400",
+            label: "Late",
+            value: stats.late,
+          },
+          {
+            icon: <CloseCircleOutlined />,
+            iconColor: "text-red-400",
+            label: "Absent",
+            value: stats.absent,
+          },
+          {
+            icon: <UserOutlined />,
+            iconColor: "text-orange-400",
+            label: "Total Staff",
+            value: totalStaff,
+          },
+        ]}
+      />
 
-      {/* Hero Header */}
-      <div
-        className="mb-6 overflow-hidden rounded-2xl"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-      >
-        <div className="relative px-8 py-6">
-          <div className="absolute right-0 top-0 opacity-10">
-            <div className="-mr-32 -mt-32 h-64 w-64 rounded-full" style={{ background: ACCENT }} />
-          </div>
-          <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
-          </div>
-          <div
-            className="absolute left-0 right-0 top-0 h-1"
-            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
-          />
+      <FilterBar title="Filters" subtitle="Select a date to view staff attendance">
+        <DatePicker
+          value={dayjs(selectedDate)}
+          onChange={(date) => {
+            if (date) setSelectedDate(date.format("YYYY-MM-DD"));
+          }}
+          allowClear={false}
+          className="rounded-xl"
+        />
+        <Input
+          placeholder="Search staff..."
+          prefix={<SearchOutlined />}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: 220 }}
+          allowClear
+          className="rounded-xl"
+        />
+        <Button
+          icon={<ReloadOutlined />}
+          onClick={loadAttendanceData}
+          loading={isLoading}
+          className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316]"
+        >
+          Refresh
+        </Button>
+      </FilterBar>
 
-          <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
-                <TeamOutlined className="mr-2" style={{ color: ACCENT }} />
-                Attendance Records
-              </h1>
-              <p className="text-sm" style={{ color: MUTED }}>
-                Staff attendance for {dayjs(selectedDate).format("MMMM D, YYYY")}
-              </p>
-            </div>
-          </div>
-
-          {/* KPI Chips */}
-          <div className="relative z-10 mt-4 grid grid-cols-3 gap-3">
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <CheckCircleOutlined style={{ color: ACCENT }} /> Present
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.present}</p>
-            </div>
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <ClockCircleOutlined style={{ color: AMBER }} /> Late
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.late}</p>
-            </div>
-            <div className="rounded-2xl px-4 py-3" style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}>
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <CloseCircleOutlined style={{ color: RED }} /> Absent
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{stats.absent}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <Card
-        className="mb-6"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
-      >
-        <Space wrap>
-          <DatePicker
-            value={dayjs(selectedDate)}
-            onChange={(date) => {
-              if (date) setSelectedDate(date.format("YYYY-MM-DD"));
-            }}
-            allowClear={false}
-            className="rounded-xl"
-            popupClassName="nm-dark-select-dropdown"
-          />
-          <Input
-            placeholder="Search staff..."
-            prefix={<SearchOutlined />}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: 220 }}
-            allowClear
-            className="rounded-xl"
-          />
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={loadAttendanceData}
-            loading={isLoading}
-            style={GHOST_BTN}
-          >
-            Refresh
-          </Button>
-        </Space>
-      </Card>
-
-      {/* Section Header */}
-      <div className="mb-4">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-lg"
-              style={{ background: ACCENT_SOFT, color: ACCENT }}
-            >
-              <UserOutlined />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold" style={{ color: TEXT }}>Attendance Records</h2>
-              <p className="text-sm" style={{ color: MUTED }}>
-                Staff attendance for {dayjs(selectedDate).format("MMMM D, YYYY")}
-              </p>
-            </div>
-          </div>
-          <Tag
-            className="rounded-full px-3 py-1 text-sm"
-            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-          >
-            {filteredData.length} record{filteredData.length !== 1 ? 's' : ''}
-          </Tag>
-        </div>
-      </div>
-
-      {/* Table */}
-      <Card
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
+      <SectionCard
+        icon={<UserOutlined />}
+        title="Attendance Records"
+        subtitle={`Staff attendance for ${dayjs(selectedDate).format("MMMM D, YYYY")}`}
+        extra={<CountPill>{filteredData.length} record{filteredData.length !== 1 ? 's' : ''}</CountPill>}
       >
         <Table
           columns={columns}
@@ -329,21 +378,16 @@ function AttendanceView() {
           pagination={clientPagination({ label: "records" })}
           locale={{
             emptyText: (
-              <div className="py-10 text-center">
-                <div
-                  className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl"
-                  style={{ background: ACCENT_SOFT, color: ACCENT }}
-                >
-                  <TeamOutlined className="text-3xl" />
-                </div>
-                <p className="font-semibold" style={{ color: TEXT }}>No attendance records found</p>
-                <p className="text-sm" style={{ color: MUTED }}>Try selecting a different date</p>
-              </div>
+              <TableEmpty
+                icon={<UserOutlined style={{ fontSize: 20 }} />}
+                title="No attendance records found"
+                description="Try selecting a different date"
+              />
             ),
           }}
         />
-      </Card>
-    </div>
+      </SectionCard>
+    </PageShell>
   );
 }
 

@@ -8,7 +8,6 @@ use App\Models\Notification;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\ProductStockDelivery;
-use App\Models\StockAdjustment;
 use App\Models\StockBatch;
 use App\Models\ManualStockOut;
 use Illuminate\Http\Request;
@@ -201,7 +200,7 @@ class ProductController extends Controller
         return response()->json(['message' => 'Restocked successfully', 'delivery' => $delivery]);
     }
 
-    public function stockOut(Request $request, $id)
+    public function pullOut(Request $request, $id)
     {
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
@@ -264,12 +263,12 @@ class ProductController extends Controller
             $entry->load(['product', 'branch', 'creator']);
 
             return response()->json([
-                'message' => 'Stock out recorded successfully',
-                'stock_out' => $entry,
+                'message' => 'Pull out recorded successfully',
+                'pull_out' => $entry,
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Stock out failed', 'error' => $e->getMessage()], 422);
+            return response()->json(['message' => 'Pull out failed', 'error' => $e->getMessage()], 422);
         }
     }
 
@@ -323,115 +322,6 @@ class ProductController extends Controller
             DB::rollBack();
             return response()->json(['message' => 'Failed to reverse stock out', 'error' => $e->getMessage()], 500);
         }
-    }
-
-    public function adjustStock(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'branch_id' => 'required|exists:branches,id',
-            'actual_quantity' => 'required|numeric|min:0',
-            'reason' => 'required|string|max:255',
-            'adjusted_at' => 'nullable|date',
-        ]);
-
-        $actualQty = round((float) $validated['actual_quantity'], 2);
-
-        DB::beginTransaction();
-        try {
-            $stock = ProductStock::where('product_id', (int) $id)
-                ->where('branch_id', $validated['branch_id'])
-                ->first();
-
-            $systemQty = round((float) ($stock->quantity ?? 0), 2);
-            $difference = round($actualQty - $systemQty, 2);
-
-            if (!$stock) {
-                // Bedo no stock row? Create one starting from actual count.
-                $stock = ProductStock::create([
-                    'product_id' => (int) $id,
-                    'branch_id' => $validated['branch_id'],
-                    'quantity' => max(0, $actualQty),
-                    'received' => true,
-                ]);
-            } else {
-                // Positive adjustment (actual > system): add a batch so FIFO stays intact.
-                if ($difference > 0) {
-                    StockBatch::create([
-                        'product_id' => (int) $id,
-                        'branch_id' => $validated['branch_id'],
-                        'quantity' => $difference,
-                        'remaining' => $difference,
-                        'received_at' => !empty($validated['adjusted_at'])
-                            ? \Carbon\Carbon::parse($validated['adjusted_at'])->setTimezone('Asia/Manila')
-                            : \Carbon\Carbon::now('Asia/Manila'),
-                        'source_type' => 'stock_adjustment',
-                        'source_id' => null,
-                    ]);
-                }
-
-                // Negative adjustment (actual < system): deduct from oldest batches first (FIFO).
-                if ($difference < 0) {
-                    $remainingQty = abs($difference);
-                    $batches = StockBatch::where('product_id', (int) $id)
-                        ->where('branch_id', $validated['branch_id'])
-                        ->where('remaining', '>', 0)
-                        ->orderBy('received_at')
-                        ->orderBy('id')
-                        ->get();
-
-                    foreach ($batches as $batch) {
-                        if ($remainingQty <= 0) break;
-                        $deduct = min($batch->remaining, $remainingQty);
-                        $batch->decrement('remaining', $deduct);
-                        $remainingQty -= $deduct;
-                    }
-                }
-
-                $stock->update(['quantity' => max(0, $actualQty)]);
-            }
-
-            $entry = StockAdjustment::create([
-                'product_id' => (int) $id,
-                'branch_id' => $validated['branch_id'],
-                'system_quantity' => $systemQty,
-                'actual_quantity' => $actualQty,
-                'difference' => $difference,
-                'reason' => $validated['reason'],
-                'adjusted_at' => $validated['adjusted_at'] ?? now()->toDateString(),
-                'adjusted_by' => $request->user()?->id,
-            ]);
-
-            DB::commit();
-
-            $entry->load(['product', 'branch', 'adjuster']);
-
-            return response()->json([
-                'message' => 'Stock adjusted successfully',
-                'adjustment' => $entry,
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Stock adjustment failed', 'error' => $e->getMessage()], 422);
-        }
-    }
-
-    public function adjustmentHistory(Request $request)
-    {
-        $user = $request->user();
-
-        $query = StockAdjustment::with(['product', 'branch', 'adjuster'])
-            ->orderByDesc('created_at');
-
-        // Staff see only their own adjustments; admin sees all (audit trail).
-        if (!$user || $user->role !== 'admin') {
-            $query->where('adjusted_by', $user?->id);
-        }
-
-        $rows = $request->has('per_page')
-            ? $query->paginate((int) $request->per_page)
-            : $query->get();
-
-        return response()->json($rows);
     }
 
     public function pendingCount(Request $request)

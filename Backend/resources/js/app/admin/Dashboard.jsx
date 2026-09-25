@@ -569,7 +569,7 @@ function Dashboard() {
           color = "#F59E0B";
         } else {
           status = "Healthy";
-          color = "#22D3A8";
+          color = "#16A34A";
         }
 
         if (qty < min) {
@@ -592,21 +592,21 @@ function Dashboard() {
 
   const navigateTo = (path) => navigate(path);
 
-  // ─── Palette — matches MenuSidebar (dark plum + mint) ───────────
-  const PAGE_BG = "#1F1A2E";
-  const PANEL_BG = "#2A2438";
-  const PANEL_BG_2 = "#332C45";
-  const BORDER = "rgba(255,255,255,0.06)";
-  const TEXT = "#FFFFFF";
-  const MUTED = "#A5A0B5";
-  const FAINT = "#6E6A7E";
-  const ACCENT = "#22D3A8";
-  const ACCENT_DEEP = "#16B48C";
-  const ACCENT_SOFT = "rgba(34,211,168,0.12)";
-  const AMBER = "#F59E0B";
-  const AMBER_SOFT = "rgba(245,158,11,0.15)";
-  const GREEN = "#22D3A8";
-  const GREEN_SOFT = "rgba(34,211,168,0.12)";
+  // ─── Palette — light warm cream + orange ─────────────────────────
+  const PAGE_BG = "#FFF7ED";
+  const PANEL_BG = "#FFFFFF";
+  const PANEL_BG_2 = "#FFF7ED";
+  const BORDER = "rgba(234,88,12,0.10)";
+  const TEXT = "#292524";
+  const MUTED = "#78716C";
+  const FAINT = "#A8A29E";
+  const ACCENT = "#EA580C";
+  const ACCENT_DEEP = "#F97316";
+  const ACCENT_SOFT = "rgba(234,88,12,0.12)";
+  const AMBER = "#D97706";
+  const AMBER_SOFT = "rgba(217,119,6,0.12)";
+  const GREEN = "#16A34A";
+  const GREEN_SOFT = "rgba(22,163,74,0.12)";
   const RED = "#EF4444";
   const RED_SOFT = "rgba(239,68,68,0.15)";
 
@@ -618,7 +618,7 @@ function Dashboard() {
     { key: "ready", label: "Ready", color: "#D97706" },
     { key: "picked_up", label: "Picked Up", color: "#A78BFA" },
     { key: "out_for_delivery", label: "Out for Delivery", color: "#F97316" },
-    { key: "delivered", label: "Delivered", color: ACCENT },
+    { key: "delivered", label: "Delivered", color: GREEN },
     { key: "cancelled", label: "Cancelled", color: RED },
   ];
 
@@ -641,20 +641,27 @@ function Dashboard() {
     (d) => Number(d.orders) > 0 || Number(d.revenue) > 0
   );
 
-  // ─── Palette — matches MenuSidebar (dark plum + mint) ───────────
+  // ─── Dashboard view ────────────────────────────────────────────
   return (
-    <div className="min-h-screen" style={{ background: PAGE_BG }}>
+    <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">
       {/* =========================================================
           PAGE TITLE
       ========================================================= */}
-      <section className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight" style={{ color: TEXT }}>
-          {getGreeting()}
-          {userName ? `, ${userName}` : ""}
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: MUTED }}>
-          Welcome back to NewMoon Lechon Manok and Liempo House!
-        </p>
+      <section className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 px-6 py-7 shadow-[0_20px_50px_rgba(67,20,7,0.20)] sm:px-8">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/10 blur-2xl" />
+        <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[100px] leading-none text-white/5">
+          <ShopOutlined />
+        </div>
+        <div className="relative z-10">
+          <h1 className="text-2xl font-bold text-white">
+            {getGreeting()}
+            {userName ? <>, <span className="text-orange-400">{userName}</span></> : ""}
+          </h1>
+          <p className="mt-1 text-sm text-white/60">
+            Welcome back to NewMoon Lechon Manok and Liempo House!
+          </p>
+        </div>
       </section>
 
       {/* =========================================================
@@ -663,90 +670,90 @@ function Dashboard() {
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <div
           onClick={() => navigateTo("/branch-map")}
-          className="cursor-pointer rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+          className="cursor-pointer rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          style={{ borderColor: BORDER }}
           onMouseEnter={e => e.currentTarget.style.borderColor = ACCENT}
           onMouseLeave={e => e.currentTarget.style.borderColor = BORDER}
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full" style={{ background: AMBER_SOFT, color: AMBER }}>
-              <ShopOutlined style={{ fontSize: 20 }} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              <ShopOutlined />
             </div>
             <div>
-              <p className="text-2xl font-bold" style={{ color: TEXT }}>{branches.length}</p>
-              <p className="text-xs" style={{ color: MUTED }}>Total Branches</p>
+              <p className="text-stone-900 font-bold text-2xl">{branches.length}</p>
+              <p className="text-xs text-stone-500">Total Branches</p>
             </div>
           </div>
         </div>
 
         <div
           onClick={() => navigateTo("/staff")}
-          className="cursor-pointer rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+          className="cursor-pointer rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          style={{ borderColor: BORDER }}
           onMouseEnter={e => e.currentTarget.style.borderColor = ACCENT}
           onMouseLeave={e => e.currentTarget.style.borderColor = BORDER}
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full" style={{ background: ACCENT_SOFT, color: ACCENT }}>
-              <TeamOutlined style={{ fontSize: 20 }} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              <TeamOutlined />
             </div>
             <div>
-              <p className="text-2xl font-bold" style={{ color: TEXT }}>{staff.length}</p>
-              <p className="text-xs" style={{ color: MUTED }}>Total Staff</p>
+              <p className="text-stone-900 font-bold text-2xl">{staff.length}</p>
+              <p className="text-xs text-stone-500">Total Staff</p>
             </div>
           </div>
         </div>
 
         <div
           onClick={() => navigateTo("/sales")}
-          className="cursor-pointer rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+          className="cursor-pointer rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          style={{ borderColor: BORDER }}
           onMouseEnter={e => e.currentTarget.style.borderColor = ACCENT}
           onMouseLeave={e => e.currentTarget.style.borderColor = BORDER}
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full" style={{ background: RED_SOFT, color: RED }}>
-              <FontAwesomeIcon icon={faPesoSign} style={{ fontSize: 18 }} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              <FontAwesomeIcon icon={faPesoSign} />
             </div>
             <div>
-              <p className="text-2xl font-bold" style={{ color: TEXT }}>{formatCurrency(todaySales)}</p>
-              <p className="text-xs" style={{ color: MUTED }}>Today&apos;s Sales</p>
+              <p className="text-stone-900 font-bold text-2xl">{formatCurrency(todaySales)}</p>
+              <p className="text-xs text-stone-500">Today&apos;s Sales</p>
             </div>
           </div>
         </div>
 
         <div
           onClick={() => navigateTo("/sales")}
-          className="cursor-pointer rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+          className="cursor-pointer rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          style={{ borderColor: BORDER }}
           onMouseEnter={e => e.currentTarget.style.borderColor = ACCENT}
           onMouseLeave={e => e.currentTarget.style.borderColor = BORDER}
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full" style={{ background: GREEN_SOFT, color: GREEN }}>
-              <StarOutlined style={{ fontSize: 20 }} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              <StarOutlined />
             </div>
             <div>
-              <p className="text-2xl font-bold" style={{ color: TEXT }}>{formatCurrency(totalSales)}</p>
-              <p className="text-xs" style={{ color: MUTED }}>Total Sales</p>
+              <p className="text-stone-900 font-bold text-2xl">{formatCurrency(totalSales)}</p>
+              <p className="text-xs text-stone-500">Total Sales</p>
             </div>
           </div>
         </div>
 
         <div
           onClick={() => navigateTo("/delivery")}
-          className="cursor-pointer rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+          className="cursor-pointer rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+          style={{ borderColor: BORDER }}
           onMouseEnter={e => e.currentTarget.style.borderColor = ACCENT}
           onMouseLeave={e => e.currentTarget.style.borderColor = BORDER}
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full" style={{ background: "rgba(167,139,250,0.15)", color: "#A78BFA" }}>
-              <ShoppingCartOutlined style={{ fontSize: 20 }} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              <ShoppingCartOutlined />
             </div>
             <div>
-              <p className="text-2xl font-bold" style={{ color: TEXT }}>{overviewSummary.total_orders ?? 0}</p>
-              <p className="text-xs" style={{ color: MUTED }}>Online Orders</p>
+              <p className="text-stone-900 font-bold text-2xl">{overviewSummary.total_orders ?? 0}</p>
+              <p className="text-xs text-stone-500">Online Orders</p>
             </div>
           </div>
         </div>
@@ -755,36 +762,31 @@ function Dashboard() {
       {/* =========================================================
           QUICK ACTIONS — moved above Sales Performance
       ========================================================= */}
-      <section
-        className="mb-6 rounded-2xl p-5"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-      >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: ACCENT }}>
-              Quick Actions
-            </p>
-            <h2 className="mt-1 text-lg font-bold tracking-tight" style={{ color: TEXT }}>
-              Keep your data fresh
-            </h2>
-            <p className="mt-1 text-sm" style={{ color: MUTED }}>
-              Refresh your dashboard or register a new branch in seconds.
-            </p>
+      <section className="mb-6 overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              <ReloadOutlined />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-stone-900">Keep your data fresh</h2>
+              <p className="text-xs text-stone-500">
+                Refresh your dashboard or register a new branch in seconds.
+              </p>
+            </div>
           </div>
+          <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+            Quick Actions
+          </span>
+        </div>
 
-          <div className="flex flex-wrap gap-2">
+        <div className="p-4">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button
               icon={<ReloadOutlined />}
               onClick={() => loadDashboardData(true)}
               loading={loading}
-              style={{
-                height: 44,
-                borderRadius: 12,
-                background: PANEL_BG_2,
-                border: `1px solid ${BORDER}`,
-                color: TEXT,
-                fontWeight: 500,
-              }}
+              className="h-11! rounded-xl! border-stone-200! bg-white! px-5! font-medium! text-stone-700! hover:border-orange-300! hover:text-orange-600!"
             >
               Refresh
             </Button>
@@ -796,15 +798,7 @@ function Dashboard() {
                 addBranchForm.resetFields();
                 setIsModalOpen(true);
               }}
-              style={{
-                height: 44,
-                borderRadius: 12,
-                background: ACCENT,
-                border: "none",
-                color: "#1F1A2E",
-                fontWeight: 700,
-                boxShadow: "none",
-              }}
+              className="h-11! rounded-xl! border-none! bg-linear-to-r! from-orange-600! to-amber-500! px-5! font-semibold! shadow-none! hover:brightness-110!"
             >
               Add Branch
             </Button>
@@ -813,12 +807,7 @@ function Dashboard() {
               <button
                 type="button"
                 onClick={() => setShowLowStockModal(true)}
-                className="inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all duration-200"
-                style={{
-                  background: RED_SOFT,
-                  border: `1px solid ${RED}30`,
-                  color: "#FCA5A5",
-                }}
+                className="inline-flex h-11 items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100"
               >
                 <WarningOutlined />
                 {lowStockItems.length} Low Stock
@@ -832,10 +821,7 @@ function Dashboard() {
           ERROR
       ========================================================= */}
       {loadError && (
-        <div
-          className="mb-6 flex items-start gap-3 rounded-2xl px-4 py-3 text-sm"
-          style={{ background: RED_SOFT, border: `1px solid ${RED}30`, color: "#FCA5A5" }}
-        >
+        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           <WarningOutlined className="mt-0.5" />
           <span>{loadError}</span>
         </div>
@@ -844,23 +830,18 @@ function Dashboard() {
       {/* =========================================================
           SALES PERFORMANCE — FULL WIDTH
       ========================================================= */}
-      <section
-        className="mb-6 rounded-2xl p-6"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-      >
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-[17px] font-bold tracking-tight" style={{ color: TEXT }}>
-              Sales Performance
-            </h2>
-            <p className="text-xs" style={{ color: MUTED }}>
-              Track your Branches sales over time
-            </p>
+      <section className="mb-6 overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              <LineChartOutlined />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-stone-900">Sales Performance</h2>
+              <p className="text-xs text-stone-500">Track your Branches sales over time</p>
+            </div>
           </div>
-          <div
-            className="flex rounded-lg p-0.5"
-            style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-          >
+          <div className="flex rounded-xl border border-orange-100 bg-orange-50 p-0.5">
             {["today", "week", "month"].map((p) => (
               <button
                 key={p}
@@ -868,7 +849,7 @@ function Dashboard() {
                 className="rounded-md px-3 py-1 text-xs font-semibold transition-colors"
                 style={
                   salesPeriod === p
-                    ? { background: ACCENT, color: "#1F1A2E" }
+                    ? { background: ACCENT, color: "#FFFFFF" }
                     : { color: MUTED, background: "transparent" }
                 }
                 onMouseEnter={(e) => {
@@ -884,21 +865,14 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="h-64">
+        <div className="h-64 p-4">
           {salesChartData.every((d) => d.amount === 0) ? (
-            <div className="flex h-full flex-col items-center justify-center text-center">
-              <div
-                className="flex h-14 w-14 items-center justify-center rounded-2xl"
-                style={{ background: ACCENT_SOFT, color: ACCENT }}
-              >
-                <RiseOutlined style={{ fontSize: 22 }} />
+            <div className="py-10 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+                <RiseOutlined style={{ fontSize: 20 }} />
               </div>
-              <p className="mt-3 text-sm font-semibold" style={{ color: TEXT }}>
-                No sales in this period
-              </p>
-              <p className="text-xs" style={{ color: MUTED }}>
-                Sales will appear here once recorded
-              </p>
+              <p className="text-base font-semibold text-stone-700">No sales in this period</p>
+              <p className="mt-1 text-sm text-stone-400">Sales will appear here once recorded</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -952,45 +926,27 @@ function Dashboard() {
       ========================================================= */}
       <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Online Orders Tracker */}
-        <section
-          className="rounded-2xl p-5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-        >
-          <div className="mb-4 flex items-center justify-between gap-3">
+        <section className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
             <div className="flex items-center gap-3">
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                style={{ background: AMBER_SOFT, color: AMBER }}
-              >
-                <TruckOutlined style={{ fontSize: 18 }} />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                <TruckOutlined />
               </div>
               <div>
-                <h2 className="text-[17px] font-bold tracking-tight" style={{ color: TEXT }}>
-                  Online Orders
-                </h2>
-                <p className="text-xs" style={{ color: MUTED }}>
-                  Live customer orders from the app
-                </p>
+                <h2 className="text-lg font-bold text-stone-900">Online Orders</h2>
+                <p className="text-xs text-stone-500">Live customer orders from the app</p>
               </div>
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider"
-                style={{
-                  background: ACCENT_SOFT,
-                  color: ACCENT,
-                  border: `1px solid ${ACCENT}30`,
-                }}
-              >
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-orange-600">
                 <SyncOutlined spin={onlineLoading} />
                 Live · 30s
               </span>
               <button
                 type="button"
                 onClick={() => loadOnlineOverview()}
-                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
-                style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}`, color: MUTED, cursor: "pointer" }}
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-orange-100 bg-orange-50 text-stone-500 transition-colors hover:text-orange-600"
                 onMouseEnter={(e) => { e.currentTarget.style.color = ACCENT; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = MUTED; }}
               >
@@ -999,168 +955,145 @@ function Dashboard() {
             </div>
           </div>
 
-          {onlineError && (
-            <div
-              className="mb-4 rounded-xl px-3 py-2 text-xs"
-              style={{ background: RED_SOFT, border: `1px solid ${RED}30`, color: "#FCA5A5" }}
-            >
-              <WarningOutlined className="mr-2" />
-              {onlineError}
-            </div>
-          )}
-
-          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {OVERVIEW_STATUS.map((s) => (
-              <div
-                key={s.key}
-                className="rounded-xl p-3"
-                style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold leading-none" style={{ color: s.color }}>
-                    {overviewStatus[s.key] || 0}
-                  </span>
-                  <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }}
-                  />
-                </div>
-                <p className="mt-2 truncate text-[11px] font-medium" style={{ color: MUTED }}>
-                  {s.label}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <div className="rounded-xl p-3" style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}>
-              <p className="text-lg font-bold leading-none" style={{ color: ACCENT }}>
-                {overviewSummary.active_orders ?? 0}
-              </p>
-              <p className="mt-1 text-[11px] font-medium" style={{ color: MUTED }}>
-                Active Orders
-              </p>
-            </div>
-            <div className="rounded-xl p-3" style={{ background: AMBER_SOFT, border: `1px solid ${AMBER}30` }}>
-              <p className="text-lg font-bold leading-none" style={{ color: AMBER }}>
-                {overviewSummary.today_orders ?? 0}
-              </p>
-              <p className="mt-1 text-[11px] font-medium" style={{ color: MUTED }}>
-                Today&apos;s Orders
-              </p>
-            </div>
-            <div className="rounded-xl p-3" style={{ background: AMBER_SOFT, border: `1px solid ${AMBER}30` }}>
-              <p className="text-lg font-bold leading-none" style={{ color: AMBER }}>
-                {formatCurrency(overviewSummary.today_revenue ?? 0)}
-              </p>
-              <p className="mt-1 text-[11px] font-medium" style={{ color: MUTED }}>
-                Today&apos;s Revenue
-              </p>
-            </div>
-            <div className="rounded-xl p-3" style={{ background: GREEN_SOFT, border: `1px solid ${GREEN}30` }}>
-              <p className="text-lg font-bold leading-none" style={{ color: GREEN }}>
-                {formatCurrency(overviewSummary.delivered_revenue ?? 0)}
-              </p>
-              <p className="mt-1 text-[11px] font-medium" style={{ color: MUTED }}>
-                Delivered Revenue
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: MUTED }}>
-                Recent Online Orders
-              </p>
-              <button
-                type="button"
-                onClick={() => navigateTo("/delivery")}
-                className="text-xs font-semibold transition-opacity"
-                style={{ color: ACCENT, background: "transparent", border: "none", cursor: "pointer" }}
-                onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.75"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
-              >
-                View All →
-              </button>
-            </div>
-
-            {recentOnlineOrders.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <TruckOutlined style={{ fontSize: 22, color: FAINT }} />
-                <p className="mt-2 text-sm font-medium" style={{ color: TEXT }}>
-                  No online orders yet
-                </p>
-                <p className="text-xs" style={{ color: MUTED }}>
-                  Customer app orders will appear here
-                </p>
-              </div>
-            ) : (
-              <div className="max-h-80 space-y-2 overflow-auto pr-1">
-                {recentOnlineOrders.map((o) => (
-                  <div
-                    key={o.id}
-                    className="flex items-center gap-3 rounded-lg p-2.5"
-                    style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-                  >
-                    <span
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold"
-                      style={{ background: `${onlineStatusColor(o.status)}1a`, color: onlineStatusColor(o.status) }}
-                    >
-                      {o.order_number?.replace("ORD-", "").slice(-5)}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-semibold" style={{ color: TEXT }}>
-                        {o.customer_name}
-                      </p>
-                      <p className="truncate text-[11px]" style={{ color: MUTED }}>
-                        {o.branch_name} · {o.payment_method?.toUpperCase()}
-                      </p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className="text-[13px] font-bold" style={{ color: AMBER }}>
-                        {formatCurrency(o.total)}
-                      </p>
-                      <span
-                        className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                        style={{ background: `${onlineStatusColor(o.status)}1a`, color: onlineStatusColor(o.status) }}
-                      >
-                        {onlineStatusLabel(o.status)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+          <div className="p-4">
+            {onlineError && (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                <WarningOutlined className="mr-2" />
+                {onlineError}
               </div>
             )}
+
+            <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {OVERVIEW_STATUS.map((s) => (
+                <div
+                  key={s.key}
+                  className="rounded-xl border border-orange-100 bg-orange-50/40 p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold leading-none" style={{ color: s.color }}>
+                      {overviewStatus[s.key] || 0}
+                    </span>
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }}
+                    />
+                  </div>
+                  <p className="mt-2 truncate text-[11px] font-medium text-stone-500">
+                    {s.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="rounded-xl border border-orange-100 bg-orange-50 p-3">
+                <p className="text-lg font-bold leading-none text-orange-600">
+                  {overviewSummary.active_orders ?? 0}
+                </p>
+                <p className="mt-1 text-[11px] font-medium text-stone-500">Active Orders</p>
+              </div>
+              <div className="rounded-xl border border-amber-100 bg-amber-50 p-3">
+                <p className="text-lg font-bold leading-none text-amber-700">
+                  {overviewSummary.today_orders ?? 0}
+                </p>
+                <p className="mt-1 text-[11px] font-medium text-stone-500">Today&apos;s Orders</p>
+              </div>
+              <div className="rounded-xl border border-amber-100 bg-amber-50 p-3">
+                <p className="text-lg font-bold leading-none text-amber-700">
+                  {formatCurrency(overviewSummary.today_revenue ?? 0)}
+                </p>
+                <p className="mt-1 text-[11px] font-medium text-stone-500">Today&apos;s Revenue</p>
+              </div>
+              <div className="rounded-xl border border-green-100 bg-green-50 p-3">
+                <p className="text-lg font-bold leading-none text-green-600">
+                  {formatCurrency(overviewSummary.delivered_revenue ?? 0)}
+                </p>
+                <p className="mt-1 text-[11px] font-medium text-stone-500">Delivered Revenue</p>
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-stone-500">
+                  Recent Online Orders
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigateTo("/delivery")}
+                  className="cursor-pointer border-none bg-transparent text-xs font-semibold text-orange-600 transition-opacity"
+                  onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.75"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+                >
+                  View All →
+                </button>
+              </div>
+
+              {recentOnlineOrders.length === 0 ? (
+                <div className="py-10 text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+                    <TruckOutlined style={{ fontSize: 20 }} />
+                  </div>
+                  <p className="text-base font-semibold text-stone-700">No online orders yet</p>
+                  <p className="mt-1 text-sm text-stone-400">
+                    Customer app orders will appear here
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-80 space-y-2 overflow-auto pr-1">
+                  {recentOnlineOrders.map((o) => (
+                    <div
+                      key={o.id}
+                      className="flex items-center gap-3 rounded-xl border border-orange-100 bg-orange-50/40 p-2.5"
+                    >
+                      <span
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold"
+                        style={{ background: `${onlineStatusColor(o.status)}1a`, color: onlineStatusColor(o.status) }}
+                      >
+                        {o.order_number?.replace("ORD-", "").slice(-5)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13px] font-semibold text-stone-700">
+                          {o.customer_name}
+                        </p>
+                        <p className="truncate text-[11px] text-stone-500">
+                          {o.branch_name} · {o.payment_method?.toUpperCase()}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="text-[13px] font-bold text-amber-700">
+                          {formatCurrency(o.total)}
+                        </p>
+                        <span
+                          className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                          style={{ background: `${onlineStatusColor(o.status)}1a`, color: onlineStatusColor(o.status) }}
+                        >
+                          {onlineStatusLabel(o.status)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
         {/* Online Sales Chart */}
-        <section
-          className="rounded-2xl p-5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-        >
-          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <section className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
             <div className="flex items-center gap-3">
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                style={{ background: RED_SOFT, color: RED }}
-              >
-                <LineChartOutlined style={{ fontSize: 18 }} />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                <LineChartOutlined />
               </div>
               <div>
-                <h2 className="text-[17px] font-bold tracking-tight" style={{ color: TEXT }}>
-                  Online Sales
-                </h2>
-                <p className="text-xs" style={{ color: MUTED }}>
+                <h2 className="text-lg font-bold text-stone-900">Online Sales</h2>
+                <p className="text-xs text-stone-500">
                   Revenue and order volume from app orders
                 </p>
               </div>
             </div>
 
-            <div
-              className="flex w-fit rounded-lg p-0.5"
-              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-            >
+            <div className="flex w-fit rounded-xl border border-orange-100 bg-orange-50 p-0.5">
               {["today", "week", "month"].map((p) => (
                 <button
                   key={p}
@@ -1169,7 +1102,7 @@ function Dashboard() {
                   className="rounded-md px-3 py-1 text-xs font-semibold transition-colors"
                   style={
                     onlinePeriod === p
-                      ? { background: AMBER, color: "#1F1A2E" }
+                      ? { background: AMBER, color: "#FFFFFF" }
                       : { color: MUTED, background: "transparent" }
                   }
                   onMouseEnter={(e) => {
@@ -1185,19 +1118,16 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="h-64">
+          <div className="h-64 p-4">
             {!onlineChartHasData ? (
-              <div className="flex h-full flex-col items-center justify-center text-center">
-                <div
-                  className="flex h-14 w-14 items-center justify-center rounded-2xl"
-                  style={{ background: AMBER_SOFT, color: AMBER }}
-                >
-                  <RiseOutlined style={{ fontSize: 22 }} />
+              <div className="py-10 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+                  <RiseOutlined style={{ fontSize: 20 }} />
                 </div>
-                <p className="mt-3 text-sm font-semibold" style={{ color: TEXT }}>
+                <p className="text-base font-semibold text-stone-700">
                   No online sales in this period
                 </p>
-                <p className="text-xs" style={{ color: MUTED }}>
+                <p className="mt-1 text-sm text-stone-400">
                   App orders will appear here once placed
                 </p>
               </div>
@@ -1281,144 +1211,133 @@ function Dashboard() {
       ========================================================= */}
       <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Best Sellers */}
-        <section
-          className="rounded-2xl p-5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-        >
-          <h2 className="text-[17px] font-bold tracking-tight" style={{ color: TEXT }}>
-            Today&apos;s Best Sellers
-          </h2>
-          <p className="mb-4 text-xs" style={{ color: MUTED }}>
-            Most-ordered items across all sales
-          </p>
-          {bestSellers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <FireOutlined style={{ fontSize: 22, color: ACCENT }} />
-              <p className="mt-2 text-sm font-medium" style={{ color: TEXT }}>
-                No sales yet
-              </p>
-              <p className="text-xs" style={{ color: MUTED }}>
-                Ordered items will be ranked here
-              </p>
+        <section className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                <FireOutlined />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-stone-900">Today&apos;s Best Sellers</h2>
+                <p className="text-xs text-stone-500">Most-ordered items across all sales</p>
+              </div>
             </div>
-          ) : (
-            <div>
-              {bestSellers.map((b, i) => (
-                <div
-                  key={b.name}
-                  className="flex items-center gap-3 py-3"
-                  style={{ borderTop: i === 0 ? "none" : `1px solid ${BORDER}` }}
-                >
-                  <span
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold"
-                    style={
-                      i === 0
-                        ? { background: ACCENT, color: "#1F1A2E" }
-                        : { background: ACCENT_SOFT, color: ACCENT }
-                    }
-                  >
-                    {i + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold" style={{ color: TEXT }}>
-                      {b.name}
-                    </p>
-                    <p className="text-xs" style={{ color: MUTED }}>
-                      {b.qty} sold
-                    </p>
-                  </div>
-                  <div className="text-sm font-bold" style={{ color: ACCENT }}>
-                    {formatCurrency(b.revenue)}
-                  </div>
+            <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+              {bestSellers.length} items
+            </span>
+          </div>
+
+          <div className="p-4">
+            {bestSellers.length === 0 ? (
+              <div className="py-10 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+                  <FireOutlined style={{ fontSize: 20 }} />
                 </div>
-              ))}
-            </div>
-          )}
+                <p className="text-base font-semibold text-stone-700">No sales yet</p>
+                <p className="mt-1 text-sm text-stone-400">Ordered items will be ranked here</p>
+              </div>
+            ) : (
+              <div>
+                {bestSellers.map((b, i) => (
+                  <div
+                    key={b.name}
+                    className="flex items-center gap-3 py-3"
+                    style={{ borderTop: i === 0 ? "none" : `1px solid ${BORDER}` }}
+                  >
+                    <span
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold"
+                      style={
+                        i === 0
+                          ? { background: ACCENT, color: "#FFFFFF" }
+                          : { background: ACCENT_SOFT, color: ACCENT }
+                      }
+                    >
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-stone-700">{b.name}</p>
+                      <p className="text-xs text-stone-500">{b.qty} sold</p>
+                    </div>
+                    <div className="text-sm font-bold text-orange-600">
+                      {formatCurrency(b.revenue)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Branch Performance */}
-        <section
-          className="rounded-2xl p-5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-[17px] font-bold tracking-tight" style={{ color: TEXT }}>
-                Branch Performance
-              </h2>
-              <p className="text-xs" style={{ color: MUTED }}>
-                Sales activity by location
-              </p>
+        <section className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                <ShopOutlined />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-stone-900">Branch Performance</h2>
+                <p className="text-xs text-stone-500">Sales activity by location</p>
+              </div>
             </div>
-            <button
-              onClick={() => navigateTo("/branch-map")}
-              className="text-xs font-semibold transition-colors"
-              style={{ color: ACCENT, background: "transparent", border: "none", cursor: "pointer" }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.75"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-            >
-              All Branches →
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+                {branches.length} branches
+              </span>
+              <button
+                onClick={() => navigateTo("/branch-map")}
+                className="cursor-pointer border-none bg-transparent text-xs font-semibold text-orange-600 transition-colors"
+                onMouseEnter={e => e.currentTarget.style.opacity = "0.75"}
+                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+              >
+                All Branches →
+              </button>
+            </div>
           </div>
-          {branchPerformance.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <ShopOutlined style={{ fontSize: 22, color: ACCENT }} />
-              <p className="mt-2 text-sm font-medium" style={{ color: TEXT }}>
-                No branches
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {branchPerformance.map((b) => (
-                <button
-                  key={b.id}
-                  onClick={() => navigateTo(`/branch/${b.id}`)}
-                  className="group flex flex-col gap-2 rounded-lg p-4 text-left transition-all duration-200"
-                  style={{
-                    background: PANEL_BG_2,
-                    border: `1px solid ${BORDER}`,
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = ACCENT}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = BORDER}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-bold" style={{ color: TEXT }}>
-                      {b.name}
-                    </span>
-                    <span
-                      className="inline-flex items-center gap-1.5 text-[10px] font-semibold"
-                      style={{ color: ACCENT }}
-                    >
-                      <span
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{ background: ACCENT }}
-                      />
-                      Open
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: MUTED }}>Sales</span>
-                    <span className="font-bold" style={{ color: ACCENT }}>
-                      {formatCurrency(b.sales)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: MUTED }}>Orders</span>
-                    <span className="font-semibold" style={{ color: TEXT }}>
-                      {b.orders}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: MUTED }}>Staff</span>
-                    <span className="font-semibold" style={{ color: TEXT }}>
-                      {b.staffCount}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+
+          <div className="p-4">
+            {branchPerformance.length === 0 ? (
+              <div className="py-10 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+                  <ShopOutlined style={{ fontSize: 20 }} />
+                </div>
+                <p className="text-base font-semibold text-stone-700">No branches</p>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {branchPerformance.map((b) => (
+                  <button
+                    key={b.id}
+                    onClick={() => navigateTo(`/branch/${b.id}`)}
+                    className="group flex cursor-pointer flex-col gap-2 rounded-xl border border-orange-100 bg-orange-50/40 p-4 text-left transition-all duration-200 hover:shadow-sm"
+                    style={{ borderColor: BORDER }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = ACCENT}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = BORDER}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-bold text-stone-700">{b.name}</span>
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-orange-600">
+                        <span className="h-1.5 w-1.5 rounded-full bg-orange-600" />
+                        Open
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-stone-500">Sales</span>
+                      <span className="font-bold text-orange-600">{formatCurrency(b.sales)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-stone-500">Orders</span>
+                      <span className="font-semibold text-stone-700">{b.orders}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-stone-500">Staff</span>
+                      <span className="font-semibold text-stone-700">{b.staffCount}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
       </div>
 
@@ -1427,148 +1346,154 @@ function Dashboard() {
       ========================================================= */}
       <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Recent Activity */}
-        <section
-          className="rounded-2xl p-5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-        >
-          <h2 className="text-[17px] font-bold tracking-tight" style={{ color: TEXT }}>
-            Recent Activity
-          </h2>
-          <p className="mb-4 text-xs" style={{ color: MUTED }}>
-            Latest Branches sales
-          </p>
-          {recentActivity.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <ClockCircleOutlined style={{ fontSize: 22, color: MUTED }} />
-              <p className="mt-2 text-sm font-medium" style={{ color: TEXT }}>
-                No recent activity
-              </p>
+        <section className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                <ClockCircleOutlined />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-stone-900">Recent Activity</h2>
+                <p className="text-xs text-stone-500">Latest Branches sales</p>
+              </div>
             </div>
-          ) : (
-            <div className="relative space-y-0">
-              {recentActivity.map((e, i) => (
-                <div key={i} className="relative flex gap-3 pb-4">
-                  {i < recentActivity.length - 1 && (
+            <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+              {recentActivity.length} events
+            </span>
+          </div>
+
+          <div className="p-4">
+            {recentActivity.length === 0 ? (
+              <div className="py-10 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+                  <ClockCircleOutlined style={{ fontSize: 20 }} />
+                </div>
+                <p className="text-base font-semibold text-stone-700">No recent activity</p>
+              </div>
+            ) : (
+              <div className="relative space-y-0">
+                {recentActivity.map((e, i) => (
+                  <div key={i} className="relative flex gap-3 pb-4">
+                    {i < recentActivity.length - 1 && (
+                      <span
+                        className="absolute top-5 h-full w-px"
+                        style={{ left: 9, background: BORDER }}
+                      />
+                    )}
                     <span
-                      className="absolute top-5 h-full w-px"
-                      style={{ left: 9, background: BORDER }}
+                      className="mt-1.5 flex shrink-0 items-center justify-center rounded-full"
+                      style={{
+                        width: 18,
+                        height: 18,
+                        border: `2px solid ${e.kind === "order" ? ACCENT : AMBER}`,
+                        background: PANEL_BG,
+                        boxShadow: `0 0 0 3px ${ACCENT_SOFT}`,
+                      }}
                     />
-                  )}
-                  <span
-                    className="mt-1.5 flex shrink-0 items-center justify-center rounded-full"
-                    style={{
-                      width: 18,
-                      height: 18,
-                      border: `2px solid ${e.kind === "order" ? ACCENT : AMBER}`,
-                      background: PANEL_BG,
-                      boxShadow: `0 0 0 3px ${ACCENT_SOFT}`,
-                    }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-[13px] font-semibold" style={{ color: TEXT }}>
-                        {e.text}
-                      </span>
-                      <span className="shrink-0 text-[11px]" style={{ color: MUTED }}>
-                        {e.ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs" style={{ color: MUTED }}>
-                      <span className="font-semibold" style={{ color: ACCENT }}>{e.detail}</span>
-                      {e.branch ? <span>· {e.branch}</span> : null}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-[13px] font-semibold text-stone-700">
+                          {e.text}
+                        </span>
+                        <span className="shrink-0 text-[11px] text-stone-500">
+                          {e.ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-stone-500">
+                        <span className="font-semibold text-orange-600">{e.detail}</span>
+                        {e.branch ? <span>· {e.branch}</span> : null}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Inventory Watch */}
-        <section
-          className="rounded-2xl p-5"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-[17px] font-bold tracking-tight" style={{ color: TEXT }}>
-                Inventory Watch
-              </h2>
-              <p className="text-xs" style={{ color: MUTED }}>
-                Stock levels that need monitoring
-              </p>
+        <section className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                <StockOutlined />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-stone-900">Inventory Watch</h2>
+                <p className="text-xs text-stone-500">Stock levels that need monitoring</p>
+              </div>
             </div>
-            <button
-              onClick={() => navigateTo("/inventory")}
-              className="text-xs font-semibold transition-colors"
-              style={{ color: ACCENT, background: "transparent", border: "none", cursor: "pointer" }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.75"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-            >
-              Full Stock Room →
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+                {inventoryWatch.length} alerts
+              </span>
+              <button
+                onClick={() => navigateTo("/inventory")}
+                className="cursor-pointer border-none bg-transparent text-xs font-semibold text-orange-600 transition-colors"
+                onMouseEnter={e => e.currentTarget.style.opacity = "0.75"}
+                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+              >
+                Full Stock Room →
+              </button>
+            </div>
           </div>
-          {inventoryWatch.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <CheckCircleOutlined style={{ fontSize: 22, color: ACCENT }} />
-              <p className="mt-2 text-sm font-medium" style={{ color: TEXT }}>
-                Inventory looks healthy
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {inventoryWatch.map((it) => (
-                <div
-                  key={it.name}
-                  className="rounded-lg p-3"
-                  style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-                >
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-[13px] font-semibold" style={{ color: TEXT }}>
-                        {it.name}
-                      </p>
-                      <p className="text-[11px]" style={{ color: MUTED }}>
-                        {it.qty} remaining · minimum {it.min}
-                      </p>
-                    </div>
-                    <span
-                      className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold"
-                      style={{ background: `${it.color}1a`, color: it.color }}
-                    >
-                      {it.status}
-                    </span>
-                  </div>
-                  <div
-                    className="h-1.5 overflow-hidden rounded-full"
-                    style={{ background: BORDER }}
-                  >
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${it.pct}%`, background: it.color }}
-                    />
-                  </div>
+
+          <div className="p-4">
+            {inventoryWatch.length === 0 ? (
+              <div className="py-10 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-500">
+                  <CheckCircleOutlined style={{ fontSize: 20 }} />
                 </div>
-              ))}
-              {lowStockItems.length > 0 && (
-                <button
-                  onClick={() => setShowLowStockModal(true)}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-colors"
-                  style={{
-                    background: RED_SOFT,
-                    border: `1px solid ${RED}30`,
-                    color: "#FCA5A5",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.22)"}
-                  onMouseLeave={e => e.currentTarget.style.background = RED_SOFT}
-                >
-                  <WarningOutlined />
-                  View all {lowStockItems.length} low-stock alert{lowStockItems.length > 1 ? "s" : ""}
-                </button>
-              )}
-            </div>
-          )}
+                <p className="text-base font-semibold text-stone-700">Inventory looks healthy</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {inventoryWatch.map((it) => (
+                  <div
+                    key={it.name}
+                    className="rounded-xl border border-orange-100 bg-orange-50/40 p-3"
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-semibold text-stone-700">{it.name}</p>
+                        <p className="text-[11px] text-stone-500">
+                          {it.qty} remaining · minimum {it.min}
+                        </p>
+                      </div>
+                      <span
+                        className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        style={{ background: `${it.color}1a`, color: it.color }}
+                      >
+                        {it.status}
+                      </span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-[#F5EDE0]">
+                      <div
+                        className={`h-full rounded-full ${
+                          it.status === "Healthy"
+                            ? "bg-linear-to-r from-[#22C55E] to-[#16A34A]"
+                            : "bg-linear-to-r from-[#EA580C] to-[#F59E0B]"
+                        }`}
+                        style={{ width: `${it.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {lowStockItems.length > 0 && (
+                  <button
+                    onClick={() => setShowLowStockModal(true)}
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-xl border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition-colors"
+                    style={{ background: RED_SOFT }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.22)"}
+                    onMouseLeave={e => e.currentTarget.style.background = RED_SOFT}
+                  >
+                    <WarningOutlined />
+                    View all {lowStockItems.length} low-stock alert{lowStockItems.length > 1 ? "s" : ""}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </section>
       </div>
 
@@ -1579,25 +1504,17 @@ function Dashboard() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-xl"
-                style={{ background: ACCENT_SOFT, color: ACCENT }}
-              >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
                 <ShopOutlined />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight" style={{ color: TEXT }}>
-                Branches
-              </h2>
+              <h2 className="text-2xl font-bold tracking-tight text-stone-900">Branches</h2>
             </div>
-            <p className="mt-2 text-sm" style={{ color: MUTED }}>
+            <p className="mt-2 text-sm text-stone-500">
               Manage and monitor each NewMoon branch&apos;s performance.
             </p>
           </div>
 
-          <div
-            className="inline-flex w-fit items-center rounded-full px-3 py-1.5 text-xs font-semibold"
-            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-          >
+          <div className="inline-flex w-fit items-center rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
             {branches.length} {branches.length === 1 ? "Branch" : "Branches"}
           </div>
         </div>
@@ -1607,27 +1524,16 @@ function Dashboard() {
           BRANCHES GRID
       ========================================================= */}
       {loading ? (
-        <div
-          className="rounded-2xl py-16"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-        >
+        <div className="rounded-2xl border border-orange-100 bg-white py-16 shadow-sm">
           <Loading text="Loading branches..." />
         </div>
       ) : branches.length === 0 ? (
-        <div
-          className="rounded-2xl px-6 py-16 text-center"
-          style={{ background: PANEL_BG, border: `1px dashed ${BORDER}` }}
-        >
-          <div
-            className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl"
-            style={{ background: ACCENT_SOFT, color: ACCENT }}
-          >
-            <ShopOutlined style={{ fontSize: 32 }} />
+        <div className="rounded-2xl border border-dashed border-orange-200 bg-white px-6 py-10 text-center shadow-sm">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+            <ShopOutlined style={{ fontSize: 20 }} />
           </div>
-          <h3 className="mt-5 text-xl font-bold" style={{ color: TEXT }}>
-            No branches yet
-          </h3>
-          <p className="mx-auto mt-2 max-w-md text-sm" style={{ color: MUTED }}>
+          <h3 className="text-base font-semibold text-stone-700">No branches yet</h3>
+          <p className="mx-auto mt-1 max-w-md text-sm text-stone-400">
             Start building your NewMoon operations by adding your first branch.
           </p>
           <Button
@@ -1637,16 +1543,7 @@ function Dashboard() {
               addBranchForm.resetFields();
               setIsModalOpen(true);
             }}
-            style={{
-              marginTop: 20,
-              height: 44,
-              borderRadius: 12,
-              background: ACCENT,
-              border: "none",
-              color: "#1F1A2E",
-              fontWeight: 700,
-              boxShadow: "none",
-            }}
+            className="mt-5! h-11! rounded-xl! border-none! bg-linear-to-r! from-orange-600! to-amber-500! px-5! font-semibold! shadow-none! hover:brightness-110!"
           >
             Add Your First Branch
           </Button>
@@ -1657,26 +1554,17 @@ function Dashboard() {
             <Col xs={24} sm={12} lg={8} xl={6} key={branch.id}>
               <div
                 onClick={() => navigateTo(`/branch/${branch.id}`)}
-                className="group h-full cursor-pointer overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-0.5"
-                style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
+                className="group h-full cursor-pointer overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                style={{ borderColor: BORDER }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = ACCENT}
                 onMouseLeave={e => e.currentTarget.style.borderColor = BORDER}
               >
-                <div
-                  className="relative overflow-hidden px-5 py-5"
-                  style={{ background: PANEL_BG_2, borderBottom: `1px solid ${BORDER}` }}
-                >
+                <div className="relative overflow-hidden border-b border-orange-100 bg-[#FFF7ED] px-5 py-5">
                   <div className="relative z-10 flex items-center justify-between">
-                    <div
-                      className="flex h-12 w-12 items-center justify-center rounded-xl"
-                      style={{ background: ACCENT_SOFT, color: ACCENT }}
-                    >
-                      <ShopOutlined style={{ fontSize: 20 }} />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                      <ShopOutlined />
                     </div>
-                    <div
-                      className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider"
-                      style={{ background: PANEL_BG, color: MUTED, border: `1px solid ${BORDER}` }}
-                    >
+                    <div className="rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-orange-600">
                       Branch
                     </div>
                   </div>
@@ -1684,75 +1572,52 @@ function Dashboard() {
 
                 <div className="p-5">
                   <div className="mb-5">
-                    <h3 className="truncate text-lg font-bold" style={{ color: TEXT }}>
-                      {branch.name}
-                    </h3>
+                    <h3 className="truncate text-lg font-bold text-stone-900">{branch.name}</h3>
                     {branch.code && (
-                      <span
-                        className="mt-1 inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                        style={{ background: ACCENT_SOFT, color: ACCENT }}
-                      >
+                      <span className="mt-1 inline-flex rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-[11px] font-semibold text-orange-600">
                         #{branch.code}
                       </span>
                     )}
                     {branch.address && (
-                      <p className="mt-2 line-clamp-2 text-xs leading-5" style={{ color: MUTED }}>
+                      <p className="mt-2 line-clamp-2 text-xs leading-5 text-stone-500">
                         {branch.address}
                       </p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <div
-                      className="flex items-center justify-between rounded-xl px-3 py-2.5"
-                      style={{ background: PANEL_BG_2 }}
-                    >
-                      <span className="flex items-center gap-2 text-xs font-medium" style={{ color: MUTED }}>
-                        <StockOutlined style={{ color: ACCENT }} />
+                    <div className="flex items-center justify-between rounded-xl bg-orange-50/50 px-3 py-2.5">
+                      <span className="flex items-center gap-2 text-xs font-medium text-stone-500">
+                        <StockOutlined className="text-orange-600" />
                         Stock
                       </span>
-                      <span
-                        className="rounded-lg px-2.5 py-1 text-xs font-bold"
-                        style={{ background: PANEL_BG, color: TEXT }}
-                      >
+                      <span className="rounded-lg border border-orange-100 bg-white px-2.5 py-1 text-xs font-bold text-stone-700">
                         {getBranchProductsCount(branch.id)}
                       </span>
                     </div>
 
-                    <div
-                      className="flex items-center justify-between rounded-xl px-3 py-2.5"
-                      style={{ background: PANEL_BG_2 }}
-                    >
-                      <span className="flex items-center gap-2 text-xs font-medium" style={{ color: MUTED }}>
-                        <TeamOutlined style={{ color: AMBER }} />
+                    <div className="flex items-center justify-between rounded-xl bg-orange-50/50 px-3 py-2.5">
+                      <span className="flex items-center gap-2 text-xs font-medium text-stone-500">
+                        <TeamOutlined className="text-amber-600" />
                         Staff
                       </span>
-                      <span
-                        className="rounded-lg px-2.5 py-1 text-xs font-bold"
-                        style={{ background: PANEL_BG, color: TEXT }}
-                      >
+                      <span className="rounded-lg border border-orange-100 bg-white px-2.5 py-1 text-xs font-bold text-stone-700">
                         {getBranchStaffCount(branch.id)}
                       </span>
                     </div>
 
-                    <div
-                      className="flex items-center justify-between rounded-xl px-3 py-2.5"
-                      style={{ background: PANEL_BG_2 }}
-                    >
-                      <span className="flex items-center gap-2 text-xs font-medium" style={{ color: MUTED }}>
-                        <ProductOutlined style={{ color: MUTED }} />
+                    <div className="flex items-center justify-between rounded-xl bg-orange-50/50 px-3 py-2.5">
+                      <span className="flex items-center gap-2 text-xs font-medium text-stone-500">
+                        <ProductOutlined className="text-stone-400" />
                         Products
                       </span>
-                      <span
-                        className="rounded-lg px-2.5 py-1 text-xs font-bold"
-                        style={{ background: PANEL_BG, color: TEXT }}
-                      >
+                      <span className="rounded-lg border border-orange-100 bg-white px-2.5 py-1 text-xs font-bold text-stone-700">
                         {getBranchProductCount(branch.id)}
                       </span>
                     </div>
                   </div>
 
-                  <p className="mt-4 text-right text-[11px] font-medium" style={{ color: FAINT }}>
+                  <p className="mt-4 text-right text-[11px] font-medium text-stone-400">
                     View branch →
                   </p>
                 </div>
@@ -1768,15 +1633,12 @@ function Dashboard() {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-xl"
-              style={{ background: RED_SOFT, color: RED }}
-            >
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-100 text-red-600">
               <WarningOutlined />
             </div>
             <div>
-              <p className="font-bold" style={{ color: TEXT }}>Low Stock Alert</p>
-              <p className="text-xs font-normal" style={{ color: MUTED }}>
+              <p className="font-bold text-stone-900">Low Stock Alert</p>
+              <p className="text-xs font-normal text-stone-500">
                 Inventory requires attention
               </p>
             </div>
@@ -1872,15 +1734,12 @@ function Dashboard() {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-xl"
-              style={{ background: ACCENT_SOFT, color: ACCENT }}
-            >
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
               <PlusOutlined />
             </div>
             <div>
-              <p className="font-bold" style={{ color: TEXT }}>Add New Branch</p>
-              <p className="text-xs font-normal" style={{ color: MUTED }}>
+              <p className="font-bold text-stone-900">Add New Branch</p>
+              <p className="text-xs font-normal text-stone-500">
                 Add a NewMoon business location
               </p>
             </div>
@@ -1895,11 +1754,8 @@ function Dashboard() {
         destroyOnHidden
         className="rounded-2xl"
       >
-        <div
-          className="mb-5 mt-2 rounded-xl p-4"
-          style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}
-        >
-          <p className="mb-0 text-xs leading-5" style={{ color: ACCENT }}>
+        <div className="mb-5 mt-2 rounded-xl border border-orange-100 bg-orange-50 p-4">
+          <p className="mb-0 text-xs leading-5 text-orange-700">
             <InfoCircleOutlined className="mr-2" />
             This branch information will be visible to staff members and customers.
           </p>
@@ -1955,7 +1811,7 @@ function Dashboard() {
               <Button
                 type="primary"  
                 htmlType="submit"
-                className="h-11! rounded-xl! border-none! bg-[#22D3A8] px-5! font-semibold text-page shadow-none hover:bg-accent-deep!"
+                className="h-11! rounded-xl! border-none! bg-linear-to-r! from-orange-600! to-amber-500! px-5! font-semibold! text-white! shadow-none! hover:brightness-110!"
               >
                 Create Branch
               </Button>

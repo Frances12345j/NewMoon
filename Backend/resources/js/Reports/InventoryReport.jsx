@@ -327,7 +327,7 @@ const InventoryReport = () => {
     };
 
   const branchColumn = {
-      title: "Location / Branch",
+      title: "Branch",
       dataIndex: "branch_name",
       key: "branch_name",
       render: (name) => <Text>{name}</Text>,

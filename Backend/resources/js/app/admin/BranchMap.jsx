@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Card, Table, Tag, Button, Modal, Form, Input, Space, message, Tooltip } from "antd";
+import { Table, Tag, Button, Modal, Form, Input, Space, message, Tooltip } from "antd";
 import {
   EnvironmentOutlined,
   PhoneOutlined,
@@ -18,34 +18,147 @@ import Loading from "@/components/Loading";
 import { clientPagination, serverPagination } from "@/components/Pagination";
 import "leaflet/dist/leaflet.css";
 
-// ─── Palette — matches MenuSidebar / Dashboard (dark plum + mint) ─────
-const PANEL_BG = "#2A2438";
-const PANEL_BG_2 = "#332C45";
-const BORDER = "rgba(255,255,255,0.06)";
-const TEXT = "#FFFFFF";
-const MUTED = "#A5A0B5";
-const FAINT = "#6E6A7E";
-const ACCENT = "#22D3A8";
-const ACCENT_DEEP = "#16B48C";
-const ACCENT_SOFT = "rgba(34,211,168,0.12)";
+const PageShell = ({ children }) => (
+  <div className="min-h-screen bg-[#FFF7ED] p-4 sm:p-6 lg:p-8">{children}</div>
+);
+
+const HeroButton = ({ children, ...props }) => (
+  <Button
+    {...props}
+    className="h-11! rounded-xl! border-white/20! bg-white/5! px-5! font-medium! text-white! hover:border-orange-300! hover:text-orange-300!"
+  >
+    {children}
+  </Button>
+);
+
+const CountPill = ({ children }) => (
+  <span className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700">
+    {children}
+  </span>
+);
+
+const SectionCard = ({ icon, title, subtitle, extra, children, className = "" }) => (
+  <div className={`rounded-2xl border border-orange-100 bg-white shadow-sm ${className}`}>
+    {(title || extra) && (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-orange-50 px-5 py-4">
+        <div className="flex items-center gap-3">
+          {icon && (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+              {icon}
+            </div>
+          )}
+          <div>
+            <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+            {subtitle && <p className="text-xs text-stone-500">{subtitle}</p>}
+          </div>
+        </div>
+        {extra}
+      </div>
+    )}
+    <div className="p-4">{children}</div>
+  </div>
+);
+
+const FilterBar = ({ title = "Filters", subtitle = "Narrow down the view", children }) => (
+  <div className="rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
+    <div className="mb-4 flex items-center gap-3">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+        <SearchOutlined />
+      </div>
+      <div>
+        <h2 className="text-lg font-bold text-stone-900">{title}</h2>
+        <p className="text-xs text-stone-500">{subtitle}</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap items-center gap-3">{children}</div>
+  </div>
+);
+
+const TableEmpty = ({ icon, title, description }) => (
+  <div className="py-10 text-center">
+    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-400">
+      {icon}
+    </div>
+    <p className="text-base font-semibold text-stone-700">{title}</p>
+    {description && <p className="mt-1 text-sm text-stone-400">{description}</p>}
+  </div>
+);
+
+const HeroHeader = ({ badgeIcon, badge, title, accent, subtitle, actions, stats = [] }) => (
+  <div className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-stone-950 via-stone-900 to-orange-950 shadow-[0_20px_50px_rgba(67,20,7,0.20)]">
+    <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-orange-500/8 blur-3xl" />
+    <div className="pointer-events-none absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-amber-400/6 blur-2xl" />
+    <div className="pointer-events-none absolute right-1/3 top-1/2 h-32 w-32 rounded-full bg-orange-400/5 blur-2xl" />
+    {badgeIcon && (
+      <div className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 text-[120px] leading-none text-white/3">
+        {badgeIcon}
+      </div>
+    )}
+    <div className="relative z-10 px-6 py-7 sm:px-8">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          {badge && (
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-orange-300">
+              {badgeIcon}
+              {badge}
+            </div>
+          )}
+          <h1 className="text-2xl font-bold text-white">
+            {title} {accent && <span className="text-orange-400">{accent}</span>}
+          </h1>
+          {subtitle && <p className="mt-1 text-sm text-white/60">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap gap-2 xl:min-w-max">{actions}</div>}
+      </div>
+      {stats.length > 0 && (
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {stats.map((stat, i) => (
+            <div key={i} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/6 px-4 py-3 backdrop-blur-sm">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${stat.iconBg || "bg-orange-500/15"}`}>
+                <span className={stat.iconColor || "text-orange-400"}>{stat.icon}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/50 text-xs">{stat.label}</p>
+                <p className={`text-white font-bold text-lg leading-tight ${stat.valueColor || ""}`}>
+                  {stat.value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// ─── Palette — matches Inventory Report (warm cream + orange) ─────
+const PANEL_BG = "#FFFFFF";
+const PANEL_BG_2 = "#FFF7ED";
+const BORDER = "#FFEDD5";
+const TEXT = "#292524";
+const MUTED = "#78716C";
+const FAINT = "#A8A29E";
+const ACCENT = "#EA580C";
+const ACCENT_DEEP = "#F97316";
+const ACCENT_SOFT = "rgba(234,88,12,0.10)";
 const AMBER = "#F59E0B";
 const AMBER_SOFT = "rgba(245,158,11,0.15)";
-const GREEN = "#22D3A8";
-const GREEN_SOFT = "rgba(34,211,168,0.12)";
+const GREEN = "#16A34A";
+const GREEN_SOFT = "rgba(22,163,74,0.12)";
 const RED = "#EF4444";
 const RED_SOFT = "rgba(239,68,68,0.15)";
 
 // Inline style tokens
-const FIELD_LABEL = { color: "#FFFFFF", fontWeight: 500 };
+const FIELD_LABEL = { color: "#451A03", fontWeight: 500 };
 const GRADIENT_BTN = {
-  background: "linear-gradient(135deg, #22D3A8, #16B48C)",
+  background: "linear-gradient(135deg, #EA580C, #F97316)",
   border: "none",
-  color: "#1F1A2E",
+  color: "#FFFFFF",
   fontWeight: 700,
   boxShadow: "none",
 };
 const SECONDARY_BTN = {
-  background: PANEL_BG_2,
+  background: PANEL_BG,
   border: `1px solid ${BORDER}`,
   color: TEXT,
   fontWeight: 500,
@@ -341,140 +454,57 @@ function BranchMap() {
   ];
 
   return (
-    <div className="nm-dark min-h-screen p-6" style={{ background: "#1F1A2E" }}>
-      
+    <PageShell>
+      {/* Hero Header */}
+      <HeroHeader
+        badgeIcon={<EnvironmentOutlined />}
+        badge="Branch Network"
+        title="Branch Locations"
+        accent="Map"
+        subtitle="View all branch locations on an interactive map"
+        actions={
+          <HeroButton
+            icon={<ReloadOutlined />}
+            onClick={() => loadBranches(true)}
+            loading={loading}
+          >
+            Refresh
+          </HeroButton>
+        }
+        stats={[
+          { icon: <EnvironmentOutlined />, iconBg: "bg-orange-500/15", iconColor: "text-orange-400", label: "Total Branches", value: branches.length },
+          { icon: <EnvironmentOutlined />, iconBg: "bg-green-500/15", iconColor: "text-green-400", label: "With Location", value: branchesWithLocation.length },
+          { icon: <EnvironmentOutlined />, iconBg: "bg-amber-500/15", iconColor: "text-amber-400", label: "Missing Location", value: branchesWithoutLocation.length },
+        ]}
+      />
 
-      {/* Header — dark plum with mint accents */}
-      <div
-        className="mb-6 overflow-hidden rounded-2xl"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}` }}
-      >
-        <div className="relative px-8 py-6">
-          {/* Decorative circles */}
-          <div className="absolute right-0 top-0 opacity-10">
-            <div
-              className="-mr-32 -mt-32 h-64 w-64 rounded-full"
-              style={{ background: ACCENT }}
-            />
-          </div>
-          <div className="absolute bottom-0 left-1/3 opacity-5">
-            <div className="h-48 w-48 rounded-full" style={{ background: ACCENT }} />
-          </div>
-
-          {/* Accent line */}
-          <div
-            className="absolute left-0 right-0 top-0 h-1"
-            style={{ background: `linear-gradient(90deg, ${ACCENT}, ${ACCENT_DEEP})` }}
-          />
-
-          <div className="relative z-10 flex items-center justify-between">
-            <div>
-              <h1 className="mb-1 text-2xl font-bold" style={{ color: TEXT }}>
-                <EnvironmentOutlined className="mr-2" style={{ color: ACCENT }} />
-                Branch Locations Map
-              </h1>
-              <p className="text-sm" style={{ color: MUTED }}>
-                View all branch locations on an interactive map
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Stats in Header */}
-          <div className="relative z-10 mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
-            <div
-              className="rounded-2xl px-4 py-3"
-              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-            >
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <EnvironmentOutlined style={{ color: ACCENT }} /> Total Branches
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{branches.length}</p>
-            </div>
-            <div
-              className="rounded-2xl px-4 py-3"
-              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-            >
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <EnvironmentOutlined style={{ color: ACCENT }} /> With Location
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{branchesWithLocation.length}</p>
-            </div>
-            <div
-              className="rounded-2xl px-4 py-3"
-              style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
-            >
-              <p className="flex items-center gap-1.5 text-xs" style={{ color: MUTED }}>
-                <EnvironmentOutlined style={{ color: AMBER }} /> Missing Location
-              </p>
-              <p className="mt-1 text-xl font-bold" style={{ color: TEXT }}>{branchesWithoutLocation.length}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <Card
-        className="mb-6"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
-      >
-        <Space wrap>
+      {/* Search */}
+      <div className="mb-6">
+        <FilterBar title="Filters" subtitle="Search branches by name or address">
           <Input
             placeholder="Search branch name or address..."
-            prefix={<SearchOutlined style={{ color: MUTED }} />}
+            prefix={<SearchOutlined style={{ color: FAINT }} />}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: 300 }}
             allowClear
+            className="h-11! rounded-xl! border-stone-200! hover:border-orange-300! focus:border-orange-500!"
           />
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={() => loadBranches(true)}
-            loading={loading}
-            style={GHOST_BTN}
-          >
-            Refresh
-          </Button>
-        </Space>
-      </Card>
-
-      {/* Map Section */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
-              <EnvironmentOutlined className="mr-2" style={{ color: ACCENT }} />
-              Interactive Map
-            </h2>
-            <p className="text-sm mt-1" style={{ color: MUTED }}>Click markers for branch details</p>
-          </div>
-          <Tag
-            className="rounded-full px-3 py-1 text-sm font-semibold"
-            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-          >
-            {branchesWithLocation.length} located
-          </Tag>
-        </div>
+        </FilterBar>
       </div>
 
-      <Card
+      {/* Map Section */}
+      <SectionCard
         className="mb-6"
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.35)" }}
-        styles={{ body: { padding: 0, background: PANEL_BG } }}
+        icon={<EnvironmentOutlined />}
+        title="Interactive Map"
+        subtitle="Click markers for branch details"
+        extra={<CountPill>{branchesWithLocation.length} located</CountPill>}
       >
         {loading ? (
           <Loading full text="Loading map..." />
         ) : branchesWithLocation.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div
-              className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl"
-              style={{ background: ACCENT_SOFT, color: ACCENT }}
-            >
-              <EnvironmentOutlined className="text-4xl" />
-            </div>
-            <p className="mb-2 text-lg font-semibold" style={{ color: TEXT }}>No branch locations found</p>
-            <p style={{ color: MUTED }}>Add latitude and longitude to branches to see them on the map</p>
-          </div>
+          <TableEmpty icon={<EnvironmentOutlined className="text-3xl" />} title="No branch locations found" description="Add latitude and longitude to branches to see them on the map" />
         ) : (
           <div className="h-125 w-full md:h-150 lg:h-175">
             <MapContainer
@@ -536,25 +566,20 @@ function BranchMap() {
             </MapContainer>
           </div>
         )}
-      </Card>
+      </SectionCard>
 
       {/* Branches Missing Location */}
       {branchesWithoutLocation.length > 0 && (
-        <Card
-          className="mb-6"
-          style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderLeft: `3px solid ${AMBER}`, borderRadius: 12 }}
-          styles={{ body: { background: PANEL_BG } }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <EnvironmentOutlined style={{ color: AMBER }} />
-            <span className="font-semibold" style={{ color: AMBER }}>Branches Missing Location Data ({branchesWithoutLocation.length})</span>
+        <div className="mb-6 rounded-2xl border border-l-4 border-l-amber-300 bg-amber-50/60 p-4 shadow-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <EnvironmentOutlined className="text-amber-600" />
+            <span className="font-semibold text-amber-800">Branches Missing Location Data ({branchesWithoutLocation.length})</span>
           </div>
           <div className="space-y-2">
             {branchesWithoutLocation.map((branch) => (
               <div
                 key={branch.id}
-                className="flex items-center justify-between rounded-xl p-3"
-                style={{ background: PANEL_BG_2, border: `1px solid ${BORDER}` }}
+                className="flex items-center justify-between rounded-xl border border-orange-100 bg-white p-3"
               >
                 <div>
                   <p className="font-medium" style={{ color: TEXT }}>{branch.name}</p>
@@ -564,54 +589,38 @@ function BranchMap() {
                   size="small"
                   icon={<EditOutlined />}
                   onClick={() => handleEditLocation(branch)}
-                  style={GHOST_BTN}
+                  className="rounded-xl border-[#EA580C] text-[#EA580C] hover:bg-[#FFF1E6] hover:border-[#F97316]"
                 >
                   Add Location
                 </Button>
               </div>
             ))}
           </div>
-        </Card>
+        </div>
       )}
 
       {/* All Branches Table Section */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h2 className="text-xl font-semibold" style={{ color: TEXT }}>
-              <EnvironmentOutlined className="mr-2" style={{ color: ACCENT }} />
-              All Branches
-            </h2>
-            <p className="text-sm mt-1" style={{ color: MUTED }}>Complete list of all registered branches</p>
-          </div>
-          <Tag
-            className="rounded-full px-3 py-1 text-sm font-semibold"
-            style={{ background: ACCENT_SOFT, color: ACCENT, border: `1px solid ${ACCENT}30` }}
-          >
-            {filteredBranches.length} branch{filteredBranches.length !== 1 ? 'es' : ''}
-          </Tag>
-        </div>
-      </div>
-
-      <Card
-        style={{ background: PANEL_BG, border: `1px solid ${BORDER}`, borderRadius: 12 }}
-        styles={{ body: { background: PANEL_BG } }}
+      <SectionCard
+        icon={<EnvironmentOutlined />}
+        title="All Branches"
+        subtitle="Complete list of all registered branches"
+        extra={<CountPill>{filteredBranches.length} branch{filteredBranches.length !== 1 ? 'es' : ''}</CountPill>}
       >
         <div ref={tableRef}>
           <Table
             columns={columns}
             dataSource={filteredBranches}
             rowKey="id"
-            rowClassName={(record) => record.id === selectedBranch?.id ? "border-l-4 border-l-[#22D3A8]" : ""}
+            rowClassName={(record) => record.id === selectedBranch?.id ? "border-l-4 border-l-[#EA580C]" : ""}
             onRow={(record) => ({
               onClick: () => handleRowClick(record),
               style: { cursor: record.latitude && record.longitude ? "pointer" : "default" },
             })}
             pagination={clientPagination({ label: "branches" })}
-            locale={{ emptyText: <div className="py-10 text-center"><div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: ACCENT_SOFT, color: ACCENT }}><EnvironmentOutlined className="text-3xl" /></div><p className="font-semibold" style={{ color: TEXT }}>No branches found</p><p className="text-sm" style={{ color: MUTED }}>Try adjusting your search</p></div> }}
+            locale={{ emptyText: <TableEmpty icon={<EnvironmentOutlined className="text-3xl" />} title="No branches found" description="Try adjusting your search" /> }}
           />
         </div>
-      </Card>
+      </SectionCard>
 
       {/* Edit Location Modal */}
       <Modal
@@ -621,7 +630,7 @@ function BranchMap() {
               <EditOutlined />
             </div>
             <div>
-              <p className="font-bold" style={{ color: TEXT }}>{editingBranch?.name} - Set Location</p>
+              <p className="font-bold text-[#451A03]">{editingBranch?.name} - Set Location</p>
               <p className="text-xs font-normal" style={{ color: MUTED }}>Find coordinates for this branch</p>
             </div>
           </div>
@@ -640,13 +649,13 @@ function BranchMap() {
           >
             <Input
               placeholder="e.g., 123 Main St, Manila, Philippines"
+              className="rounded-xl!"
             />
           </Form.Item>
           <div
-            className="mb-4 rounded-xl p-3"
-            style={{ background: ACCENT_SOFT, border: `1px solid ${ACCENT}30` }}
+            className="mb-4 rounded-xl border border-orange-100 bg-[#FFF1E6] p-3"
           >
-            <p className="mb-0 text-xs" style={{ color: ACCENT }}>
+            <p className="mb-0 text-xs" style={{ color: "#9A3412" }}>
               <InfoCircleOutlined className="mr-1" />
               Enter a complete address including street, city, and country for accurate location detection.
             </p>
@@ -656,6 +665,7 @@ function BranchMap() {
               <Button
                 onClick={() => { setIsEditModalVisible(false); setEditingBranch(null); editFormInstance.resetFields(); }}
                 disabled={isGeocoding}
+                className="rounded-xl"
                 style={SECONDARY_BTN}
               >
                 Cancel
@@ -664,6 +674,7 @@ function BranchMap() {
                 type="primary"
                 htmlType="submit"
                 loading={isGeocoding}
+                className="rounded-xl"
                 style={GRADIENT_BTN}
               >
                 Save Location
@@ -672,7 +683,7 @@ function BranchMap() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </PageShell>
   );
 }
 
